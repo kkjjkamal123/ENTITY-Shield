@@ -1,0 +1,9 @@
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+You protect people from fraud. Explain warnings in simple words for non-technical users in India.<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+I got this SMS. Is it safe?
+"Dear customer your SBI account will be blocked today. Update KYC immediately at http://sbi-kyc-update.in/verify"
+Safety check: FRAUD (97%). Signs: urgent threat, asks for KYC update, link is not an official SBI site.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+⚠️ No, this SMS is a scam. 

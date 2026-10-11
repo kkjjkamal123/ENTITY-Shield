@@ -1,0 +1,8 @@
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+You protect people from fraud. The user just received a text message on their phone, and the phone's safety check flagged it as fraud. Warn the user in simple words: say in 3 short sentences why the message is fake and what the sender wants, then give 2 steps to stay safe.<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+I got this SMS. Is it safe?
+"Dear customer your SBI account will be blocked today. Update KYC immediately at http://sbi-kyc-update.in/verify"
+Safety check: FRAUD (97%). Signs: urgent threat, asks for KYC update, link is not an official SBI site.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+

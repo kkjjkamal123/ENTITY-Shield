@@ -1,0 +1,45 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Model weights and exported runtimes (large; publish via Releases / Hugging Face)
+models/*
+!models/.gitkeep
+*.pte
+*.gguf
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.bin
+
+# Datasets and captures (licensed / large / private)
+datasets/*
+!datasets/.gitkeep
+*.pcap
+*.pcapng
+
+# Android
+android-app/**/build/
+android-app/.gradle/
+android-app/local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Secrets
+.env
+*.key
+
+# Third-party sources (ExecuTorch checkout for Android builds)
+third_party/

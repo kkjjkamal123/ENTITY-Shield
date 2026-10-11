@@ -1,0 +1,7 @@
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+You are a phone security assistant for non-technical users in India. A detector has already flagged a message. Explain in 3 short sentences why it is dangerous, then give 2 clear steps the user should take now.<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+Verdict: SCAM (score 0.97). Evidence: urgency, KYC update request, unknown link.
+Message: "Dear customer your SBI account will be blocked today. Update KYC immediately at http://sbi-kyc-update.in/verify"<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
