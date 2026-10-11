@@ -1,0 +1,87 @@
+# ExecuTorch export log: Llama 3.2 1B Instruct QAT+LoRA -> llama3_2_1b_instruct_qlora_ctx2048.pte
+# Copied from models/outputs/2026-10-08/17-34-24/export_llm.log (models/ is gitignored). Two lines with local library paths removed.
+
+[2026-10-08 17:34:24,725][root][INFO] - Applying quantizers: []
+[2026-10-08 17:34:24,971][root][INFO] - Checkpoint dtype: torch.bfloat16
+[2026-10-08 17:34:25,022][root][INFO] - Replacing KVCache with CustomKVCache. This modifies the model in place.
+[2026-10-08 17:34:25,057][root][INFO] - Model after source transforms: Transformer(
+  (tok_embeddings): QuantizedGroupEmbedding()
+  (layers): ModuleList(
+    (0-15): 16 x TransformerBlock(
+      (attention): AttentionMHA(
+        (wq): Int8DynActInt4WeightLinearLoRA(
+          (adaptor): LoRAAdaptorLinear(
+            (A): Linear(in_features=2048, out_features=16, bias=False)
+            (B): Linear(in_features=16, out_features=2048, bias=False)
+          )
+        )
+        (wk): Int8DynActInt4WeightLinearLoRA(
+          (adaptor): LoRAAdaptorLinear(
+            (A): Linear(in_features=2048, out_features=16, bias=False)
+            (B): Linear(in_features=16, out_features=512, bias=False)
+          )
+        )
+        (wv): Int8DynActInt4WeightLinearLoRA(
+          (adaptor): LoRAAdaptorLinear(
+            (A): Linear(in_features=2048, out_features=16, bias=False)
+            (B): Linear(in_features=16, out_features=512, bias=False)
+          )
+        )
+        (wo): Int8DynActInt4WeightLinearLoRA(
+          (adaptor): LoRAAdaptorLinear(
+            (A): Linear(in_features=2048, out_features=16, bias=False)
+            (B): Linear(in_features=16, out_features=2048, bias=False)
+          )
+        )
+        (rope): Rope(
+          (apply_rotary_emb): RotaryEmbedding()
+        )
+        (kv_cache): CustomKVCache()
+        (SDPA): SDPACustom()
+      )
+      (feed_forward): FeedForward(
+        (w1): Int8DynActInt4WeightLinearLoRA(
+          (adaptor): LoRAAdaptorLinear(
+            (A): Linear(in_features=2048, out_features=16, bias=False)
+            (B): Linear(in_features=16, out_features=8192, bias=False)
+          )
+        )
+        (w2): Int8DynActInt4WeightLinearLoRA(
+          (adaptor): LoRAAdaptorLinear(
+            (A): Linear(in_features=8192, out_features=16, bias=False)
+            (B): Linear(in_features=16, out_features=2048, bias=False)
+          )
+        )
+        (w3): Int8DynActInt4WeightLinearLoRA(
+          (adaptor): LoRAAdaptorLinear(
+            (A): Linear(in_features=2048, out_features=16, bias=False)
+            (B): Linear(in_features=16, out_features=8192, bias=False)
+          )
+        )
+      )
+      (attention_norm): RMSNorm()
+      (ffn_norm): RMSNorm()
+    )
+  )
+  (rope): Rope(
+    (apply_rotary_emb): RotaryEmbedding()
+  )
+  (norm): RMSNorm()
+  (output): Int8DynActInt8WeightLinear()
+)
+[2026-10-08 17:34:25,057][root][INFO] - Exporting with:
+[2026-10-08 17:34:25,059][root][INFO] - inputs: (tensor([[2, 3, 4]]), {'input_pos': tensor([0])})
+[2026-10-08 17:34:25,059][root][INFO] - kwargs: None
+[2026-10-08 17:34:25,059][root][INFO] - dynamic shapes: ({1: Dim('token_dim', min=0, max=511)}, {'input_pos': {0: 1}})
+[2026-10-08 17:34:39,025][root][INFO] - Running canonical pass: RemoveRedundantTransposes
+[2026-10-08 17:34:39,074][root][INFO] - Lowering model using following partitioner(s): 
+[2026-10-08 17:34:39,074][root][INFO] - --> XnnpackDynamicallyQuantizedPartitioner
+[2026-10-08 17:34:39,074][root][INFO] - --> XnnpackPartitioner
+[2026-10-08 17:34:39,074][root][INFO] - Using pt2e [] to quantizing the model...
+[2026-10-08 17:34:39,074][root][INFO] - No quantizer provided, passing...
+[2026-10-08 17:34:39,074][root][INFO] - Re-exporting with:
+[2026-10-08 17:34:39,074][root][INFO] - inputs: (tensor([[2, 3, 4]]), {'input_pos': tensor([0])})
+[2026-10-08 17:34:39,074][root][INFO] - kwargs: None
+[2026-10-08 17:34:39,074][root][INFO] - dynamic shapes: ({1: Dim('token_dim', min=0, max=511)}, {'input_pos': {0: 1}})
+[2026-10-08 17:36:42,975][root][INFO] - Required memory for activation in bytes: [0, 222256960]
+[2026-10-08 17:36:43,206][root][INFO] - Saved exported program to llama3_2_1b_instruct_qlora_ctx2048.pte

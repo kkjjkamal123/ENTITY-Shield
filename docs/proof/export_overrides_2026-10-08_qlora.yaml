@@ -1,0 +1,6 @@
+- ++base.model_class=llama3_2
+- ++base.checkpoint=<repo>/models/llama-3.2-1b-instruct-qlora/consolidated.00.pth
+- ++base.params=<repo>/models/llama-3.2-1b-instruct-qlora/params.json
+- ++export.max_seq_length=512
+- ++export.max_context_length=2048
+- ++export.output_name=llama3_2_1b_instruct_qlora_ctx2048.pte
