@@ -1,10 +1,16 @@
-import sys, matplotlib
+"""Regenerates the README result charts from the numbers in docs/PLAN.md section 0.
+Usage: python docs/img/make_charts.py [output_dir]   (default: this script's folder)"""
+import os, sys, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-out = sys.argv[1]
+if len(sys.argv) > 2:
+    sys.exit(__doc__)
+out = sys.argv[1] if len(sys.argv) == 2 else os.path.dirname(os.path.abspath(__file__))
+os.makedirs(out, exist_ok=True)
 BG, FG, GRID = "#ffffff", "#1f2328", "#d0d7de"
 C1, C2, C3 = "#2563eb", "#ea580c", "#6b7280"
-plt.rcParams.update({"font.family": "Helvetica Neue", "font.size": 11, "text.color": FG, "axes.labelcolor": FG,
+# Helvetica Neue is macOS-only; fall back quietly elsewhere instead of warning on every text element.
+plt.rcParams.update({"font.family": ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"], "font.size": 11, "text.color": FG, "axes.labelcolor": FG,
     "xtick.color": FG, "ytick.color": FG, "axes.edgecolor": GRID, "figure.facecolor": BG, "axes.facecolor": BG,
     "savefig.facecolor": BG})
 

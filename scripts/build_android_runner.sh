@@ -7,8 +7,21 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ET="${REPO_ROOT}/third_party/executorch"
 PY="${REPO_ROOT}/.venv/bin/python"
-: "${ANDROID_NDK:=$(brew --prefix)/share/android-commandlinetools/ndk/28.2.13676358}"
-JOBS="$(sysctl -n hw.ncpu)"
+NDK_VERSION="28.2.13676358"   # NDK r28c, same as scripts/setup_mac.sh
+if [ -z "${ANDROID_NDK:-}" ]; then
+  if [ -n "${ANDROID_HOME:-}" ]; then
+    ANDROID_NDK="${ANDROID_HOME}/ndk/${NDK_VERSION}"
+  else
+    ANDROID_NDK="$(brew --prefix 2>/dev/null)/share/android-commandlinetools/ndk/${NDK_VERSION}"
+  fi
+fi
+JOBS="${JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu)}"
+
+die() { echo "build_android_runner: $*" >&2; exit 1; }
+[ -f "${ET}/CMakeLists.txt" ] || die "ExecuTorch checkout not found at ${ET} (run scripts/setup_mac.sh)"
+[ -f "${ANDROID_NDK}/build/cmake/android.toolchain.cmake" ] || die "Android NDK not found at ${ANDROID_NDK} (set ANDROID_NDK)"
+[ -x "${PY}" ] || die "Python venv not found at ${PY} (run scripts/setup_mac.sh)"
+command -v cmake >/dev/null || die "cmake not found (brew install cmake)"
 
 common=(
   -DCMAKE_TOOLCHAIN_FILE="${ANDROID_NDK}/build/cmake/android.toolchain.cmake"
