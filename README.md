@@ -15,6 +15,7 @@ Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · Cybersecurity & Digi
 ![Targets](https://img.shields.io/badge/targets-Android%20arm64%20%7C%20Raspberry%20Pi%205-green)
 ![Runtime](https://img.shields.io/badge/runtime-ExecuTorch%201.5.1%20%2B%20XNNPACK-blue)
 ![Cloud](https://img.shields.io/badge/cloud-none-lightgrey)
+![Version](https://img.shields.io/badge/version-0.2.0-informational)
 
 </div>
 
@@ -255,29 +256,42 @@ Full log: [`docs/proof/export_llm_2026-10-08_qlora.log`](docs/proof/export_llm_2
 | Platform | Supported |
 |---|---|
 | **macOS 27, Apple silicon** | ✅ the development host; all scripts were run here |
-| Linux | ⚠️ should work with small path changes (Homebrew paths in the scripts) |
+| Linux | ⚠️ `setup_mac.sh` is Homebrew-only; the other scripts work if `ANDROID_NDK` (or `ANDROID_HOME`) points at NDK r28c and `.venv` exists |
 | Windows | ❌ not supported |
 
 ```bash
-# 1. One-time setup: adb, Android cmdline tools + NDK r28c, JDK 17, CMake, Ninja, uv,
-#    and a Python 3.11 venv with ExecuTorch 1.5.1 + PyTorch 2.14.0
+# 1. One-time setup (safe to re-run): adb, Android cmdline tools + NDK r28c, JDK 17, CMake, Ninja, uv,
+#    a Python 3.11 venv with ExecuTorch 1.5.1 + PyTorch 2.14.0, and the ExecuTorch v1.5.1 source
+#    in third_party/executorch (~2 GB with submodules; SKIP_EXECUTORCH_CLONE=1 skips it)
 ./scripts/setup_mac.sh
 
-# 2. Export Llama 3.2 1B Instruct to an ExecuTorch .pte (weights from Meta / Hugging Face,
-#    placed under models/, which is gitignored)
+# 2. Download the weights into the gitignored models/ folder. Both repos are gated:
+#    accept the Llama 3.2 license on Hugging Face first, then log in.
+.venv/bin/hf auth login
+.venv/bin/hf download meta-llama/Llama-3.2-1B-Instruct --include 'original/*' \
+  --local-dir models/llama-3.2-1b-instruct
+.venv/bin/hf download meta-llama/Llama-3.2-1B-Instruct-QLORA_INT4_EO8 \
+  --local-dir models/llama-3.2-1b-instruct-qlora
+
+# 3. Export to an ExecuTorch .pte (8da4w by default; ~2 min and ~7 GB RAM on an M5)
 ./training/llm/export_llama.sh
-#    QAT+LoRA variant:
+#    QAT+LoRA variant (the current pick for explanations):
 CONFIG=llama_xnnpack_qat.yaml SRC=models/llama-3.2-1b-instruct-qlora \
   OUT_NAME=llama3_2_1b_instruct_qlora_ctx2048.pte ./training/llm/export_llama.sh
 
-# 3. Cross-compile the ExecuTorch llama runner for arm64 Android
+# 4. Cross-compile the ExecuTorch llama runner for arm64 Android
 ./scripts/build_android_runner.sh
 
-# 4. Run one prompt on a connected phone and print the answer + prefill / TTFT / decode stats
+# 5. Copy llama_main, tokenizer.model and the model to /data/local/tmp/shield on the phone
+./scripts/push_to_phone.sh llama3_2_1b_instruct_qlora_ctx2048.pte
+
+# 6. Run one prompt on the phone; prints the answer, then prefill / TTFT / decode / load time / RSS
 ./scripts/phone_llm.sh llama3_2_1b_instruct_qlora_ctx2048.pte training/llm/prompts/2026-10-08_v4_en_factsheet_prefill.txt
 ```
 
-Model weights, exported `.pte` files, datasets and the ExecuTorch checkout are **not committed** (see `.gitignore`); the scripts recreate them. The charts are regenerated with `python docs/img/make_charts.py docs/img` (needs `matplotlib`).
+Model weights, exported `.pte` files, datasets and the ExecuTorch checkout are **not committed** (see `.gitignore`): `setup_mac.sh` fetches ExecuTorch, step 2 downloads the weights and `export_llama.sh` rebuilds the `.pte`. The charts are regenerated with `python docs/img/make_charts.py` (needs `matplotlib`).
+
+**Tests:** `./scripts/tests/run_tests.sh` checks every script offline against a fake `adb` and a fake venv (no phone, weights or NDK needed); the chart check runs when `matplotlib` is installed.
 
 ## Repository layout
 
@@ -286,13 +300,14 @@ Model weights, exported `.pte` files, datasets and the ExecuTorch checkout are *
 | `docs/PLAN.md` | Full plan, progress log, targets, risks, compliance checklist |
 | `docs/img/` | Result charts and the script that makes them |
 | `docs/proof/` | Export log and config from the real model export |
-| `scripts/` | Mac setup, Android runner build, phone runner |
+| `scripts/` | Mac setup, Android runner build, push to phone, phone runner, `tests/` (offline script tests) |
 | `training/llm/` | Llama export script and the dated prompt experiments |
 | `training/sms`, `training/url`, `training/network` | Detector training (not started) |
 | `android-app/` | Android app (not started) |
 | `pi-gateway/` | Raspberry Pi 5 gateway (not started) |
 | `models/`, `datasets/` | Not committed |
-| `benchmarks/` | Benchmark results and raw CSVs (controlled runs pending) |
+| `benchmarks/` | Benchmark results and raw CSVs (empty: controlled runs pending) |
+| `CHANGELOG.md`, `VERSION` | Release notes and the current repo version |
 
 ## Roadmap
 

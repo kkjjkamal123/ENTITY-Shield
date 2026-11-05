@@ -603,6 +603,7 @@ Weeks run Monday to Sunday.
 ```
 ARM-SOC/
 ├── README.md              Project overview (fills in as we build)
+├── CHANGELOG.md           Release notes; VERSION holds the current repo version
 ├── docs/
 │   └── PLAN.md            This document
 ├── android-app/           Android app (Kotlin + ExecuTorch), detectors and the explanation engine
@@ -623,7 +624,9 @@ ARM-SOC/
 └── scripts/
     ├── setup_mac.sh               One-time Mac toolchain setup
     ├── build_android_runner.sh    Cross-compiles ExecuTorch + llama_main for arm64 Android
-    └── phone_llm.sh               Runs one prompt on the phone; prints answer + prefill/TTFT/decode
+    ├── push_to_phone.sh           Copies llama_main, tokenizer.model and .pte models to the phone
+    ├── phone_llm.sh               Runs one prompt on the phone; prints answer + prefill/TTFT/decode/load/RSS
+    └── tests/run_tests.sh         Offline tests for the scripts (fake adb, no phone needed)
 ```
 
 Planned docs, added as the work happens: `docs/LEDGER.md`, `docs/JOURNEY.md`, `docs/ARCHITECTURE.md`, `docs/BUILD.md`, `benchmarks/BENCHMARKS.md`.
