@@ -7,6 +7,9 @@ are not built yet, so there is no APK `versionCode` / `versionName` or gateway v
 
 Tooling fixes and docs. No change to the models, the prompts or the measured numbers.
 
+Not yet run on the phone: the new `push_to_phone.sh` and the changed `phone_llm.sh` paths were checked
+only against a fake `adb` that replays real `llama_main` v1.5.1 output (no phone was connected).
+
 ### Fixed
 - `scripts/phone_llm.sh`: failures were silent: a failed `adb push` or `llama_main` run just exited 1
   with the runner's stderr left on the phone. It now names the failing step and prints the tail of
