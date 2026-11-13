@@ -30,6 +30,41 @@ The October plan (4 devices, Pi hotspot, LoRA, ENTITY policy port, lessons from 
 
 Newest first.
 
+### 2026-11-13 (afternoon): both detectors trained, exported and running on the phone ✅ (day 2 work, done a day early)
+
+**Device change:** the phone connected today is an **Infinix X6878** (Snapdragon 7s Gen 3 / SM7635, 1× A720 @ 2.7 GHz + 3× A720 @ 2.4 GHz + 4× A520 @ 1.8 GHz, **i8mm + bf16**, 7.5 GB RAM, Android 16), not the CMF Phone 1. Building and measuring on it. The October Llama numbers are from the CMF and get re-measured anyway.
+
+**Toolchain:** `.venv`, NDK, the Llama weights and the October `.pte` files had been deleted. `setup_mac.sh` restored the venv and NDK. **Llama weights still need a re-download** (gated: `hf auth login` with a new token).
+
+**Detectors:** `training/featurize.py` (hashed char 2–5-grams, 32,768 slots + named 0/1 signals; ASCII-only lowercasing and FNV-1a so Kotlin can match it exactly) → logistic regression → one `Linear + sigmoid` `.pte` (XNNPACK, 133 KB each). `training/train_detector.py sms|url`. Settings picked on the validation split only (SMS: L2 1e-4, 6 epochs; URL: L2 1e-6, 15 epochs).
+
+**SMS data:** UCI (random 70/15/15) + `training/sms/indian_sms.py`, 101 hand-written templates (47 scam families incl. KYC, electricity, courier, digital arrest, job/task, UPI collect, loans, investment, account takeover; 54 legitimate incl. bank OTP/debit alerts, deliveries, bills, PF, ITR, promotions from DLT senders, personal Hinglish/Hindi). **Split by template** (60/20/20): test wordings were never seen in training.
+
+**URL data:** hostname only (Tranco has no paths, so path features would leak the label; the DNS guard only sees hostnames). PhishTank **time split**: train ≤ 2026-06-14, test ≥ 2026-08-06. OpenPhish snapshot as an extra recall-only set.
+
+**Test results (threshold set at ≤ 1% false alarms on validation):**
+
+| Set | n | Precision | Recall | F1 | False-alarm rate | AUC |
+|---|---:|---:|---:|---:|---:|---:|
+| SMS, UCI test | 837 | 0.974 | 0.942 | 0.958 | 0.42% | 0.997 |
+| SMS, Indian test (unseen templates) | 840 | 0.978 | 0.903 | 0.939 | 1.82% | 0.982 |
+| URL, PhishTank newer than training + Tranco | 11,249 | 0.964 | 0.695 | 0.808 | 1.29% | 0.920 |
+| URL, OpenPhish snapshot (recall only) | 277 | 1.0 | 0.863 | — | — | — |
+| URL, 41 official Indian brand domains | 41 | — | — | — | **0%** | — |
+
+URL rows include the allow-list (below). Model alone: recall 0.704, but 4 of 41 official domains flagged.
+
+**What went wrong and the fixes:**
+- First SMS run: 6.3% false alarms on unseen Indian templates. Causes: links to official domains (`bescom.co.in`) counted as `has_link`, and bare IP links were missed. Fixed in the featurizer, plus 27 more templates.
+- First URL run underfit (train recall 0.80) because it used the SMS regularisation. Each detector now has its own setting.
+- The URL model flagged new official domains (`axis.bank.in`, `sbi.bank.in`, `pay.google.com`) → **allow-list first, model second**: official brand domains + Tranco top 10k, **minus 271 shared platforms** found in the *training* phish (myportfolio.com, hsforms.com, gitbook.io, lovable.app, duckdns.org, translate.goog, amazonaws.com, …) and the free-hosting list. `training/url/allowlist.txt`, 9,935 domains.
+
+**Learned SMS signal weights** (make sense): registered sender ID −2.6, "do not share" −1.5, asks for OTP/PIN −1.1 (real OTP messages are common); has link +2.0, prize/lottery +1.9, phone number to call +1.6, brand/domain mismatch +1.5, sender is a mobile number +1.3.
+
+**On the phone** (`training/phone_detectors.py`, ExecuTorch `executor_runner` built for arm64 Android): all 83 golden inputs give the same score as on the Mac (max diff 6.5e-7). Model latency over 1,000 runs: **SMS p50 0.022 ms / p95 0.031 ms; URL p50 0.021 ms / p95 0.024 ms.** Raw: `benchmarks/results/detector_*_2026-11-13.*`.
+
+**Limits to state in the report:** the Indian SMS set is templated, not real messages (the real-inbox false-alarm test is still to do); the URL model sees only the hostname, so phishing on shared platforms is caught only by the free-hosting signal; latency is model only (featurizing gets timed in the app).
+
 ### 2026-11-13: plan replaced, 10 days left
 
 **Found:** the challenge page now lists Phase 1 as due **23 Nov 2026**, Phase 2 **5 Feb 2027**, finals **15–16 Feb 2027**. Registration closed 19 Oct; the team is registered. No judging rubric and no submission form link on the page.
@@ -207,7 +242,7 @@ Phase 1 asks for "report, source code and demo", hosted on GitHub, through the c
 | Day | Work | Done when | Status |
 |---|---|---|---|
 | Fri 13 | Rewrite this plan, fix dates. Find the submission form and Phase 1 rules in the registration email. Download datasets. | Plan committed; form link known or support emailed | 🟡 |
-| Sat 14 | SMS + URL detectors: data, train, evaluate, export `.pte`, golden vectors | F1 and false-positive tables; both `.pte` run on the phone | ⏳ |
+| Sat 14 | SMS + URL detectors: data, train, evaluate, export `.pte`, golden vectors | F1 and false-positive tables; both `.pte` run on the phone | ✅ done Fri 13 (real-inbox test left) |
 | Sun 15 | App skeleton: SMS receiver, featurizer, detectors, alert card | Real SMS → alert on screen, airplane mode | ⏳ |
 | Mon 16 | Llama in the app: prefill, streaming, EN/HI, fixed steps, actions | Alert card shows the explanation; sender block works | ⏳ |
 | Tue 17 | Share-to-app links, follow-up questions, history, demo screen | **Phone-only build covers C2–C6 end to end** | ⏳ |
@@ -272,9 +307,9 @@ Rules: detection never waits for Llama; the model loads on demand and is freed a
 | Number | Method | Status |
 |---|---|---|
 | Time to first warning | SMS receive → alert drawn, n ≥ 10 | ⏳ |
-| Detector latency p50/p95 | On the phone, n ≥ 1000 | ⏳ |
-| SMS precision / recall / F1 / FPR | UCI held-out, Indian scam held-out, own inbox (FPR only) | ⏳ |
-| URL precision / recall / AUC | Time-split phishing feed + Tranco | ⏳ |
+| Detector latency p50/p95 | On the phone, n ≥ 1000 | ✅ model only: 0.022 / 0.031 ms; with featurizing ⏳ |
+| SMS precision / recall / F1 / FPR | UCI held-out, Indian scam held-out, own inbox (FPR only) | ✅ held-out sets; own inbox ⏳ |
+| URL precision / recall / AUC | Time-split phishing feed + Tranco | ✅ |
 | Network per-class F1 | CICIDS2017 held-out, plus own lab attacks reported separately | ⏳ |
 | Llama TTFT, decode tok/s, RSS | Unplugged, screen on, n ≥ 5 (replaces the October single runs) | ⏳ |
 | Energy per explanation | Battery current × voltage over the run | ⏳ |

@@ -110,6 +110,10 @@ out="$(CONFIG=nope.yaml bash "${EX}" 2>&1)"; check "export_llama: missing config
 out="$(ANDROID_NDK=/nonexistent bash "${R}/scripts/build_android_runner.sh" 2>&1)"
 check "build_android_runner: missing checkout reported" 1 "ExecuTorch checkout not found" "${out}" $?
 
+# ---- detector featurizer and SMS template set (plain python3, no deps) ----
+out="$(python3 "${REPO_ROOT}/training/featurize.py" 2>&1)"; check "featurize.py self-check" 0 "self-check ok" "${out}" $?
+out="$(python3 "${REPO_ROOT}/training/sms/indian_sms.py" 2>&1)"; check "indian_sms.py fills every template" 0 "rows;" "${out}" $?
+
 # ---- charts (only when matplotlib is installed) ----
 if python3 -c 'import matplotlib' 2>/dev/null; then
   out="$(python3 "${REPO_ROOT}/docs/img/make_charts.py" "${T}" 2>&1)"; rc=$?

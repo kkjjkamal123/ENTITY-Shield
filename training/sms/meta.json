@@ -1,0 +1,37 @@
+{
+ "kind": "sms",
+ "version": "2026-11-13",
+ "dim": 32768,
+ "ngrams": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "signals": [
+  "has_link",
+  "urgency",
+  "asks_secret",
+  "money_request",
+  "account_threat",
+  "prize_lottery",
+  "job_task",
+  "authority_threat",
+  "kyc_identity",
+  "brand_link_mismatch",
+  "shortener_link",
+  "sender_mobile",
+  "sender_dlt",
+  "dont_share_otp",
+  "call_number"
+ ],
+ "thresholds": {
+  "scam": 0.5,
+  "uncertain": 0.2
+ },
+ "input": [
+  1,
+  32783
+ ],
+ "output": "P(scam) in [0,1]"
+}

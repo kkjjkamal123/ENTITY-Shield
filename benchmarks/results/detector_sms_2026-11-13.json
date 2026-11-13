@@ -1,0 +1,202 @@
+{
+ "kind": "sms",
+ "date": "2026-11-13",
+ "seed": 7,
+ "dim": 32768,
+ "ngrams": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "thresholds": {
+  "scam": 0.5,
+  "uncertain": 0.2
+ },
+ "split": {
+  "test_templates": [
+   "arr4",
+   "ato1",
+   "cour2",
+   "del3",
+   "del5",
+   "dltf3",
+   "elec2",
+   "elec4",
+   "gov1",
+   "ins3",
+   "job1",
+   "kyc2",
+   "kyc4",
+   "per1",
+   "per9",
+   "txn4",
+   "txn5",
+   "txn6",
+   "txn7",
+   "upi5",
+   "util5"
+  ]
+ },
+ "sizes": {
+  "train": 6301,
+  "val": 1636,
+  "test": 1677
+ },
+ "results": {
+  "train": {
+   "at_scam": {
+    "n": 6301,
+    "pos": 1624,
+    "neg": 4677,
+    "precision": 0.9938,
+    "recall": 0.9865,
+    "f1": 0.9901,
+    "fpr": 0.0021
+   },
+   "at_uncertain": {
+    "n": 6301,
+    "pos": 1624,
+    "neg": 4677,
+    "precision": 0.9402,
+    "recall": 0.9975,
+    "f1": 0.968,
+    "fpr": 0.022
+   },
+   "auc": 0.9996
+  },
+  "train_uci": {
+   "at_scam": {
+    "n": 3901,
+    "pos": 504,
+    "neg": 3397,
+    "precision": 0.9837,
+    "recall": 0.9583,
+    "f1": 0.9709,
+    "fpr": 0.0024
+   },
+   "auc": 0.9988
+  },
+  "train_indian": {
+   "at_scam": {
+    "n": 2400,
+    "pos": 1120,
+    "neg": 1280,
+    "precision": 0.9982,
+    "recall": 0.9991,
+    "f1": 0.9987,
+    "fpr": 0.0016
+   },
+   "auc": 1.0
+  },
+  "val": {
+   "at_scam": {
+    "n": 1636,
+    "pos": 483,
+    "neg": 1153,
+    "precision": 1.0,
+    "recall": 0.9731,
+    "f1": 0.9864,
+    "fpr": 0.0
+   },
+   "at_uncertain": {
+    "n": 1636,
+    "pos": 483,
+    "neg": 1153,
+    "precision": 0.921,
+    "recall": 0.9896,
+    "f1": 0.9541,
+    "fpr": 0.0356
+   },
+   "auc": 0.9979
+  },
+  "val_uci": {
+   "at_scam": {
+    "n": 836,
+    "pos": 123,
+    "neg": 713,
+    "precision": 1.0,
+    "recall": 0.9431,
+    "f1": 0.9707,
+    "fpr": 0.0
+   },
+   "auc": 0.9937
+  },
+  "val_indian": {
+   "at_scam": {
+    "n": 800,
+    "pos": 360,
+    "neg": 440,
+    "precision": 1.0,
+    "recall": 0.9833,
+    "f1": 0.9916,
+    "fpr": 0.0
+   },
+   "auc": 0.9993
+  },
+  "test": {
+   "at_scam": {
+    "n": 1677,
+    "pos": 520,
+    "neg": 1157,
+    "precision": 0.9773,
+    "recall": 0.9115,
+    "f1": 0.9433,
+    "fpr": 0.0095
+   },
+   "at_uncertain": {
+    "n": 1677,
+    "pos": 520,
+    "neg": 1157,
+    "precision": 0.7589,
+    "recall": 0.9865,
+    "f1": 0.8579,
+    "fpr": 0.1409
+   },
+   "auc": 0.9896
+  },
+  "test_uci": {
+   "at_scam": {
+    "n": 837,
+    "pos": 120,
+    "neg": 717,
+    "precision": 0.9741,
+    "recall": 0.9417,
+    "f1": 0.9576,
+    "fpr": 0.0042
+   },
+   "auc": 0.9966
+  },
+  "test_indian": {
+   "at_scam": {
+    "n": 840,
+    "pos": 400,
+    "neg": 440,
+    "precision": 0.9783,
+    "recall": 0.9025,
+    "f1": 0.9389,
+    "fpr": 0.0182
+   },
+   "auc": 0.9824
+  }
+ },
+ "signal_weights": {
+  "has_link": 1.969,
+  "prize_lottery": 1.919,
+  "call_number": 1.633,
+  "brand_link_mismatch": 1.462,
+  "sender_mobile": 1.299,
+  "shortener_link": 1.28,
+  "account_threat": 1.255,
+  "kyc_identity": 1.193,
+  "job_task": 1.156,
+  "urgency": 1.096,
+  "authority_threat": 0.385,
+  "money_request": -0.16,
+  "asks_secret": -1.135,
+  "dont_share_otp": -1.506,
+  "sender_dlt": -2.582
+ },
+ "pte_bytes": 133380,
+ "pte_vs_torch_max_abs_diff": 4.3213367462158203e-07
+}
