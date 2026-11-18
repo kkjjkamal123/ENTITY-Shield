@@ -22,8 +22,8 @@ class FeaturizerTest {
             val input = if (kind == "url") Featurizer.urlHost(text) else text
             val h = Featurizer.hashed(input)
             val want = row.getJSONObject("hashed")
-            assertEquals("$kind #$i slots: $text", want.keySet().map { it.toInt() }.toSortedSet(), h.keys.toSortedSet())
-            for (k in want.keySet()) assertEquals("$kind #$i slot $k", want.getDouble(k), h[k.toInt()]!!, 1e-6)
+            assertEquals("$kind #$i slots: $text", want.keys().asSequence().map { it.toInt() }.toSortedSet(), h.keys.toSortedSet())
+            for (k in want.keys()) assertEquals("$kind #$i slot $k", want.getDouble(k), h[k.toInt()]!!, 1e-6)
             val sig = if (kind == "url") Featurizer.urlSignals(input) else Featurizer.smsSignals(text, sender)
             val wantSig = row.getJSONArray("signals")
             assertEquals("$kind #$i signal count", wantSig.length(), sig.size)

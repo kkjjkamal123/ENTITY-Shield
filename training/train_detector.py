@@ -56,7 +56,7 @@ def sms_data():
 
 def url_data():
     r = random.Random(SEED)
-    tranco = [row[1] for row in csv.reader(open(DS / "tranco" / "top-1m.csv"))]
+    tranco = [row[1] for row in csv.reader(open(DS / "tranco" / "top-1m.csv", encoding="utf-8"))]
     top100k = set(tranco[:100_000])
     first_seen = {}
     pt = sorted(DS.glob("phishtank/online-valid_*.csv.gz"))[-1]
@@ -80,7 +80,7 @@ def url_data():
     out = {"train": mk(p_tr, 1) + mk(b_tr, 0), "val": mk(p_va, 1) + mk(b_va, 0), "test": mk(p_te, 1) + mk(b_te, 0)}
     seen = set(p_tr)
     op = sorted(DS.glob("openphish/feed_*.txt"))[-1]
-    extra = {F.url_host(u) for u in open(op) if u.strip()} - seen - top100k
+    extra = {F.url_host(u) for u in open(op, encoding="utf-8") if u.strip()} - seen - top100k
     out["openphish"] = mk(sorted(extra), 1)
     out["official"] = mk(sorted({d for ds in F.BRANDS.values() for d in ds}), 0)
     held = {"phishtank_test_from": first_seen[p_te[0]], "phishtank_train_until": first_seen[p_tr[-1]]}
@@ -201,7 +201,22 @@ def auc(p, y):
 # ---------------------------------------------------------------- export
 
 
+def windows_flatc_workaround():
+    """ExecuTorch 1.5.1 on Windows: the wheel ships executorch/data/bin/flatc.exe, but the lookup in
+    exir/_serialize/_flatbuffer.py only checks for a resource named 'flatc', then falls back to
+    $FLATC_EXECUTABLE or 'flatc' on PATH, so XNNPACK export fails with WinError 2. Point it at the
+    bundled binary."""
+    import os
+    if os.name != "nt" or "FLATC_EXECUTABLE" in os.environ:
+        return
+    import importlib.resources
+    exe = importlib.resources.files("executorch.data.bin").joinpath("flatc.exe")
+    if exe.is_file():
+        os.environ["FLATC_EXECUTABLE"] = str(exe)
+
+
 def export_pte(dense, n_in, path):
+    windows_flatc_workaround()
     from executorch.backends.xnnpack.partition.xnnpack_partitioner import XnnpackPartitioner
     from executorch.exir import to_edge_transform_and_lower
     ep = torch.export.export(dense.eval(), (torch.zeros(1, n_in),))
@@ -249,7 +264,7 @@ def main(kind):
                     report["results"][f"{k}_{src}"] = dict(at_scam=metrics(ps, ys, t_scam), auc=auc(ps, ys))
     if kind == "url":  # what the app does: allow-list first, model second
         allow = {d for ds in F.BRANDS.values() for d in ds}
-        allow |= {row[1] for i, row in zip(range(10_000), csv.reader(open(DS / "tranco" / "top-1m.csv")))}
+        allow |= {row[1] for i, row in zip(range(10_000), csv.reader(open(DS / "tranco" / "top-1m.csv", encoding="utf-8")))}
         allow -= set(F.FREE_HOSTS)
         # shared platforms: >= 2 phishing subdomains in the TRAIN split -> anyone can host there, don't trust it
         regs = {}
@@ -259,7 +274,7 @@ def main(kind):
         shared = {r for r, hs in regs.items() if len(hs) >= 2} - {d for ds in F.BRANDS.values() for d in ds}
         allow -= shared
         report["allowlist"] = dict(size=len(allow), shared_platforms_removed=len(shared))
-        (ROOT / "training" / "url" / "allowlist.txt").write_text("\n".join(sorted(allow)) + "\n")
+        (ROOT / "training" / "url" / "allowlist.txt").write_text("\n".join(sorted(allow)) + "\n", encoding="utf-8", newline="\n")
         for k in data:
             pa = [0.0 if F.allowlisted(F.url_host(x["text"]), allow) else s for x, s in zip(data[k], p[k])]
             report["results"][f"{k}_with_allowlist"] = dict(at_scam=metrics(pa, y[k], t_scam), auc=auc(pa, y[k]))
@@ -290,14 +305,14 @@ def main(kind):
         gold.append(dict(text=g["text"], sender=g["sender"], label=g["label"],
                          hashed={str(k): round(v, 7) for k, v in sorted(h.items())}, signals=s, score=round(pt, 6)))
     out_dir = ROOT / "training" / kind
-    (out_dir / "golden.json").write_text(json.dumps(gold, ensure_ascii=False, indent=1))
+    (out_dir / "golden.json").write_text(json.dumps(gold, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
     meta = dict(kind=kind, version=report["date"], dim=F.DIM, ngrams=list(F.NGRAMS), signals=names,
                 thresholds=report["thresholds"], input=[1, F.DIM + len(names)], output="P(scam) in [0,1]")
-    (out_dir / "meta.json").write_text(json.dumps(meta, indent=1))
+    (out_dir / "meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8", newline="\n")
     report["pte_bytes"] = pte.stat().st_size
     report["pte_vs_torch_max_abs_diff"] = worst
     res = ROOT / "benchmarks" / "results" / f"detector_{kind}_{report['date']}.json"
-    res.write_text(json.dumps(report, ensure_ascii=False, indent=1))
+    res.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
 
     print(json.dumps({k: report[k] for k in ("sizes", "thresholds", "split", "pte_bytes")}, indent=1))
     for k, v in report["results"].items():

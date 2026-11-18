@@ -10,7 +10,7 @@ import java.io.File
 enum class Band { SAFE, UNCERTAIN, SCAM }
 
 /** Which fixed advice applies. Picked by rules from the message, never by the LLM. */
-enum class Family { KYC, POWER, PARCEL, ARREST, JOB, PRIZE, UPI, OTP, LOAN, INVEST, FAMILY, LINK, GENERIC, NET_SCAN, NET_BEACON, NET_BRUTE, NET_ANOMALY }
+enum class Family { KYC, POWER, PARCEL, ARREST, JOB, PRIZE, UPI, OTP, LOAN, INVEST, FAMILY, LINK, GENERIC, NET_SCAN, NET_BEACON, NET_BRUTE, NET_ANOMALY, NET_DOMAIN, NET_DGA, NET_TUNNEL }
 
 data class Verdict(
     val kind: String,              // "sms" | "url" | "net"
@@ -20,6 +20,7 @@ data class Verdict(
     val evidence: List<String>,    // signal names that fired
     val worstHost: String?,        // riskiest link host, if any
     val millis: Double,            // featurize + model time
+    val allowlisted: Boolean = false, // decided by an allow-list, the model was not consulted
 )
 
 /** The two ExecuTorch detectors (sms.pte, url.pte), plus the allow-list. Thread-safe enough for one caller at a time. */
@@ -29,6 +30,11 @@ class Detectors private constructor(ctx: Context) {
     private val smsT = thresholds(ctx, "sms_meta.json")
     private val urlT = thresholds(ctx, "url_meta.json")
     val allow: Set<String> = ctx.assets.open("allowlist.txt").bufferedReader().readLines().filter { it.isNotBlank() }.toSet()
+    /** Extra allow-list for the DNS guard only: app/CDN infrastructure that phishers also abuse (so it is
+     *  not in the URL allow-list), but that the phone's own apps look up all day. Links are still judged. */
+    private val dnsInfra: Set<String> = runCatching {
+        ctx.assets.open("dns_infra.txt").bufferedReader().readLines().map { it.trim() }.filter { it.isNotEmpty() && !it.startsWith("#") }.toSet()
+    }.getOrDefault(emptySet())
 
     fun score(kind: String, x: FloatArray): Float {
         val m = if (kind == "url") url else sms
@@ -41,11 +47,21 @@ class Detectors private constructor(ctx: Context) {
         val t0 = System.nanoTime()
         val host = Featurizer.urlHost(if ("://" in link) link else "http://$link")
         val sig = Featurizer.urlSignals(host)
-        val p = if (Featurizer.allowlisted(host, allow)) 0f else score("url", Featurizer.vector("url", host))
+        val allowed = Featurizer.allowlisted(host, allow)
+        val p = if (allowed) 0f else score("url", Featurizer.vector("url", host))
         var band = band(p, urlT)
         if (band == Band.SAFE && sig[Featurizer.URL_SIGNALS.indexOf("shortener")] > 0) band = Band.UNCERTAIN // can't see where it goes
         val ev = Featurizer.URL_SIGNALS.filterIndexed { i, _ -> sig[i] > 0 }
-        return Verdict("url", band, p, Family.LINK, ev, host, (System.nanoTime() - t0) / 1e6)
+        return Verdict("url", band, p, Family.LINK, ev, host, (System.nanoTime() - t0) / 1e6, allowed)
+    }
+
+    /** A domain the phone is looking up (DNS guard). Local and infrastructure names are never scored. */
+    fun checkDomain(name: String): Verdict {
+        val host = name.trim('.').lowercase()
+        val local = '.' !in host || LOCAL_SUFFIXES.any { host.endsWith(it) }
+        val infra = dnsInfra.any { host == it || host.endsWith(".$it") }
+        if (local || infra) return Verdict("url", Band.SAFE, 0f, Family.LINK, emptyList(), host, 0.0, true)
+        return checkUrl(host)
     }
 
     @Synchronized
@@ -73,6 +89,7 @@ class Detectors private constructor(ctx: Context) {
     }
 
     companion object {
+        private val LOCAL_SUFFIXES = listOf(".arpa", ".local", ".lan", ".home", ".internal", ".localdomain", ".home.arpa")
         @Volatile private var inst: Detectors? = null
         fun get(ctx: Context): Detectors = inst ?: synchronized(this) { inst ?: Detectors(ctx.applicationContext).also { inst = it } }
 

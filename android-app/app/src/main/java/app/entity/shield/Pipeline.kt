@@ -78,6 +78,10 @@ object Pipeline {
         var a = Alert(ids.incrementAndGet(), System.currentTimeMillis(), source, sender, text, v, 0.0)
         if (v.band != Band.SAFE && (source == "sms" || source == "demo" || source == "net")) notify(ctx, a)
         a = a.copy(warnMs = (SystemClock.elapsedRealtimeNanos() - t0) / 1e6)
+        // The user will probably open this alert next: load Llama and pre-fill the fixed system prompt now,
+        // off the detection path, so the explanation only pays for the message-specific tokens.
+        if (v.band != Band.SAFE && source != "bench" && ctx.getSharedPreferences("shield", 0).getBoolean("prewarm", true) && Explainer.get(ctx).available())
+            Explainer.get(ctx).prewarm(Advice.explainPrefix(Prefs.lang(ctx)))
         Log.i(TAG, "verdict source=$source band=${v.band} score=${"%.3f".format(v.score)} family=${v.family} detectMs=${"%.3f".format(v.millis)} warnMs=${"%.2f".format(a.warnMs)}")
         synchronized(this) { file(ctx).appendText(a.toJson().toString() + "\n") }
         main.post { alerts.add(0, a) }
@@ -93,8 +97,8 @@ object Pipeline {
         if (ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
         ensureChannel(ctx)
         val lang = Prefs.lang(ctx)
-        val title = Advice.prefill(a.v, lang).substringBefore(if (lang == Advice.Lang.HI) " कारण:" else " Why:")
-        val body = Advice.steps(a.v.family, lang).first()
+        val title = Advice.headline(a.v, lang)
+        val body = if (a.v.kind == "net") a.text else Advice.steps(a.v.family, lang).first()
         val open = PendingIntent.getActivity(ctx, a.id.toInt(), Intent(ctx, MainActivity::class.java).putExtra("alert", a.id),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val n = android.app.Notification.Builder(ctx, CHANNEL)
@@ -107,6 +111,21 @@ object Pipeline {
             .build()
         ctx.getSystemService(NotificationManager::class.java).notify(a.id.toInt(), n)
     }
+
+    /** Benchmark only: post the same notification an alert would, so the timing includes it. */
+    fun benchNotify(ctx: Context, v: Verdict, id: Int) {
+        if (ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+        ensureChannel(ctx)
+        val lang = Prefs.lang(ctx)
+        val n = android.app.Notification.Builder(ctx, CHANNEL)
+            .setSmallIcon(android.R.drawable.stat_sys_warning)
+            .setContentTitle(Advice.headline(v, lang))
+            .setContentText(Advice.steps(v.family, lang).first())
+            .build()
+        ctx.getSystemService(NotificationManager::class.java).notify(id, n)
+    }
+
+    fun cancel(ctx: Context, id: Int) = ctx.getSystemService(NotificationManager::class.java).cancel(id)
 
     fun clear(ctx: Context) {
         file(ctx).delete()

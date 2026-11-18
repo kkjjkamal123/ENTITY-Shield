@@ -37,6 +37,9 @@ object Advice {
         Family.NET_BEACON to listOf("A device on your network is contacting a server on a fixed timer, like malware does.", "Disconnect that device from Wi-Fi.", "Factory-reset or update it before reconnecting."),
         Family.NET_BRUTE to listOf("Someone is trying many passwords on a device on your network.", "Change that device's password to a strong one.", "Turn off remote login (SSH/Telnet) if you do not use it."),
         Family.NET_ANOMALY to listOf("A device is behaving unusually on your network.", "Check whether you recognise the device.", "Disconnect it if you do not."),
+        Family.NET_DOMAIN to listOf("Shield already blocked this site, so nothing was sent to it.", "If you did not open it yourself, check the app named above: uninstall it if you do not trust it.", "Never enter OTPs or passwords on a page you reached from a message."),
+        Family.NET_DGA to listOf("The app named above is behaving like malware that hunts for its hidden server.", "Uninstall that app (Settings > Apps), especially if it came from outside the Play Store.", "Then run Play Protect and change passwords you used on this phone."),
+        Family.NET_TUNNEL to listOf("The app named above is hiding data inside internet lookups, a way to sneak information out.", "Uninstall that app now, especially if it was installed from a link or APK file.", "Change your banking and email passwords from a trusted device."),
     )
     private val HI = mapOf(
         Family.KYC to listOf("लिंक न खोलें। बैंक कभी SMS लिंक से KYC नहीं मांगते।", "KYC सिर्फ़ ब्रांच में या बैंक के आधिकारिक ऐप में करें।", "भेजने वाले को ब्लॉक करें।"),
@@ -55,6 +58,9 @@ object Advice {
         Family.NET_BEACON to listOf("आपके नेटवर्क का एक डिवाइस तय समय पर किसी सर्वर से बात कर रहा है, जैसा मैलवेयर करता है।", "उस डिवाइस को Wi-Fi से हटा दें।", "दोबारा जोड़ने से पहले उसे रीसेट या अपडेट करें।"),
         Family.NET_BRUTE to listOf("कोई आपके नेटवर्क के एक डिवाइस पर कई पासवर्ड आज़मा रहा है।", "उस डिवाइस का पासवर्ड मज़बूत करें।", "ज़रूरत न हो तो रिमोट लॉगिन (SSH/Telnet) बंद करें।"),
         Family.NET_ANOMALY to listOf("आपके नेटवर्क पर एक डिवाइस असामान्य व्यवहार कर रहा है।", "देखें कि आप उस डिवाइस को पहचानते हैं या नहीं।", "न पहचानें तो उसे हटा दें।"),
+        Family.NET_DOMAIN to listOf("Shield ने यह साइट पहले ही ब्लॉक कर दी, इसलिए उसे कुछ नहीं भेजा गया।", "अगर आपने इसे ख़ुद नहीं खोला, तो ऊपर लिखे ऐप की जांच करें; भरोसा न हो तो उसे हटा दें।", "मैसेज से खुले किसी पेज पर कभी OTP या पासवर्ड न डालें।"),
+        Family.NET_DGA to listOf("ऊपर लिखा ऐप मैलवेयर की तरह अपना छिपा सर्वर ढूंढ रहा है।", "उस ऐप को हटा दें (Settings > Apps), ख़ासकर अगर वह Play Store के बाहर से आया हो।", "फिर Play Protect चलाएं और इस फ़ोन पर इस्तेमाल किए पासवर्ड बदलें।"),
+        Family.NET_TUNNEL to listOf("ऊपर लिखा ऐप इंटरनेट लुकअप के अंदर डेटा छिपाकर बाहर भेज रहा है।", "उस ऐप को अभी हटा दें, ख़ासकर अगर वह किसी लिंक या APK फ़ाइल से आया हो।", "किसी भरोसेमंद डिवाइस से अपने बैंक और ईमेल के पासवर्ड बदलें।"),
     )
 
     // ------------------------------------------------------------ evidence -> words (for the prompt and the UI chips)
@@ -80,7 +86,14 @@ object Advice {
         "many_hyphens" -> "the address has many hyphens"
         "long_host", "many_subdomains" -> "the address is unusually long"
         "punycode" -> "the address uses look-alike characters"
-        else -> null // sender_dlt, dont_share_otp, digits_in_name: point to safety, not risk
+        "dns_blocked" -> v.worstHost?.let { "an app tried to reach $it, which looks like a scam or malware site" } ?: "an app tried to reach a scam site"
+        "beacon" -> "an app contacts the same server on a fixed timer, like malware checking in"
+        "dga_burst" -> "an app looked up many random names that do not exist, like malware searching for its server"
+        "tunnel" -> "an app is hiding data inside long random web addresses"
+        "port_scan" -> v.worstHost?.let { "the device $it on this Wi-Fi probed several ports on the phone" } ?: "a device on this Wi-Fi probed the phone"
+        "adb_probe" -> "it tried the Android debugging port that phone-hijacking worms use"
+        "brute_force" -> "it tried to log in again and again"
+        else -> null // sender_dlt, dont_share_otp, digits_in_name, counters: point to safety or are details
     }
 
     fun signs(v: Verdict): List<String> = v.evidence.mapNotNull { phrase(it, v) }.distinct()
@@ -91,7 +104,25 @@ object Advice {
         "A UPI PIN is only needed to send money, never to receive it. Police and courts never arrest anyone over a phone or video call. " +
         "The cyber crime helpline in India is 1930."
 
+    /** Short title for notifications and the verdict banner. */
+    fun headline(v: Verdict, lang: Lang): String {
+        val hi = lang == Lang.HI
+        if (v.band == Band.SAFE) return if (hi) "✅ कोई ख़तरा नहीं मिला" else "✅ No threat found"
+        return when (v.family) {
+            Family.NET_DOMAIN -> if (hi) "🛡️ धोखे वाली साइट ब्लॉक की गई" else "🛡️ Scam site blocked"
+            Family.NET_BEACON -> if (hi) "⚠️ ऐप मैलवेयर जैसा व्यवहार कर रहा है" else "⚠️ App behaving like malware"
+            Family.NET_DGA -> if (hi) "⚠️ ऐप छिपा सर्वर ढूंढ रहा है" else "⚠️ App hunting for a hidden server"
+            Family.NET_TUNNEL -> if (hi) "⚠️ लुकअप में छिपाकर डेटा भेजा जा रहा है" else "⚠️ Data hidden in web lookups"
+            Family.NET_SCAN -> if (hi) "⚠️ इस Wi-Fi पर कोई आपके फ़ोन को टटोल रहा है" else "⚠️ Someone on this Wi-Fi is probing your phone"
+            Family.NET_BRUTE -> if (hi) "⚠️ पासवर्ड अनुमान वाला हमला" else "⚠️ Password-guessing attack"
+            Family.NET_ANOMALY -> if (hi) "⚠️ असामान्य नेटवर्क गतिविधि" else "⚠️ Unusual network activity"
+            else -> prefill(v, lang).substringBefore(if (hi) " कारण:" else " Why:")
+        }
+    }
+
     fun prefill(v: Verdict, lang: Lang): String = when {
+        v.kind == "net" && lang == Lang.HI -> if (v.band == Band.SCAM) "⚠️ यह असली ख़तरा है। कारण:" else "⚠️ यह संदिग्ध लगता है। कारण:"
+        v.kind == "net" -> if (v.band == Band.SCAM) "⚠️ This is a real threat. Why:" else "⚠️ This looks suspicious. Why:"
         lang == Lang.HI && v.band == Band.SCAM -> "⚠️ नहीं, यह ${noun(v, lang)} एक धोखा है। कारण:"
         lang == Lang.HI -> "⚠️ यह ${noun(v, lang)} संदिग्ध लगता है। कारण:"
         v.band == Band.SCAM -> "⚠️ No, this ${noun(v, lang)} is a scam. Why:"
@@ -104,13 +135,19 @@ object Advice {
         else -> "SMS"
     }
 
-    fun explainPrompt(v: Verdict, message: String, lang: Lang): String {
-        val label = if (v.band == Band.SCAM) "FRAUD" else "SUSPICIOUS"
-        val what = when (v.kind) { "url" -> "I was about to open this link. Is it safe?"; "net" -> "My home network guard raised this alert. What does it mean?"; else -> "I got this SMS. Is it safe?" }
+    /** The fixed system part of every explanation prompt. It is the same for every alert, so it can be
+     *  pre-filled into the KV cache while nothing else is happening (Explainer.prewarm). */
+    fun explainPrefix(lang: Lang): String {
         val hindi = if (lang == Lang.HI) " Answer in simple Hindi (Devanagari)." else ""
         return "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n" +
             "You protect people in India from fraud. Explain warnings in very simple words. $FACTS " +
-            "Write at most 2 short sentences about this specific case.$hindi<|eot_id|>" +
+            "Write at most 2 short sentences about this specific case.$hindi<|eot_id|>"
+    }
+
+    fun explainPrompt(v: Verdict, message: String, lang: Lang): String {
+        val label = if (v.band == Band.SCAM) "FRAUD" else "SUSPICIOUS"
+        val what = when (v.kind) { "url" -> "I was about to open this link. Is it safe?"; "net" -> "My phone's network guard raised this alert. What does it mean?"; else -> "I got this SMS. Is it safe?" }
+        return explainPrefix(lang) +
             "<|start_header_id|>user<|end_header_id|>\n\n$what\n\"${message.take(600)}\"\n" +
             "Safety check: $label (${(v.score * 100).toInt()}%). Signs: ${signs(v).joinToString(", ").ifEmpty { "pattern matches known scams" }}." +
             "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n${prefill(v, lang)}"

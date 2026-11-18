@@ -1,0 +1,26 @@
+ENTITY Shield — licensing overview
+Copyright (c) 2026 Team ENTITY (V S Kamalesh and team).
+
+This repository is MIXED-LICENSED. Which license applies depends on the path:
+
+1. Apache License 2.0 (see LICENSE-APACHE)
+   - training/            detector training, featurizer, evaluation, export to ExecuTorch, LLM export scripts
+   - scripts/             setup, phone benchmark and end-to-end test tooling
+   - docs/, benchmarks/   plan, report sources, measurement records and plots
+   - android-app/app/src/main/java/app/entity/shield/{Featurizer,Detectors,DnsPacket,Explainer,
+     Pipeline,Advice,NetGuard,ShieldVpnService,Tripwire,InboxAudit,Bench,DeviceInfo,Speaker,
+     SmsReceiver,LinkGuardActivity,SelfTest}.kt   (the detection, network and on-device AI engine)
+   - android-app/app/src/test/, android-app/app/src/debug/
+
+2. Proprietary — all rights reserved (see LICENSE-PROPRIETARY.md)
+   - The ENTITY Shield application user interface and dashboard: android-app/app/src/main/java/
+     app/entity/shield/{MainActivity,HomeScreen,AlertScreens,NetworkScreen,CheckLab,Components,
+     Theme}.kt, the app icon and the "ENTITY Shield" name and visual design.
+   Evaluators of the Bharat AI-SoC Challenge 2026-27 may build, install and run it to assess the
+   entry.
+
+3. Third-party components keep their own licenses (see THIRD_PARTY_NOTICES.md), including:
+   - Llama 3.2 (Llama 3.2 Community License; "Built with Llama")
+   - ExecuTorch (BSD-3-Clause), XNNPACK (BSD-3-Clause), KleidiAI (Apache-2.0)
+   - Datasets: UCI SMS Spam Collection (CC BY 4.0), PhishTank, OpenPhish, Tranco list
+   - Code ported from ENTITY (Apache-2.0, same author)

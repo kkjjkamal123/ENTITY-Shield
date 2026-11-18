@@ -1,0 +1,217 @@
+{
+ "kind": "url",
+ "hyperparams": {
+  "epochs": 15,
+  "l2": 1e-06
+ },
+ "date": "2026-11-19",
+ "seed": 7,
+ "dim": 32768,
+ "ngrams": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "thresholds": {
+  "scam": 0.6947,
+  "uncertain": 0.3702
+ },
+ "split": {
+  "phishtank_test_from": "2026-08-07T22:39:56+00:00",
+  "phishtank_train_until": "2026-06-04T07:54:41+00:00"
+ },
+ "sizes": {
+  "train": 35623,
+  "val": 5090,
+  "test": 10179,
+  "openphish": 297,
+  "official": 41
+ },
+ "results": {
+  "train": {
+   "at_scam": {
+    "n": 35623,
+    "pos": 11874,
+    "neg": 23749,
+    "precision": 0.9991,
+    "recall": 0.9652,
+    "f1": 0.9819,
+    "fpr": 0.0004
+   },
+   "at_uncertain": {
+    "n": 35623,
+    "pos": 11874,
+    "neg": 23749,
+    "precision": 0.9824,
+    "recall": 0.9984,
+    "f1": 0.9903,
+    "fpr": 0.009
+   },
+   "auc": 0.9999
+  },
+  "val": {
+   "at_scam": {
+    "n": 5090,
+    "pos": 1697,
+    "neg": 3393,
+    "precision": 0.975,
+    "recall": 0.7572,
+    "f1": 0.8524,
+    "fpr": 0.0097
+   },
+   "at_uncertain": {
+    "n": 5090,
+    "pos": 1697,
+    "neg": 3393,
+    "precision": 0.8936,
+    "recall": 0.8362,
+    "f1": 0.8639,
+    "fpr": 0.0498
+   },
+   "auc": 0.9441
+  },
+  "test": {
+   "at_scam": {
+    "n": 10179,
+    "pos": 3393,
+    "neg": 6786,
+    "precision": 0.9726,
+    "recall": 0.6788,
+    "f1": 0.7995,
+    "fpr": 0.0096
+   },
+   "at_uncertain": {
+    "n": 10179,
+    "pos": 3393,
+    "neg": 6786,
+    "precision": 0.8855,
+    "recall": 0.7725,
+    "f1": 0.8251,
+    "fpr": 0.05
+   },
+   "auc": 0.9253
+  },
+  "openphish": {
+   "at_scam": {
+    "n": 297,
+    "pos": 297,
+    "neg": 0,
+    "precision": 1.0,
+    "recall": 0.9394,
+    "f1": 0.9688,
+    "fpr": null
+   },
+   "at_uncertain": {
+    "n": 297,
+    "pos": 297,
+    "neg": 0,
+    "precision": 1.0,
+    "recall": 0.9495,
+    "f1": 0.9741,
+    "fpr": null
+   },
+   "auc": null
+  },
+  "official": {
+   "at_scam": {
+    "n": 41,
+    "pos": 0,
+    "neg": 41,
+    "precision": 0.0,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.0732
+   },
+   "at_uncertain": {
+    "n": 41,
+    "pos": 0,
+    "neg": 41,
+    "precision": 0.0,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.1951
+   },
+   "auc": null
+  },
+  "train_with_allowlist": {
+   "at_scam": {
+    "n": 35623,
+    "pos": 11874,
+    "neg": 23749,
+    "precision": 0.9992,
+    "recall": 0.9582,
+    "f1": 0.9783,
+    "fpr": 0.0004
+   },
+   "auc": 0.9919
+  },
+  "val_with_allowlist": {
+   "at_scam": {
+    "n": 5090,
+    "pos": 1697,
+    "neg": 3393,
+    "precision": 0.9754,
+    "recall": 0.7478,
+    "f1": 0.8466,
+    "fpr": 0.0094
+   },
+   "auc": 0.9346
+  },
+  "test_with_allowlist": {
+   "at_scam": {
+    "n": 10179,
+    "pos": 3393,
+    "neg": 6786,
+    "precision": 0.9718,
+    "recall": 0.6611,
+    "f1": 0.7869,
+    "fpr": 0.0096
+   },
+   "auc": 0.9037
+  },
+  "openphish_with_allowlist": {
+   "at_scam": {
+    "n": 297,
+    "pos": 297,
+    "neg": 0,
+    "precision": 1.0,
+    "recall": 0.9327,
+    "f1": 0.9652,
+    "fpr": null
+   },
+   "auc": null
+  },
+  "official_with_allowlist": {
+   "at_scam": {
+    "n": 41,
+    "pos": 0,
+    "neg": 41,
+    "precision": null,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.0
+   },
+   "auc": null
+  }
+ },
+ "allowlist": {
+  "size": 9940,
+  "shared_platforms_removed": 245
+ },
+ "signal_weights": {
+  "free_hosting": 5.189,
+  "ip_host": 2.222,
+  "long_host": 1.883,
+  "many_subdomains": 1.107,
+  "lure_word": 1.035,
+  "brand_not_official": 1.022,
+  "many_hyphens": 0.224,
+  "suspicious_tld": -0.051,
+  "shortener": -0.083,
+  "digits_in_name": -0.863,
+  "punycode": -2.365
+ },
+ "pte_bytes": 133380,
+ "pte_vs_torch_max_abs_diff": 1.1920928955078125e-07
+}

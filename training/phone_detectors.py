@@ -48,7 +48,7 @@ def main():
     rows = []
     for kind in ("sms", "url"):
         pte = ROOT / "models/detectors" / f"{kind}.pte"
-        gold = json.loads((ROOT / "training" / kind / "golden.json").read_text())
+        gold = json.loads((ROOT / "training" / kind / "golden.json").read_text(encoding="utf-8"))
         adb("push", str(pte), f"{DEV}/{kind}.pte")
         adb("shell", f"rm -f {DEV}/in/* {DEV}/out/*")
         with tempfile.TemporaryDirectory() as tmp:
@@ -80,7 +80,7 @@ def main():
                          mean_ms=round(statistics.fmean(ms), 4)))
         print(rows[-1])
     out = ROOT / "benchmarks/results" / f"detector_phone_{datetime.date.today()}.csv"
-    with open(out, "w", newline="") as f:
+    with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)

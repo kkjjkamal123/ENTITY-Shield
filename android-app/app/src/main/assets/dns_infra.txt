@@ -1,0 +1,133 @@
+# DNS guard allow-list: app, OS and CDN infrastructure the phone looks up all day.
+# These are removed from the URL allow-list (training/url/allowlist.txt) because phishers also host
+# pages on some of them; links on them are still judged by the URL model. The DNS guard does not score
+# them, so it never blocks the phone's own background traffic. One registrable domain per line.
+# --- cloud / CDN
+amazonaws.com
+cloudfront.net
+akamai.net
+akamaiedge.net
+akamaized.net
+akamaihd.net
+edgekey.net
+edgesuite.net
+fastly.net
+fastly-edge.com
+cloudflare.com
+cloudflare.net
+cloudflare-dns.com
+azureedge.net
+azurefd.net
+trafficmanager.net
+windows.net
+msedge.net
+llnwd.net
+cdn77.org
+# --- Google / Android
+google.com
+googleapis.com
+gstatic.com
+googleusercontent.com
+googlevideo.com
+ggpht.com
+gvt1.com
+gvt2.com
+gvt3.com
+1e100.net
+android.com
+googlesyndication.com
+doubleclick.net
+app-measurement.com
+firebaseio.com
+crashlytics.com
+withgoogle.com
+youtube.com
+ytimg.com
+# --- Meta
+facebook.com
+fbcdn.net
+facebook.net
+instagram.com
+cdninstagram.com
+whatsapp.net
+whatsapp.com
+# --- Apple / Microsoft
+apple.com
+icloud.com
+mzstatic.com
+microsoft.com
+live.com
+office.net
+msftconnecttest.com
+# --- Phone makers (OS telemetry, updates, stores)
+nothing.tech
+nothingtech.com
+transsion.com
+transsion-os.com
+shalltry.com
+infinixmobility.com
+hihonor.com
+heytapmobile.com
+heytap.com
+coloros.com
+oppomobile.com
+realme.com
+xiaomi.com
+miui.com
+mi.com
+samsung.com
+samsungcloud.com
+samsungapps.com
+vivo.com.cn
+vivoglobal.com
+oneplus.com
+oneplus.net
+motorola.com
+qualcomm.com
+mediatek.com
+# --- Indian telcos and big apps
+jio.com
+jio.net
+airtel.in
+airtel.com
+vodafoneidea.com
+myvi.in
+npci.org.in
+paytm.com
+paytm.net
+phonepe.com
+truecaller.com
+swiggy.com
+zomato.com
+flipkart.com
+amazon.in
+amazon.com
+media-amazon.com
+ssl-images-amazon.com
+hotstar.com
+jiocinema.com
+sharechat.com
+mxplayer.in
+# --- analytics / push SDKs embedded in most apps
+appsflyer.com
+appsflyersdk.com
+adjust.com
+branch.io
+onesignal.com
+clevertap-prod.com
+clevertap.com
+moengage.com
+webengage.com
+netcoresmartech.com
+mixpanel.com
+sentry.io
+segment.io
+unity3d.com
+applovin.com
+inmobi.com
+# --- media
+spotify.com
+scdn.co
+netflix.com
+nflxvideo.net
+nflxso.net
