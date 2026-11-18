@@ -182,7 +182,7 @@ object Advice {
         val what = when (v.kind) { "url" -> "I was about to open this link. Is it safe?"; "net" -> "My phone's network guard raised this alert. What does it mean?"; else -> "I got this SMS. Is it safe?" }
         return explainPrefix(lang) +
             "<|start_header_id|>user<|end_header_id|>\n\n$what\n\"${message.take(600)}\"\n" +
-            "Safety check: $label (${(v.score * 100).toInt()}%). Signs: ${signs(v).joinToString(", ").ifEmpty { "pattern matches known scams" }}." +
+            "Safety check: $label (${(v.score * 100).toInt()}%). Signs: ${signsFor(v, lang).joinToString(", ").ifEmpty { if (lang == Lang.HI) "जाने-पहचाने धोखे जैसा पैटर्न" else "pattern matches known scams" }}." +
             "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n${prefill(v, lang)}"
     }
 

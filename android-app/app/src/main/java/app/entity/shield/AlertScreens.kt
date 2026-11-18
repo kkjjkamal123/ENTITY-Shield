@@ -176,7 +176,7 @@ fun AlertDetail(a: Alert, lang: Advice.Lang) {
         }
 
         // 3. evidence chips
-        val signs = Advice.signs(a.v)
+        val signs = Advice.signsFor(a.v, lang)
         if (signs.isNotEmpty()) {
             SectionTitle(if (hi) "संकेत" else "Warning signs")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
