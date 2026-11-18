@@ -151,10 +151,12 @@ def main():
         p.sh("ping -c 1 -W 2 sbi-kyc-update.in")
         p.sh("ping -c 1 -W 2 hdfc-netbanking-verify.top")
         time.sleep(2)
-        p.cmd("netstat")
+        p.cmd("netstat", host="google.com")
         st = p.wait_line(r"ShieldE2E: netstat", 15) or ""
         check("benign domain resolves (ALLOW)", re.search(r"google\.com:ALLOW", st), st.split("last=", 1)[-1][:200])
-        check("phishing domain blocked (BLOCK + alert)", re.search(r"(sbi-kyc-update\.in|hdfc-netbanking-verify\.top):BLOCK", st), "")
+        p.cmd("netstat", host="-")
+        st2 = p.wait_line(r"ShieldE2E: netstat", 15, after=1) or ""
+        check("phishing domain blocked (BLOCK + alert)", re.search(r"(sbi-kyc-update\.in|hdfc-netbanking-verify\.top):BLOCK", st2), st2.split("last=", 1)[-1][:160])
         # DGA-like burst: random names that do not exist
         for _ in range(10):
             name = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(14)) + ".xyz"

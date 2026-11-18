@@ -1,0 +1,73 @@
+{
+ "device": "A015",
+ "soc": "MT6878",
+ "locked": true,
+ "date": "2026-11-19 04:55:20.026812",
+ "results": [
+  {
+   "check": "detector parity (Kotlin featurizer + ExecuTorch == Python)",
+   "ok": true,
+   "detail": "sms golden: 43/43 match (max diff 5.1e-07) | url golden: 40/40 match (max diff 5.7e-07) | SMS check, featurize + models, n=1000: p50 2.804 ms · p95 22.183 ms | URL check, n=1000: p50 0.643 ms · p95 2.415 ms | "
+  },
+  {
+   "check": "SMS verdict SCAM: Dear customer your SBI account will be b…",
+   "ok": true,
+   "detail": "got SCAM warnMs=107.52"
+  },
+  {
+   "check": "SMS verdict SCAM: आपके आधार पर मनी लॉन्ड्रिंग केस दर्ज है।…",
+   "ok": true,
+   "detail": "got SCAM warnMs=214.05"
+  },
+  {
+   "check": "SMS verdict SCAM: You have received Rs 4,999 refund. Enter…",
+   "ok": true,
+   "detail": "got SCAM warnMs=368.65"
+  },
+  {
+   "check": "SMS verdict SAFE: 482913 is your OTP for transaction of Rs…",
+   "ok": true,
+   "detail": "got SAFE warnMs=36.83"
+  },
+  {
+   "check": "SMS verdict SAFE: Your Amazon order will be delivered toda…",
+   "ok": true,
+   "detail": "got SAFE warnMs=312.15"
+  },
+  {
+   "check": "SMS verdict SAFE: Bhai kal ka plan cancel, office me late …",
+   "ok": true,
+   "detail": "got SAFE warnMs=66.56"
+  },
+  {
+   "check": "time to first warning < 1500 ms (detect + notification)",
+   "ok": true,
+   "detail": "median 214.1 ms, max 368.6 ms"
+  },
+  {
+   "check": "Network Guard starts (local DNS VPN + tripwire)",
+   "ok": true,
+   "detail": "net requested=true vpnOn=true listening=2222,2323,5555,8080,8443,9999 ip=192.168.0.106 upstream=192.168.29.1"
+  },
+  {
+   "check": "benign domain resolves (ALLOW)",
+   "ok": true,
+   "detail": "Shell (adb):www.google.com:ALLOW:0"
+  },
+  {
+   "check": "phishing domain blocked (BLOCK + alert)",
+   "ok": true,
+   "detail": "Strava:cdn-1.strava.com:ALLOW:0;Adobe Acrobat:cc-api-data.adobe.io:ALLOW:0;Strava:heatmap-external-a.strava.com:ALLOW:0;Shell (adb):hdfc-netbanking-verify.top:B"
+  },
+  {
+   "check": "DGA-style lookup burst detected",
+   "ok": true,
+   "detail": "net:SCAM:NET_DGA:Shell (adb) looked up 8 names that do not exist in one minute (e.g. rq4h0xx5dv0imu.xyz), t || net:SCAM:NET_DOMAIN:Shell (adb) tried to open sbi-kyc-update.in. Shield blocked the looku"
+  },
+  {
+   "check": "LAN tripwire catches a port scan from the laptop",
+   "ok": true,
+   "detail": "4 ports reached on 192.168.0.106"
+  }
+ ]
+}

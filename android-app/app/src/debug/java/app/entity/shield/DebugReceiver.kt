@@ -69,8 +69,11 @@ class DebugReceiver : BroadcastReceiver() {
                         log("net requested=$on vpnOn=${NetGuard.vpnOn} listening=${NetGuard.listening.joinToString(",")} ip=${NetGuard.phoneIp} upstream=${NetGuard.upstream}")
                     }
                     "netreset" -> { NetGuard.resetForTest(); log("netreset done") }
+                    "clear" -> { app.getSharedPreferences("shield", 0).edit().remove("prefill_strip_bos").commit(); Pipeline.load(app); Pipeline.clear(app); NetGuard.resetForTest(); InboxAudit.flagged.clear(); log("clear done") }
+                    "lang" -> { Prefs.setLang(app, if (intent.getStringExtra("v") == "HI") Advice.Lang.HI else Advice.Lang.EN); log("lang set") }
                     "netstat" -> log("netstat vpnOn=${NetGuard.vpnOn} queries=${NetGuard.queries} blocked=${NetGuard.blocked} flagged=${NetGuard.flagged} apps=${NetGuard.apps} trip=${NetGuard.tripHits} last=" +
-                        NetGuard.dnsEvents.take(8).joinToString(";") { "${it.app}:${it.host}:${it.action}:${it.rcode}" })
+                        NetGuard.dnsEvents.toList().filter { e -> intent.getStringExtra("host")?.let { it in e.host } ?: true }.take(8)
+                            .joinToString(";") { "${it.app}:${it.host}:${it.action}:${it.rcode}" })
                     "bench" -> { Bench.run(app, intent.getIntExtra("runs", 3)); while (!Bench.running) Thread.sleep(50); while (Bench.running) Thread.sleep(500); log("bench done csv=${Bench.lastCsv}") }
                     "alerts" -> log("alerts " + Pipeline.alerts.take(intent.getIntExtra("n", 5)).joinToString(" || ") { "${it.source}:${it.v.band}:${it.v.family}:${it.text.take(90)}" })
                     else -> log("unknown cmd=$cmd")

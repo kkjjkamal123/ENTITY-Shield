@@ -30,6 +30,53 @@ The October plan (4 devices, Pi hotspot, LoRA, ENTITY policy port, lessons from 
 
 Newest first.
 
+### 2026-11-19 (early morning): end to end on both phones, video, report
+
+**End-to-end (`scripts/e2e_phone.py`)** with the app shown above the lock screen (debug builds only), so
+it runs in `cpuset:/top-app` on a locked phone:
+- Infinix X6878: **15/15** in one run. Detector parity 43/43 + 40/40; 6 SMS verdicts; time to first
+  warning median 21.6 ms; Llama EN (TTFT 1.87 s) and HI (2.46 s) in the app; Network Guard up;
+  phishing domains blocked; DGA burst detected.
+- CMF Phone 1: **13/13** (Llama skipped at 8% battery), including the **LAN tripwire catching a
+  port scan from this laptop** over the shared Wi-Fi.
+
+**Bugs found by the e2e loop:**
+1. The VPN needs `VpnService.prepare()` before `establish()`, even with the ACTIVATE_VPN appop.
+2. Alert de-duplication hid repeat detections across runs (fixed with `netreset` in tests).
+3. A burst of real app lookups after Wi-Fi reconnected pushed the test domain out of the last-8 window
+   (fixed with a host filter).
+
+**In-app benchmark of record (Infinix, plugged):** time to first warning n=20 p50 12.1 ms, p95 29.3 ms.
+Llama first token: cold 1.91 / 1.78 s, **pre-warmed 1.02 / 1.00 s**
+(`benchmarks/results/bench_inapp_Infinix_X6878_2026-11-19.csv`).
+
+**Pre-warm correctness:** the pre-warmed answer equals the cold one for 14 tokens, then takes a different
+correct wording. The likely cause is chunked prefill (99 + 134 tokens) changing attention's
+floating-point summation order, which flips a near-tie. Stripping the literal BOS from the prefilled
+text made the answers diverge from the first sentence, so `prefillPrompt` adds no BOS.
+
+**Explanation quality:**
+- Manual review of the 40-message evaluation: EN 28 correct / 8 vague / 4 wrong (Indian messages
+  8/2/0).
+- HI with English signs: 18/16/6, including 2 evidence negations.
+- **HI with Hindi signs (shipped): 17/20/3, Indian 7/3/0, no negations.**
+- Labels are in `benchmarks/results/llm_explain_manual_review_*.json`, pending a native-speaker check.
+
+**Deliverables now in the repo:**
+- Signed release APK (key outside the repo).
+- `docs/report/ENTITY-Shield-Report.pdf`, generated from the raw results.
+- `demo/ENTITY-Shield-demo.mp4` (2:16, real phone recordings: airplane-mode SMS alert EN→HI, Network
+  Guard vs the beaconsim test app, tripwire vs the laptop, in-app benchmark).
+- README rewritten with screenshots.
+
+**Still needs the user:**
+- Inbox audit (labelling their own SMS).
+- Optional voice-over.
+- Make the repo public (or invite the judges).
+- Publish the GitHub Release.
+- Submit the form.
+- Revoke the pasted GitHub token.
+
 ### 2026-11-19 (night): app runs Llama in-process, Network Guard built, Windows toolchain, two phones
 
 **Decisions (from the user):** phone only (no Pi sentinel; C1 moves onto the phone), Phase 1 scope =

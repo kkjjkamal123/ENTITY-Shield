@@ -23,6 +23,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setShowWhenLocked(true) // test app: lets the recorded demo run on a locked phone without showing the lock screen
         val col = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 120, 40, 40); setBackgroundColor(Color.rgb(20, 20, 28)) }
         col.addView(TextView(this).apply { text = "Beacon Simulator (test)"; textSize = 22f; setTextColor(Color.WHITE) })
         col.addView(TextView(this).apply {

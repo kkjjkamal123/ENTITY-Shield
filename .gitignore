@@ -43,3 +43,7 @@ android-app/local.properties
 
 # Third-party sources (ExecuTorch checkout for Android builds)
 third_party/
+
+# Demo video intermediates (the final demo/ENTITY-Shield-demo.mp4 is committed)
+demo/raw/
+demo/build/
