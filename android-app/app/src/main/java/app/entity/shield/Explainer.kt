@@ -85,7 +85,10 @@ class Explainer private constructor(private val ctx: Context) {
                 if (warmPrefix != prefix) {
                     module!!.resetContext()
                     val t = System.currentTimeMillis()
-                    module!!.prefillPrompt(prefix)
+                    // Experiment switch (see docs/PLAN.md): does prefillPrompt() add its own BOS? If so, the literal
+                    // <|begin_of_text|> must be dropped from the prefilled text to match the cold prompt exactly.
+                    val stripBos = ctx.getSharedPreferences("shield", 0).getBoolean("prefill_strip_bos", false)
+                    module!!.prefillPrompt(if (stripBos) prefix.removePrefix("<|begin_of_text|>") else prefix)
                     warmPrefix = prefix
                     Log.i(TAG, "prewarmed ${prefix.length} chars in ${System.currentTimeMillis() - t} ms")
                 }

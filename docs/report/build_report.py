@@ -106,8 +106,9 @@ if groups:
     charts["review"] = img(fig)
 
 fig, ax = plt.subplots(figsize=(8.5, 2.2))
-steps = [("SMS check (featurize + 2 models)", 5.0, C["cyan"]), ("SMS → notification (time to first warning)", 22, C["blue"]),
-         ("Llama first token (best arm, Snapdragon 7s Gen 3)", 890, C["violet"]), ("Llama first token, background cgroup (A55s)", 9200, C["grey"])]
+steps = [("SMS check, Snapdragon 7s Gen 3 (p50)", 1.15, C["cyan"]), ("SMS → notification (time to first warning, median)", 21.6, C["blue"]),
+         ("Llama first token in the app, pre-warmed", 1000, C["violet"]), ("Llama first token in the app, cold", 1780, C["violet"]),
+         ("Llama first token, background cgroup (A55s, CMF)", 9200, C["grey"])]
 b = ax.barh([s[0] for s in steps][::-1], [s[1] for s in steps][::-1], color=[s[2] for s in steps][::-1])
 ax.set_xscale("log")
 ax.bar_label(b, labels=[f"{s[1]:g} ms" for s in steps][::-1], padding=4, fontsize=9)
@@ -116,8 +117,8 @@ ax.set_xlabel("milliseconds (log scale)")
 fig.tight_layout()
 charts["latency"] = img(fig)
 
-screens = sorted(glob.glob(str(ROOT / "docs" / "img" / "screens" / "*.png")))
-screens_html = "".join(f'<figure><img src="data:image/png;base64,{base64.b64encode(open(s, "rb").read()).decode()}"><figcaption>{Path(s).stem.replace("_", " ")}</figcaption></figure>' for s in screens[:6])
+screens = sorted(glob.glob(str(ROOT / "docs" / "img" / "screens" / "*.jpg")))
+screens_html = "".join(f'<figure><img src="data:image/jpeg;base64,{base64.b64encode(open(s, "rb").read()).decode()}"><figcaption>{Path(s).stem.split("_", 1)[-1].replace("_", " ")}</figcaption></figure>' for s in screens[:6])
 
 # ------------------------------------------------------------------ tables
 s_uci, auc_uci = m(sms, "test_uci")
@@ -161,7 +162,7 @@ def eval_row(name, e, r):
 e2e_html = ""
 for e in e2e:
     ok = sum(r["ok"] for r in e["results"])
-    e2e_html += f"<h4>{e['device']} ({e['soc']}): {ok}/{len(e['results'])} checks passed</h4><ul>" + "".join(
+    e2e_html += f"<h4>{e['device']} ({e['soc']}): {ok}/{len(e["results"])} checks passed</h4><ul style=\"list-style:none;padding-left:0\">" + "".join(
         f"<li>{'✅' if r['ok'] else '❌'} {r['check']} <span class=small>{r['detail'][:140]}</span></li>" for r in e["results"]) + "</ul>"
 if not e2e_html:
     e2e_html = "<p class=pending>End-to-end phone run (scripts/e2e_phone.py) pending: needs the phones unlocked.</p>"
@@ -303,6 +304,14 @@ none were wrong on the Indian messages. In Hindi, 2 answers <i>negated</i> the e
 number"). This is why Llama never decides and never writes the steps, and it is the main Phase 2 target (distillation +
 LoRA on the QAT checkpoint). Manual labels: <code>benchmarks/results/llm_explain_manual_review_*.json</code>, reviewed with
 AI assistance and pending a native-speaker check.</div>
+
+<h3>Pre-warming the system prompt</h3>
+<p>When an alert fires, the fixed 99-token system prompt is pre-filled into the KV cache (<code>LlmModule.prefillPrompt</code>), so
+opening the alert costs only the message's own 134 tokens. In the app on the Infinix (foreground, same alert, greedy), the
+first token arrives after <b>1.00 s pre-warmed vs 1.78 s cold (−44%)</b>. The pre-warmed answer matches the cold one for its first
+14 tokens, then picks an equally correct wording. This is consistent with a near-tie flipping under a different floating-point
+summation order when the prompt is prefilled in two chunks; we have not confirmed it directly. Removing the literal BOS token
+from the prefilled text diverged from the first sentence, so <code>prefillPrompt</code> adds no BOS of its own.</p>
 
 <h2 class="pb">6. Arm SoC: where the time goes</h2>
 <p>Measured with ExecuTorch's own <code>llama_main</code> under <code>taskset</code>. The only things that change are the thread

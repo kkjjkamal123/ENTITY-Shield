@@ -38,7 +38,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private fun kindGlyph(a: Alert) = when (a.v.kind) { "url" -> "🔗"; "net" -> if (a.v.family == Family.NET_SCAN || a.v.family == Family.NET_BRUTE) "📡" else "⌁"; else -> "✉" }
+private fun kindGlyph(a: Alert) = when (a.v.kind) { "url" -> "🔗"; "net" -> if (a.v.family == Family.NET_SCAN || a.v.family == Family.NET_BRUTE) "📡" else "🌐"; else -> "💬" }
 
 @Composable
 fun AlertRow(a: Alert, lang: Advice.Lang, onClick: () -> Unit) {

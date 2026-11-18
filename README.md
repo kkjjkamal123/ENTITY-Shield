@@ -13,19 +13,25 @@ Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · On-device threat, ph
 
 </div>
 
-> **Status, 2026-11-19 (Phase 1 is due 23 Nov):**
->
-> **Verified on real phones:**
-> - Llama 3.2 1B explains alerts **inside the app** through ExecuTorch.
-> - Both detectors give the same scores on the phone as in training (production path).
-> - Thread/core ablation, and a 40-message English + Hindi explanation evaluation.
->
-> **Built and unit-tested, end-to-end phone run pending:**
-> - Network Guard (local DNS VPN and LAN tripwire).
-> - The new dashboard.
+> **Status, 2026-11-19 (Phase 1 is due 23 Nov):** the app runs end to end on a real phone.
+> `scripts/e2e_phone.py` passes **15/15** checks on an Infinix X6878 (Snapdragon 7s Gen 3) in one run:
+> - detector parity;
+> - six SMS verdicts;
+> - time to first warning (median 21.6 ms);
+> - Llama 3.2 explaining in English and Hindi inside the app through ExecuTorch;
+> - Network Guard blocking phishing domains and catching a DGA burst.
 >
 > Every number below is measured, with its raw file in [`benchmarks/results/`](benchmarks/results);
 > nothing is projected. The day-by-day record is [`docs/PLAN.md`](docs/PLAN.md#0-progress-log).
+
+<p align="center">
+<img src="docs/img/screens/1_home.jpg" width="19%" alt="Home">
+<img src="docs/img/screens/3_alert_en.jpg" width="19%" alt="Scam alert, English">
+<img src="docs/img/screens/4_alert_hi.jpg" width="19%" alt="Scam alert, Hindi">
+<img src="docs/img/screens/6_alerts.jpg" width="19%" alt="Alert feed with network detections">
+<img src="docs/img/screens/5_network_hi.jpg" width="19%" alt="Network Guard">
+</p>
+<p align="center"><sub>Real screenshots, Infinix X6878. Left to right: dashboard · a scam SMS explained by Llama (English) · the same alert in Hindi · alert feed with Network Guard catching a test app's DGA burst, DNS exfiltration and blocked lookups · Network Guard live view.</sub></p>
 
 ---
 
@@ -70,7 +76,7 @@ cannot overturn a verdict or invent advice. Details: [`docs/ARCHITECTURE.md`](do
 | Full SMS check (featurize + both models), n = 1000 | p50 **5.0 ms** · p95 7.6 ms (was 9.4 ms before the allocation-free featurizer) |
 | URL check, n = 1000 | p50 **1.1 ms** · p95 1.2 ms |
 | Model size | 130 KB each (`.pte`) |
-| SMS in → notification posted (time to first warning) | 22 ms (single in-app measurement; n ≥ 20 in the benchmark of record, pending) |
+| SMS in → notification posted (time to first warning) | 22 ms on the CMF; **median 21.6 ms, max 49.6 ms** on the Infinix (6 messages, e2e run) |
 
 ### Llama 3.2 1B on ExecuTorch: where the threads go
 
@@ -97,6 +103,24 @@ interleaved runs per arm, plugged in, 29–30 °C.
    prefill. This is an upstream-fix candidate, like ENTITY's merged llama.cpp PR #25701.
 3. **ENTITY's llama.cpp finding holds on ExecuTorch and on Armv9.** Thread count matters: 8 threads
    cost 19% decode. Pinning to the big cores gives the fastest and steadiest prefill (±0.6 vs ±6.6).
+
+### Llama in the app: cold vs pre-warmed
+
+When an alert fires, Shield pre-fills the fixed system prompt (99 tokens) into ExecuTorch's KV cache
+(`LlmModule.prefillPrompt`), so opening the alert only pays for the message's own 134 tokens. Infinix,
+app in the foreground, same alert, greedy:
+
+| | Prompt tokens processed | First token |
+|---|---:|---:|
+| Cold | 233 | 1.78 s |
+| **Pre-warmed** | 134 | **1.00 s (−44%)** |
+
+The pre-warmed answer matches the cold one for its first 14 tokens, then takes a different but
+equally correct wording ("…trick victims into revealing sensitive information" vs "…get victims to
+take action"). This is consistent with a near-tie flipping under a different floating-point summation
+order when the prompt is prefilled in two chunks; we have not confirmed it directly. Removing the
+literal BOS token from the prefilled text made the answers diverge from the first sentence, so
+`prefillPrompt` adds no BOS of its own.
 
 ### Llama explanations: quality
 

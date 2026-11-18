@@ -42,6 +42,7 @@ class DebugReceiver : BroadcastReceiver() {
                             else Advice.followUpPrompt(a.v, a.text, intent.getStringExtra("q") ?: "I already clicked the link. What now?", lang)
                         val sb = StringBuilder()
                         val done = java.util.concurrent.CountDownLatch(1)
+                        intent.getStringExtra("stripbos")?.let { app.getSharedPreferences("shield", 0).edit().putBoolean("prefill_strip_bos", it == "1").commit() }
                         val warm = cmd == "explain" && intent.getStringExtra("warm") == "1"
                         val prefix = if (warm) Advice.explainPrefix(lang) else null
                         if (warm) { Explainer.get(app).prewarm(prefix!!); Thread.sleep(300) }

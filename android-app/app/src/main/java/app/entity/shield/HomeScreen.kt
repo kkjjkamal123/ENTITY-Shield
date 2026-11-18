@@ -76,10 +76,10 @@ fun HomeScreen(lang: Advice.Lang, onOpen: (Alert) -> Unit, go: (Int) -> Unit) {
 
         // ---- guards
         SectionTitle(if (hi) "सुरक्षा गार्ड" else "Guards")
-        GuardRow("✉", if (hi) "SMS गार्ड" else "SMS Guard",
+        GuardRow("💬", if (hi) "SMS गार्ड" else "SMS Guard",
             if (smsOn) (if (hi) "हर SMS इसी फ़ोन पर जांचा जाता है" else "Every SMS is checked on this phone" + (avgDetect?.let { " · ~${"%.0f".format(it)} ms" } ?: ""))
             else (if (hi) "SMS अनुमति दें" else "Allow SMS permission to turn on"), smsOn, onToggle = null)
-        GuardRow("⌁", if (hi) "नेटवर्क गार्ड" else "Network Guard",
+        GuardRow("🌐", if (hi) "नेटवर्क गार्ड" else "Network Guard",
             if (netOn) "${NetGuard.apps} ${if (hi) "ऐप देखे" else "apps watched"} · ${NetGuard.blocked} ${if (hi) "ब्लॉक" else "blocked"} · ${if (hi) "ट्रिपवायर" else "tripwire"} ${NetGuard.listening.joinToString(",")}"
             else (if (hi) "हर ऐप के DNS लुकअप जांचें, धोखे वाली साइटें ब्लॉक करें, Wi-Fi पर जासूसी पकड़ें" else "Checks every app's DNS lookups, blocks scam sites, catches Wi-Fi probes"),
             netOn, onToggle = { (ctx as MainActivity).setNetworkGuard(it) })
