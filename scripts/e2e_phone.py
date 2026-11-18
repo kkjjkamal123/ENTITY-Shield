@@ -84,6 +84,9 @@ def main():
 
     if a.install:
         out = p.adb("install", "-r", "-g", str(APK), timeout=600)
+        if "INSTALL_FAILED_UPDATE_INCOMPATIBLE" in out or "signatures do not match" in out.lower():
+            p.adb("uninstall", PKG)   # release build installed: switch to the debug build (history is lost)
+            out = p.adb("install", "-g", str(APK), timeout=600)
         check("install", "Success" in out, out.strip().splitlines()[-1] if out.strip() else "")
     for perm in ("RECEIVE_SMS", "READ_SMS", "POST_NOTIFICATIONS"):
         p.sh(f"pm grant {PKG} android.permission.{perm}")
