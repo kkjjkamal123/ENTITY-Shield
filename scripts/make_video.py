@@ -23,7 +23,7 @@ BG = "0x070B16"
 SCENES = [
     ("s1_sms_alert.mp4", [(0, 42)], "Infinix X6878 · Snapdragon 7s Gen 3", [
         (0, 4.5, "Airplane mode on", "Everything below runs on this phone's Arm CPU. No cloud, no network."),
-        (4.5, 10, "A scam SMS arrives", "Two ExecuTorch detectors flag it in milliseconds. The warning is posted at once."),
+        (4.5, 10, "A scam message comes in", "A test SMS sent through the app's own receive pipeline (no carrier in airplane mode). Two ExecuTorch detectors flag it in milliseconds."),
         (10, 22, "Llama 3.2 1B explains, on the phone", "Runs through ExecuTorch (XNNPACK) inside the app. First token in about one second."),
         (22, 34, "The same alert in Hindi", "Llama writes only the 'why'. The verdict and the steps are fixed, checked text."),
         (34, 42, "Steps that act", "Block the sender, call 1930, report on cybercrime.gov.in, or ask a follow-up question."),

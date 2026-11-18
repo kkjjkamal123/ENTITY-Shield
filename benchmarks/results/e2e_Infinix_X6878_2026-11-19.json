@@ -2,57 +2,57 @@
  "device": "Infinix X6878",
  "soc": "SM7635",
  "locked": true,
- "date": "2026-11-19 04:45:06.878548",
+ "date": "2026-11-19 05:18:19.223601",
  "results": [
   {
    "check": "detector parity (Kotlin featurizer + ExecuTorch == Python)",
    "ok": true,
-   "detail": "sms golden: 43/43 match (max diff 5.1e-07) | url golden: 40/40 match (max diff 5.7e-07) | SMS check, featurize + models, n=1000: p50 1.362 ms · p95 2.246 ms | URL check, n=1000: p50 0.276 ms · p95 0.505 ms | "
+   "detail": "sms golden: 43/43 match (max diff 5.1e-07) | url golden: 40/40 match (max diff 5.7e-07) | SMS check, featurize + models, n=1000: p50 1.155 ms · p95 1.879 ms | URL check, n=1000: p50 0.243 ms · p95 0.450 ms | "
   },
   {
    "check": "SMS verdict SCAM: Dear customer your SBI account will be b…",
    "ok": true,
-   "detail": "got SCAM warnMs=17.49"
+   "detail": "got SCAM warnMs=14.88"
   },
   {
    "check": "SMS verdict SCAM: आपके आधार पर मनी लॉन्ड्रिंग केस दर्ज है।…",
    "ok": true,
-   "detail": "got SCAM warnMs=49.60"
+   "detail": "got SCAM warnMs=28.09"
   },
   {
    "check": "SMS verdict SCAM: You have received Rs 4,999 refund. Enter…",
    "ok": true,
-   "detail": "got SCAM warnMs=21.87"
+   "detail": "got SCAM warnMs=22.00"
   },
   {
    "check": "SMS verdict SAFE: 482913 is your OTP for transaction of Rs…",
    "ok": true,
-   "detail": "got SAFE warnMs=14.48"
+   "detail": "got SAFE warnMs=7.11"
   },
   {
    "check": "SMS verdict SAFE: Your Amazon order will be delivered toda…",
    "ok": true,
-   "detail": "got SAFE warnMs=21.61"
+   "detail": "got SAFE warnMs=13.29"
   },
   {
    "check": "SMS verdict SAFE: Bhai kal ka plan cancel, office me late …",
    "ok": true,
-   "detail": "got SAFE warnMs=2.55"
+   "detail": "got SAFE warnMs=1.39"
   },
   {
    "check": "time to first warning < 1500 ms (detect + notification)",
    "ok": true,
-   "detail": "median 21.6 ms, max 49.6 ms"
+   "detail": "median 14.9 ms, max 28.1 ms"
   },
   {
    "check": "Llama explanation (EN) on ExecuTorch",
    "ok": true,
-   "detail": "ttft=1872 ms prefill=124.466 decode=15.4578 tok/s :: It creates urgency and threatens to block the account, which is a common tactic used by scammers to get victims to take "
+   "detail": "ttft=1724 ms prefill=135.229 decode=15.9216 tok/s :: It creates urgency and threatens to block the account, which is a common tactic used by scammers to get victims to take "
   },
   {
    "check": "Llama explanation (HI) on ExecuTorch",
    "ok": true,
-   "detail": "ttft=2464 ms prefill=127.029 decode=14.7698 tok/s :: यह आपके बैंक खाते को बंद करने की धमकी देता है, जो बहुत खतरनाक है।"
+   "detail": "ttft=2510 ms prefill=124.701 decode=14.5923 tok/s :: यह आपके बैंक खाते को बंद करने की धमकी देता है, जो बहुत खतरनाक है।"
   },
   {
    "check": "Network Guard starts (local DNS VPN + tripwire)",
@@ -62,17 +62,17 @@
   {
    "check": "benign domain resolves (ALLOW)",
    "ok": true,
-   "detail": "App Center:ind-oneid.shalltry.com:ALLOW:3;App Center:api.hisavana.com:ALLOW:0;Shell (adb):hdfc-netbanking-verify.top:BLOCK:3;Shell (adb):sbi-kyc-update.in:BLOCK:3;Meta Services:z-m-gateway.facebook.co"
+   "detail": "Shell (adb):www.google.com:ALLOW:0;Android System:play.google.com:ALLOW:0;Google Play services:mtalk.google.com:ALLOW:0;Android System:android.apis.google.com:ALLOW:0"
   },
   {
    "check": "phishing domain blocked (BLOCK + alert)",
    "ok": true,
-   "detail": ""
+   "detail": "App Center:ind-oneid.shalltry.com:ALLOW:3;Shell (adb):hdfc-netbanking-verify.top:BLOCK:3;Shell (adb):sbi-kyc-update.in:BLOCK:3;Shell (adb):119.157.251.142.in-ad"
   },
   {
    "check": "DGA-style lookup burst detected",
    "ok": true,
-   "detail": "net:SCAM:NET_DGA:Shell (adb) looked up 8 names that do not exist in one minute (e.g. ti42mxd6of5nty.xyz), t || net:SCAM:NET_DOMAIN:Shell (adb) tried to open sbi-kyc-update.in. Shield blocked the looku"
+   "detail": "net:SCAM:NET_DGA:Shell (adb) looked up 8 names that do not exist in one minute (e.g. tlchfhrihwk7p3.xyz), t || net:SCAM:NET_DOMAIN:Shell (adb) tried to open sbi-kyc-update.in. Shield blocked the looku"
   },
   {
    "check": "LAN tripwire (laptop not on the phone's Wi-Fi: skipped)",

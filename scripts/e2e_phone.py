@@ -95,6 +95,8 @@ def main():
     for perm in ("RECEIVE_SMS", "READ_SMS", "POST_NOTIFICATIONS"):
         p.sh(f"pm grant {PKG} android.permission.{perm}")
     p.sh(f"appops set {PKG} ACTIVATE_VPN allow")
+    p.sh("svc power stayon true")      # a screen that times out mid-test sends the app to the background cgroup
+    p.sh("input keyevent KEYCODE_WAKEUP")
     p.adb("logcat", "-c")
     p.sh(f"am start -n {PKG}/.MainActivity --ez e2e true")
     time.sleep(2.5)
@@ -127,8 +129,14 @@ def main():
         warn.sort()
         check("time to first warning < 1500 ms (detect + notification)", warn[-1] < 1500, f"median {warn[len(warn) // 2]:.1f} ms, max {warn[-1]:.1f} ms")
 
+    def front():
+        p.sh("input keyevent KEYCODE_WAKEUP")
+        p.sh(f"am start -n {PKG}/.MainActivity --ez e2e true")
+        time.sleep(1.5)
+
     # 3. Llama explanations
     if not a.skip_llm:
+        front()
         for lang in (["EN", "HI"] if a.hindi else ["EN"]):
             p.cmd("sms", **{"from": "+919876543210", "body": shell_quote(cases[0][1])})
             time.sleep(1)
@@ -148,6 +156,7 @@ def main():
 
     # 4. Network Guard
     if not a.skip_net:
+        front()
         p.cmd("netreset")
         p.wait_line(r"ShieldE2E: netreset done", 10)
         p.cmd("net", state="on")
@@ -190,6 +199,7 @@ def main():
                 check("LAN tripwire (laptop not on the phone's Wi-Fi: skipped)", True, f"no route to {ip.group(1)}")
         p.cmd("net", state="off")
 
+    p.sh("svc power stayon false")
     passed = sum(r["ok"] for r in results)
     print(f"\n{passed}/{len(results)} checks passed")
     out = ROOT / "benchmarks/results" / f"e2e_{model.replace(' ', '_')}_{datetime.date.today()}.json"
