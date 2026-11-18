@@ -59,10 +59,15 @@ class DebugReceiver : BroadcastReceiver() {
                     "selftest" -> log("selftest " + runSelfTest(app).replace("\n", " | "))
                     "net" -> {
                         val on = intent.getStringExtra("state") != "off"
+                        // prepare() makes Shield the prepared VPN app; with the ACTIVATE_VPN appop allowed it
+                        // returns null without a dialog. Without it, establish() returns null.
+                        val consent = if (on) android.net.VpnService.prepare(app) else null
+                        if (consent != null) log("net consent_needed (grant: adb shell appops set app.entity.shield ACTIVATE_VPN allow)")
                         if (on) ShieldVpnService.start(app) else ShieldVpnService.stop(app)
                         Thread.sleep(1500)
                         log("net requested=$on vpnOn=${NetGuard.vpnOn} listening=${NetGuard.listening.joinToString(",")} ip=${NetGuard.phoneIp} upstream=${NetGuard.upstream}")
                     }
+                    "netreset" -> { NetGuard.resetForTest(); log("netreset done") }
                     "netstat" -> log("netstat vpnOn=${NetGuard.vpnOn} queries=${NetGuard.queries} blocked=${NetGuard.blocked} flagged=${NetGuard.flagged} apps=${NetGuard.apps} trip=${NetGuard.tripHits} last=" +
                         NetGuard.dnsEvents.take(8).joinToString(";") { "${it.app}:${it.host}:${it.action}:${it.rcode}" })
                     "bench" -> { Bench.run(app, intent.getIntExtra("runs", 3)); while (!Bench.running) Thread.sleep(50); while (Bench.running) Thread.sleep(500); log("bench done csv=${Bench.lastCsv}") }

@@ -212,6 +212,14 @@ object NetGuard {
         runCatching(fire).onFailure { Log.w(TAG, "alert failed: ${it.message}") }
     }
 
+    /** Tests only: forget behaviour history and alert de-duplication, so each run starts clean. */
+    fun resetForTest() {
+        synchronized(this) { times.clear(); nx.clear(); subs.clear(); trip.clear() }
+        synchronized(lastAlert) { lastAlert.clear() }
+        verdicts.evictAll()
+        reset()
+    }
+
     fun reset() = main.post {
         dnsEvents.clear(); tripEvents.clear(); queries = 0; blocked = 0; flagged = 0; tripHits = 0; apps = 0; appsSeen.clear()
     }

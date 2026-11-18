@@ -89,7 +89,7 @@ def main():
         p.sh(f"pm grant {PKG} android.permission.{perm}")
     p.sh(f"appops set {PKG} ACTIVATE_VPN allow")
     p.adb("logcat", "-c")
-    p.sh(f"am start -n {PKG}/.MainActivity")
+    p.sh(f"am start -n {PKG}/.MainActivity --ez e2e true")
     time.sleep(2.5)
 
     # 1. detectors: golden parity + latency
@@ -141,6 +141,8 @@ def main():
 
     # 4. Network Guard
     if not a.skip_net:
+        p.cmd("netreset")
+        p.wait_line(r"ShieldE2E: netreset done", 10)
         p.cmd("net", state="on")
         line = p.wait_line(r"ShieldE2E: net requested=true", 20)
         ip = re.search(r"ip=([\d.]+)", line or "")

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -16,11 +18,26 @@ android {
         ndk { abiFilters += "arm64-v8a" } // Arm only; also drops the x86_64 ExecuTorch library
     }
 
+    // Release key lives outside the repo. Point SHIELD_KEYSTORE_PROPS (or ~/.entity-shield/keystore.properties)
+    // at a file with storeFile/storePassword/keyAlias/keyPassword. Without it, release falls back to the
+    // debug key so anyone can still build and sideload.
+    val keyProps = Properties().apply {
+        val f = file(System.getenv("SHIELD_KEYSTORE_PROPS") ?: "${System.getProperty("user.home")}/.entity-shield/keystore.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    signingConfigs {
+        if (keyProps.getProperty("storeFile") != null) create("release") {
+            storeFile = file(keyProps.getProperty("storeFile"))
+            storePassword = keyProps.getProperty("storePassword")
+            keyAlias = keyProps.getProperty("keyAlias")
+            keyPassword = keyProps.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false // ExecuTorch's JNI classes must keep their names
-            // Signed with the debug key so the APK installs by sideloading.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

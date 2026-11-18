@@ -53,6 +53,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(AColor.TRANSPARENT), navigationBarStyle = SystemBarStyle.dark(AColor.TRANSPARENT))
         super.onCreate(savedInstanceState)
+        // Debug builds only: scripts/e2e_phone.py can show the app above the lock screen (like an alarm app),
+        // so tests run with the app in the foreground on a locked phone. Release builds never do this.
+        val debuggable = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        if (debuggable && intent?.getBooleanExtra("e2e", false) == true) { setShowWhenLocked(true); setTurnScreenOn(true) }
         Pipeline.ensureChannel(this)
         Pipeline.load(this)
         Speaker.init(this)
