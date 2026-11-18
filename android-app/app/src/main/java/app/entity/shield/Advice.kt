@@ -98,6 +98,39 @@ object Advice {
 
     fun signs(v: Verdict): List<String> = v.evidence.mapNotNull { phrase(it, v) }.distinct()
 
+    /** Hindi versions of the warning signs. Giving the 1B the evidence already in Hindi (instead of
+     *  asking it to translate English signs while answering) is measured in training/llm/eval_explanations.py. */
+    fun phraseHi(signal: String, v: Verdict): String? = when (signal) {
+        "has_link" -> v.worstHost?.let { "इसमें $it का लिंक है" } ?: "इसमें एक लिंक है"
+        "urgency" -> "यह जल्दबाज़ी करवाता है"
+        "asks_secret" -> "यह OTP, PIN या पासवर्ड मांगता है"
+        "money_request" -> "यह पैसे भेजने को कहता है"
+        "account_threat" -> "यह खाता या सेवा बंद करने की धमकी देता है"
+        "prize_lottery" -> "यह इनाम या लॉटरी का लालच देता है"
+        "job_task" -> "यह छोटे कामों के बदले आसान कमाई का वादा करता है"
+        "authority_threat" -> "यह पुलिस, कोर्ट या सरकारी अफ़सर होने का दावा करता है"
+        "kyc_identity" -> "यह KYC, PAN या आधार के बारे में पूछता है"
+        "brand_link_mismatch", "brand_not_official" -> v.worstHost?.let { "लिंक $it उस ब्रांड की असली वेबसाइट नहीं है" } ?: "यह नकली ब्रांड लिंक है"
+        "shortener_link", "shortener" -> "यह असली लिंक को छोटे लिंक के पीछे छिपाता है"
+        "sender_mobile" -> "यह किसी निजी मोबाइल नंबर से आया है, किसी रजिस्टर्ड कंपनी से नहीं"
+        "call_number" -> "यह किसी फ़ोन नंबर पर कॉल करने को कहता है"
+        "ip_host" -> "लिंक सिर्फ़ एक IP पता है"
+        "free_hosting" -> "साइट मुफ़्त होस्टिंग पर है, जिसे कोई भी बना सकता है"
+        "suspicious_tld" -> "पते का अंत सस्ते डोमेन जैसा है जो धोखे में आम है"
+        "lure_word" -> "पते में login, verify या update जैसे शब्द हैं"
+        "dns_blocked" -> v.worstHost?.let { "एक ऐप ने $it खोलने की कोशिश की, जो धोखे या मैलवेयर की साइट लगती है" } ?: "एक ऐप ने धोखे की साइट खोलने की कोशिश की"
+        "beacon" -> "एक ऐप तय समय पर बार-बार एक ही सर्वर से संपर्क करता है, जैसे मैलवेयर करता है"
+        "dga_burst" -> "एक ऐप ने बहुत सारे बेतरतीब नाम खोजे जो मौजूद ही नहीं हैं"
+        "tunnel" -> "एक ऐप लंबे बेतरतीब पतों में डेटा छिपाकर भेज रहा है"
+        "port_scan" -> v.worstHost?.let { "इस Wi-Fi पर डिवाइस $it ने फ़ोन के कई पोर्ट टटोले" } ?: "इस Wi-Fi पर किसी डिवाइस ने फ़ोन को टटोला"
+        "adb_probe" -> "उसने Android डिबगिंग पोर्ट आज़माया, जिसे फ़ोन पर कब्ज़ा करने वाले वर्म इस्तेमाल करते हैं"
+        "brute_force" -> "उसने बार-बार लॉगिन करने की कोशिश की"
+        else -> null
+    }
+
+    fun signsFor(v: Verdict, lang: Lang): List<String> =
+        if (lang == Lang.HI) v.evidence.mapNotNull { phraseHi(it, v) }.distinct() else signs(v)
+
     // ------------------------------------------------------------ Llama prompt (v4 design: fact sheet + verdict prefill)
 
     private const val FACTS = "Facts: KYC means Know Your Customer. Banks never ask for KYC, OTP, PIN or passwords through SMS links. " +

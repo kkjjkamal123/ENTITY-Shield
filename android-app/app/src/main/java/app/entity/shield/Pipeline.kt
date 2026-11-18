@@ -80,7 +80,9 @@ object Pipeline {
         a = a.copy(warnMs = (SystemClock.elapsedRealtimeNanos() - t0) / 1e6)
         // The user will probably open this alert next: load Llama and pre-fill the fixed system prompt now,
         // off the detection path, so the explanation only pays for the message-specific tokens.
-        if (v.band != Band.SAFE && source != "bench" && ctx.getSharedPreferences("shield", 0).getBoolean("prewarm", true) && Explainer.get(ctx).available())
+        // Only when the screen is on: a sleeping phone's owner won't open the alert within the idle window.
+        val interactive = ctx.getSystemService(android.os.PowerManager::class.java).isInteractive
+        if (v.band != Band.SAFE && source != "bench" && interactive && ctx.getSharedPreferences("shield", 0).getBoolean("prewarm", true) && Explainer.get(ctx).available())
             Explainer.get(ctx).prewarm(Advice.explainPrefix(Prefs.lang(ctx)))
         Log.i(TAG, "verdict source=$source band=${v.band} score=${"%.3f".format(v.score)} family=${v.family} detectMs=${"%.3f".format(v.millis)} warnMs=${"%.2f".format(a.warnMs)}")
         synchronized(this) { file(ctx).appendText(a.toJson().toString() + "\n") }

@@ -56,6 +56,20 @@ def phrase(sig, host):
     }.get(sig)
 
 
+def phrase_hi(sig, host):
+    return {
+        "has_link": f"इसमें {host} का लिंक है" if host else "इसमें एक लिंक है",
+        "urgency": "यह जल्दबाज़ी करवाता है", "asks_secret": "यह OTP, PIN या पासवर्ड मांगता है",
+        "money_request": "यह पैसे भेजने को कहता है", "account_threat": "यह खाता या सेवा बंद करने की धमकी देता है",
+        "prize_lottery": "यह इनाम या लॉटरी का लालच देता है", "job_task": "यह छोटे कामों के बदले आसान कमाई का वादा करता है",
+        "authority_threat": "यह पुलिस, कोर्ट या सरकारी अफ़सर होने का दावा करता है", "kyc_identity": "यह KYC, PAN या आधार के बारे में पूछता है",
+        "brand_link_mismatch": f"लिंक {host} उस ब्रांड की असली वेबसाइट नहीं है" if host else "यह नकली ब्रांड लिंक है",
+        "shortener_link": "यह असली लिंक को छोटे लिंक के पीछे छिपाता है",
+        "sender_mobile": "यह किसी निजी मोबाइल नंबर से आया है, किसी रजिस्टर्ड कंपनी से नहीं",
+        "call_number": "यह किसी फ़ोन नंबर पर कॉल करने को कहता है",
+    }.get(sig)
+
+
 def explain_prompt(text, score, band, signs, lang):
     hindi = " Answer in simple Hindi (Devanagari)." if lang == "HI" else ""
     label = "FRAUD" if band == "SCAM" else "SUSPICIOUS"
@@ -99,7 +113,7 @@ class Det:
         import torch
         return float(m.execute([torch.from_numpy(x)[None]])[0].reshape(-1)[0])
 
-    def check(self, text, sender):
+    def check(self, text, sender, hi_signs=False):
         h, s = F.vector("sms", text, sender)
         p_sms = self._run(self.sms, self._dense(h, s))
         official = {d for ds in F.BRANDS.values() for d in ds}
@@ -115,7 +129,8 @@ class Det:
         b = max(band(p_sms, self.t_sms), band(p_url, self.t_url), key=order.get)
         ev = [n for n, v in zip(F.SMS_SIGNALS, s) if v]
         signs = list(dict.fromkeys(filter(None, (phrase(e, worst) for e in ev))))
-        return max(p_sms, p_url), b, signs
+        signs_hi = list(dict.fromkeys(filter(None, (phrase_hi(e, worst) for e in ev))))
+        return max(p_sms, p_url), b, (signs_hi if hi_signs else signs)
 
 # ---- checks ----
 
@@ -171,6 +186,8 @@ def main():
     ap.add_argument("--langs", default="EN,HI")
     ap.add_argument("--max-new", type=int, default=80)
     ap.add_argument("--mask", default="", help="taskset mask, e.g. f0 for cpu4-7")
+    ap.add_argument("--hi-signs", action="store_true", help="give the warning signs in Hindi for HI answers")
+    ap.add_argument("--tag", default="", help="suffix for the output file")
     a = ap.parse_args()
 
     import train_detector as T  # same split as training (seed 7)
@@ -193,11 +210,12 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         for i, x in enumerate(pick):
             score, band, signs = det.check(x["text"], x.get("sender", ""))
+            signs_hi = det.check(x["text"], x.get("sender", ""), hi_signs=True)[2] if a.hi_signs else signs
             if band == "SAFE":  # the app would not ask Llama; record and skip
                 rows.append(dict(i=i, text=x["text"], source=x["source"], template=x.get("template"), band=band, score=score, skipped=True))
                 continue
             for lang in a.langs.split(","):
-                prompt, pre = explain_prompt(x["text"], score, band, signs, lang)
+                prompt, pre = explain_prompt(x["text"], score, band, signs_hi if lang == "HI" else signs, lang)
                 p = Path(tmp) / "p.txt"
                 p.write_text(prompt, encoding="utf-8", newline="\n")
                 body, st = run_phone(a.serial, a.model, p, a.max_new, a.mask)
@@ -222,8 +240,8 @@ def main():
                              stops_by_itself=k(lambda x: x["stops"]),
                              median_tokens=sorted(x["tokens"] or 0 for x in L)[len(L) // 2])
     summary["skipped_as_safe_by_detector"] = sum(1 for x in rows if x.get("skipped"))
-    out = ROOT / "benchmarks/results" / f"llm_explain_eval_{Path(a.model).stem}_{device.replace(' ', '_')}_{datetime.date.today()}.json"
-    out.write_text(json.dumps(dict(model=a.model, device=device, date=str(datetime.datetime.now()), summary=summary, rows=rows),
+    out = ROOT / "benchmarks/results" / f"llm_explain_eval_{Path(a.model).stem}_{device.replace(' ', '_')}_{datetime.date.today()}{a.tag}.json"
+    out.write_text(json.dumps(dict(model=a.model, device=device, hi_signs=a.hi_signs, date=str(datetime.datetime.now()), summary=summary, rows=rows),
                               ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
     print(json.dumps(summary, ensure_ascii=False, indent=1))
     print("Saved", out)
