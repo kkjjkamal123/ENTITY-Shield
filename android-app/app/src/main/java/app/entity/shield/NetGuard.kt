@@ -110,7 +110,9 @@ object NetGuard {
             dnsEvents.add(0, ev)
             if (dnsEvents.size > 400) dnsEvents.removeRange(400, dnsEvents.size)
         }
-        if (blockedIt) alertOnce(ctx, "dom|$uid|$host", 10 * 60_000L) {
+        // One "blocked" alert per app per 2 minutes (a malware burst would otherwise post dozens);
+        // every block is still counted and listed live on the Network screen.
+        if (blockedIt) alertOnce(ctx, "dom|$uid", 2 * 60_000L) {
             val t = Verdict("net", Band.SCAM, v.score, Family.NET_DOMAIN, listOf("dns_blocked") + v.evidence + "pkg:${app.pkg}", host, v.millis)
             Pipeline.onNet(ctx, t, "${app.label} tried to open $host. Shield blocked the lookup before any connection was made.", app.label)
         }

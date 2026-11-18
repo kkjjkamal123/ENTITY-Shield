@@ -36,10 +36,36 @@ class Detectors private constructor(ctx: Context) {
         ctx.assets.open("dns_infra.txt").bufferedReader().readLines().map { it.trim() }.filter { it.isNotEmpty() && !it.startsWith("#") }.toSet()
     }.getOrDefault(emptySet())
 
+    /** Reference path (golden tests): a dense FloatArray copied into a fresh tensor. */
     fun score(kind: String, x: FloatArray): Float {
         val m = if (kind == "url") url else sms
         val out = m.forward(EValue.from(Tensor.fromBlob(x, longArrayOf(1, x.size.toLong()))))
         return out[0].toTensor().dataAsFloatArray[0]
+    }
+
+    /** Production path: one direct buffer per model, wrapped once; only the touched slots are written
+     *  and cleared again, so no 131 KB vector is allocated or copied per message. */
+    private class Input(val m: Module, n: Int) {
+        val buf: java.nio.FloatBuffer = Tensor.allocateFloatBuffer(n)
+        val t: Tensor = Tensor.fromBlob(buf, longArrayOf(1, n.toLong()))
+        fun score(slots: IntArray, vals: DoubleArray, sig: FloatArray): Float {
+            for (j in slots.indices) buf.put(slots[j], vals[j].toFloat())
+            for (j in sig.indices) buf.put(Featurizer.DIM + j, sig[j])
+            val p = m.forward(EValue.from(t))[0].toTensor().dataAsFloatArray[0]
+            for (sl in slots) buf.put(sl, 0f)
+            for (j in sig.indices) buf.put(Featurizer.DIM + j, 0f)
+            return p
+        }
+    }
+    private val smsIn = Input(sms, Featurizer.DIM + Featurizer.SMS_SIGNALS.size)
+    private val urlIn = Input(url, Featurizer.DIM + Featurizer.URL_SIGNALS.size)
+
+    @Synchronized
+    fun scoreText(kind: String, text: String, sender: String = ""): Float {
+        val input = if (kind == "url") Featurizer.urlHost(text) else text
+        val (slots, vals) = Featurizer.hashedSparse(input)
+        return if (kind == "url") urlIn.score(slots, vals, Featurizer.urlSignals(input))
+        else smsIn.score(slots, vals, Featurizer.smsSignals(text, sender))
     }
 
     @Synchronized
@@ -48,7 +74,7 @@ class Detectors private constructor(ctx: Context) {
         val host = Featurizer.urlHost(if ("://" in link) link else "http://$link")
         val sig = Featurizer.urlSignals(host)
         val allowed = Featurizer.allowlisted(host, allow)
-        val p = if (allowed) 0f else score("url", Featurizer.vector("url", host))
+        val p = if (allowed) 0f else Featurizer.hashedSparse(host).let { (sl, v) -> urlIn.score(sl, v, sig) }
         var band = band(p, urlT)
         if (band == Band.SAFE && sig[Featurizer.URL_SIGNALS.indexOf("shortener")] > 0) band = Band.UNCERTAIN // can't see where it goes
         val ev = Featurizer.URL_SIGNALS.filterIndexed { i, _ -> sig[i] > 0 }
@@ -67,16 +93,15 @@ class Detectors private constructor(ctx: Context) {
     @Synchronized
     fun checkSms(text: String, sender: String): Verdict {
         val t0 = System.nanoTime()
-        val x = Featurizer.vector("sms", text, sender)
-        val pSms = score("sms", x)
+        val sigs = Featurizer.smsSignals(text, sender)
+        val pSms = Featurizer.hashedSparse(text).let { (sl, v) -> smsIn.score(sl, v, sigs) }
         var worst: String? = null
         var pUrl = 0f
         var urlBand = Band.SAFE
         for (h in Featurizer.riskyHosts(text)) {
-            val p = if (Featurizer.allowlisted(h, allow)) 0f else score("url", Featurizer.vector("url", h))
+            val p = if (Featurizer.allowlisted(h, allow)) 0f else Featurizer.hashedSparse(h).let { (sl, v) -> urlIn.score(sl, v, Featurizer.urlSignals(h)) }
             if (p >= pUrl) { pUrl = p; worst = h; urlBand = band(p, urlT) }
         }
-        val sigs = x.copyOfRange(Featurizer.DIM, x.size)
         val ev = Featurizer.SMS_SIGNALS.filterIndexed { i, _ -> sigs[i] > 0 }
         val b = maxOf(band(pSms, smsT), urlBand)
         return Verdict("sms", b, maxOf(pSms, pUrl), family(text, ev), ev, worst, (System.nanoTime() - t0) / 1e6)

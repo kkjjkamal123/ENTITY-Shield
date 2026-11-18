@@ -42,15 +42,18 @@ class DebugReceiver : BroadcastReceiver() {
                             else Advice.followUpPrompt(a.v, a.text, intent.getStringExtra("q") ?: "I already clicked the link. What now?", lang)
                         val sb = StringBuilder()
                         val done = java.util.concurrent.CountDownLatch(1)
+                        val warm = cmd == "explain" && intent.getStringExtra("warm") == "1"
+                        val prefix = if (warm) Advice.explainPrefix(lang) else null
+                        if (warm) { Explainer.get(app).prewarm(prefix!!); Thread.sleep(300) }
                         Explainer.get(app).run(prompt, intent.getIntExtra("max", 80), object : Explainer.Listener {
                             override fun onToken(piece: String) { sb.append(piece) }
                             override fun onDone(stats: Explainer.Stats) {
-                                log("$cmd id=${a.id} lang=$lang loadMs=${stats.loadMs} ttftMs=${stats.ttftMs} totalMs=${stats.totalMs} tokens=${stats.tokens} stats=${stats.raw.replace(" ", "")}")
+                                log("$cmd id=${a.id} lang=$lang warm=${stats.prewarmed} loadMs=${stats.loadMs} ttftMs=${stats.ttftMs} totalMs=${stats.totalMs} tokens=${stats.tokens} stats=${stats.raw.replace(" ", "")}")
                                 log("$cmd text=${sb.toString().replace("\n", " ").trim()}")
                                 done.countDown()
                             }
                             override fun onError(msg: String) { log("$cmd error=$msg"); done.countDown() }
-                        })
+                        }, prefix)
                         done.await(120, java.util.concurrent.TimeUnit.SECONDS)
                     }
                     "selftest" -> log("selftest " + runSelfTest(app).replace("\n", " | "))

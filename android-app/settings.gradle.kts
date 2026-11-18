@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "ENTITY Shield"
 include(":app")
+include(":beaconsim") // test-only "malware" simulator for the Network Guard demo

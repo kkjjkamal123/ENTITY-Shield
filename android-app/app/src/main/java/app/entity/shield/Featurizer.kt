@@ -48,6 +48,55 @@ object Featurizer {
         return vals
     }
 
+    // ------------------------------------------------------------ fast path (production)
+
+    private val scratch = ThreadLocal.withInitial { IntArray(DIM) }
+
+    /**
+     * Same slots and values as [hashed], in the same first-seen order, but without a String and a
+     * ByteArray per n-gram: the FNV-1a hash is fed the UTF-8 bytes of each code point directly and the
+     * counts live in a reused scratch array. This took the SMS check from ~9 ms to ~1 ms on the A78.
+     */
+    fun hashedSparse(s: String): Pair<IntArray, DoubleArray> {
+        val cps = normalize(s).codePoints().toArray()
+        val counts = scratch.get()
+        val order = IntArray(cps.size * NGRAMS.size)
+        var m = 0
+        for (n in NGRAMS) for (i in 0..cps.size - n) {
+            var h = 0x811C9DC5L
+            for (k in i until i + n) {
+                val cp = cps[k]
+                if (cp < 0x80) {
+                    h = ((h xor cp.toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                } else if (cp < 0x800) {
+                    h = ((h xor (0xC0 or (cp shr 6)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                    h = ((h xor (0x80 or (cp and 0x3F)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                } else if (cp in 0xD800..0xDFFF) {
+                    h = ((h xor 0x3FL) * 0x01000193L) and 0xFFFFFFFFL // lone surrogate encodes as '?', like String.toByteArray
+                } else if (cp < 0x10000) {
+                    h = ((h xor (0xE0 or (cp shr 12)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                    h = ((h xor (0x80 or ((cp shr 6) and 0x3F)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                    h = ((h xor (0x80 or (cp and 0x3F)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                } else {
+                    h = ((h xor (0xF0 or (cp shr 18)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                    h = ((h xor (0x80 or ((cp shr 12) and 0x3F)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                    h = ((h xor (0x80 or ((cp shr 6) and 0x3F)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                    h = ((h xor (0x80 or (cp and 0x3F)).toLong()) * 0x01000193L) and 0xFFFFFFFFL
+                }
+            }
+            val slot = (h % DIM).toInt()
+            if (counts[slot] == 0) order[m++] = slot
+            counts[slot]++
+        }
+        val vals = DoubleArray(m)
+        var sq = 0.0
+        for (j in 0 until m) vals[j] = ln1p(counts[order[j]].toDouble())
+        for (j in 0 until m) sq += vals[j] * vals[j]
+        val norm = sqrt(sq).let { if (it == 0.0) 1.0 else it }
+        for (j in 0 until m) { vals[j] = vals[j] / norm; counts[order[j]] = 0 }
+        return order.copyOf(m) to vals
+    }
+
     // ------------------------------------------------------------ word lists (same as Python)
 
     val BRANDS: Map<String, List<String>> = linkedMapOf(

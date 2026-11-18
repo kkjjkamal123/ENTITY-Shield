@@ -2,9 +2,9 @@
 
 > Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · On-device threat, phishing and scam detection
 >
-> Working name: **ENTITY Shield**. Status: **Phase 1 sprint, day 1 of 10.** Solo build. Last updated 2026-11-13.
+> Working name: **ENTITY Shield**. Status: **Phase 1 sprint, 4 days left.** Last updated 2026-11-19.
 >
-> **Now:** Phase 1 is due **23 Nov 2026** (the page moved it from 30 Nov). The 8-week plan from October was replaced by a 10-day plan (§3). Llama 3.2 1B on ExecuTorch already runs on the phone; detectors, app and Pi sentinel are next. See [Progress log](#0-progress-log).
+> **Now:** Phase 1 is due **23 Nov 2026**. **Phone only** (the Pi sentinel is dropped; network detection moved onto the phone as Network Guard). Llama 3.2 1B runs **inside the app** through ExecuTorch `LlmModule`; detectors, Network Guard and the new dashboard are built and verified on two phones. Development moved to the Windows laptop. See [Progress log](#0-progress-log).
 
 ---
 
@@ -29,6 +29,74 @@ The October plan (4 devices, Pi hotspot, LoRA, ENTITY policy port, lessons from 
 ## 0. Progress log
 
 Newest first.
+
+### 2026-11-19 (night): app runs Llama in-process, Network Guard built, Windows toolchain, two phones
+
+**Decisions (from the user):** phone only (no Pi sentinel; C1 moves onto the phone), Phase 1 scope =
+all three pillars (SMS, URL, network), premium dashboard inside the phone app, mixed licence
+(Apache-2.0 engine/training/docs, proprietary UI). Dev host is now the Windows laptop.
+
+**Phones:** CMF Phone 1 (Dimensity 7300, A78+A55, dotprod, **no SIM**) = benchmark of record and network
+demos. Infinix X6878 (Snapdragon 7s Gen 3: 1×A720 2.7 GHz + 3×A720 2.4 + 4×A520, **i8mm**, two SIMs) =
+real-SMS demo, inbox audit, second-device numbers.
+
+**Windows toolchain gotchas (fixed, documented):**
+- ExecuTorch 1.5.1's Windows wheel ships `executorch/data/bin/flatc.exe` but `_flatbuffer.py` only looks
+  for a resource named `flatc` → XNNPACK export dies with WinError 2. Fix: `FLATC_EXECUTABLE` (now set in
+  `train_detector.py`). Upstream-fix candidate.
+- `write_text()` defaults to cp1252 on Windows → the Hindi golden vectors crashed. All training IO is UTF-8/LF.
+- `sdkmanager.bat` splits `platforms;android-36` at `;` (cmd) → use `--package_file`.
+- `local.properties` needs forward slashes; git `core.autocrlf=false` for this repo.
+
+**Reproducibility:** the SMS detector retrained on Windows reproduces the 13 Nov Mac model exactly
+(43/43 golden scores, max diff 0.0; `benchmarks/results/detector_sms_2026-11-19_windows-repro.json`).
+URL detector retrained on the 19 Nov PhishTank feed (train ≤ 2026-06-04, test ≥ 2026-08-07):
+test P 0.973 / R 0.679 / FPR 0.96% (with allow-list P 0.972 / R 0.661), OpenPhish 19 Nov R 0.933,
+41 official Indian domains 0 false alarms.
+
+**App (13 Nov skeleton had never compiled against the real AAR):** `LlmGenerationConfig.Builder()` is
+internal in 1.5.1 → `LlmGenerationConfig.create()`. Now: Llama 3.2 1B QAT+LoRA explains inside the APK
+("It creates urgency and threatens to block the account, which is a common tactic used by scammers…").
+`<|eot_id|>` stripped. On-device parity through the production path: SMS 43/43, URL 40/40 (max diff 6e-7).
+
+**Finding: Android's background cgroup silently moves ExecuTorch to the little cores.** The explainer
+thread used `THREAD_PRIORITY_BACKGROUND`; `/proc/<pid>/task/*/cgroup` showed all its XNNPACK workers in
+`cpuset:/background` (= Cortex-A55): prefill 25 tok/s, decode 7.6 tok/s, TTFT 9.2 s for 233 tokens.
+Same happens to the whole process while the phone is locked. Fix: normal priority, and Llama runs only
+while the alert is on screen (detection itself never waits for it).
+
+**Finding: ExecuTorch's thread heuristic picks 3 threads on the CMF** ("Resetting threadpool to 3
+threads": `midr_el1` is unreadable, so its core-type detection falls back). Measured on the Infinix
+(`scripts/bench_threads.py`, 3 interleaved runs, plugged, 29–30 °C, QAT+LoRA, 165-token prompt):
+
+| Arm | Prefill tok/s | Decode tok/s | TTFT |
+|---|---:|---:|---:|
+| 4 threads pinned to the A720s | **185.6 ± 0.6** | 19.2 ± 0.1 | **0.89 s** |
+| ExecuTorch default (picked 4 here) | 171.0 ± 4.4 | 18.7 ± 0.4 | 0.96 s |
+| 4 threads, unpinned | 170.1 ± 6.6 | 19.3 ± 0.4 | 0.97 s |
+| 8 threads (naive) | 162.6 ± 8.1 | 15.5 ± 0.2 | 1.01 s |
+| 3 threads pinned to big (the CMF's heuristic) | 153.8 ± 2.8 | 19.0 ± 0.1 | 1.07 s |
+| 4 threads pinned to the A520s | 47.5 ± 0.1 | 9.6 ± 0.0 | 3.48 s |
+
+ENTITY's llama.cpp result holds on a different runtime and an Armv9 i8mm SoC: the thread count
+matters (8 threads cost 19% decode), pinning to the big cores gives the best and steadiest prefill
+(±0.6 vs ±6.6 tok/s), and the little cores are 2–4× slower.
+
+**Featurizer optimisation:** 98% of detection time was featurizing (a String + ByteArray per n-gram and a
+fresh 131 KB dense vector copied into a tensor per call). Allocation-free hashing + one reused direct
+`FloatBuffer` per model (ExecuTorch `Tensor.fromBlob(FloatBuffer)`): SMS check p50 9.4 → 5.0 ms, URL
+2.7 → 1.1 ms (same locked-phone conditions; golden parity unchanged). JVM test `fastPathEqualsReference`.
+
+**Built:** Network Guard (DNS-only VPN with per-app attribution, URL-model scoring, NXDOMAIN blocking,
+beacon / DGA-burst / DNS-tunnel detectors, LAN tripwire for scans, password guessing and ADB-worm
+probes), Link Guard, "Check with Shield" text action, real-inbox audit (counts-only export), in-app
+benchmark (parity, latency, time to first warning, Llama cold vs pre-warmed, energy), read-aloud,
+pre-warm of the system prompt via `prefillPrompt`, new dashboard UI, `beaconsim` test app (harmless
+DNS-only imitation of C2 beacons, DGA bursts and DNS exfiltration), `scripts/e2e_phone.py`,
+`scripts/lan_scan_demo.py`. Unit tests 10/10 (DNS codec, featurizer parity, fast path).
+
+**Blocked on the user:** both phones locked → the app cannot come to the foreground (Android blocks
+starting the VPN from the background: `BackgroundServiceStartNotAllowedException`). CMF battery at 1%.
 
 ### 2026-11-13 (afternoon): both detectors trained, exported and running on the phone ✅ (day 2 work, done a day early)
 

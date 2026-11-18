@@ -34,6 +34,22 @@ class FeaturizerTest {
     @Test fun smsMatchesPython() = check("sms")
     @Test fun urlMatchesPython() = check("url")
 
+    /** The allocation-free production featurizer must equal the reference one, slot for slot. */
+    @Test fun fastPathEqualsReference() {
+        val inputs = mutableListOf(
+            "Dear customer your SBI account will be blocked today. Update KYC immediately at http://sbi-kyc-update.in/verify",
+            "आपका खाता आज ब्लॉक हो जाएगा 😱 तुरंत KYC करें", "Ghar baithe kamaye Rs 5000 roz", "a", "", "  ",
+            "mixed हिंदी and English 123 🔥🔥 \t\n end", "hdfc-netbanking-verify.top",
+        )
+        for (kind in listOf("sms", "url")) golden(kind).let { g -> for (i in 0 until g.length()) inputs += g.getJSONObject(i).getString("text") }
+        for (s in inputs) {
+            val ref = Featurizer.hashed(s)
+            val (slots, vals) = Featurizer.hashedSparse(s)
+            assertEquals("order/slots: $s", ref.keys.toList(), slots.toList())
+            for (j in slots.indices) assertEquals("value: $s", ref[slots[j]]!!, vals[j], 0.0)
+        }
+    }
+
     @Test fun basics() {
         assertEquals(0x811C9DC5L, Featurizer.fnv1a32(ByteArray(0)))
         assertEquals(0xE40C292CL, Featurizer.fnv1a32("a".toByteArray()))

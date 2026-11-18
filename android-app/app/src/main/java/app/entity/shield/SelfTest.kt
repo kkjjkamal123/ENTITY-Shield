@@ -27,7 +27,8 @@ fun runSelfTest(ctx: Context): String {
         var worst = 0.0
         for (i in 0 until g.length()) {
             val row = g.getJSONObject(i)
-            val p = d.score(kind, Featurizer.vector(kind, row.getString("text"), row.getString("sender")))
+            // the production path (sparse featurizer + reused direct buffer), not the reference one
+            val p = d.scoreText(kind, row.getString("text"), row.getString("sender"))
             val diff = kotlin.math.abs(p - row.getDouble("score"))
             worst = maxOf(worst, diff)
             if (diff < 1e-4) ok++
