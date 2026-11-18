@@ -35,6 +35,10 @@ class Phone:
             raise RuntimeError(f"adb {' '.join(a)} failed: {r.stderr.strip()}")
         return r.stdout
 
+    def adb_all(self, *a, timeout=600):
+        r = subprocess.run([ADB, "-s", self.s, *a], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
+        return r.stdout + r.stderr
+
     def sh(self, cmd, timeout=120):
         return self.adb("shell", cmd, timeout=timeout)
 
@@ -83,10 +87,10 @@ def main():
     print(f"Phone: {model} ({soc}), {'LOCKED - results will be slow' if locked else 'unlocked'}")
 
     if a.install:
-        out = p.adb("install", "-r", "-g", str(APK), timeout=600)
+        out = p.adb_all("install", "-r", "-g", str(APK))
         if "INSTALL_FAILED_UPDATE_INCOMPATIBLE" in out or "signatures do not match" in out.lower():
             p.adb("uninstall", PKG)   # release build installed: switch to the debug build (history is lost)
-            out = p.adb("install", "-g", str(APK), timeout=600)
+            out = p.adb_all("install", "-g", str(APK))
         check("install", "Success" in out, out.strip().splitlines()[-1] if out.strip() else "")
     for perm in ("RECEIVE_SMS", "READ_SMS", "POST_NOTIFICATIONS"):
         p.sh(f"pm grant {PKG} android.permission.{perm}")
