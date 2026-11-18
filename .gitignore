@@ -47,3 +47,4 @@ third_party/
 # Demo video intermediates (the final demo/ENTITY-Shield-demo.mp4 is committed)
 demo/raw/
 demo/build/
+release/
