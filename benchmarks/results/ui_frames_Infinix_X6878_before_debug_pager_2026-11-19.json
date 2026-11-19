@@ -1,0 +1,29 @@
+{
+ "date": "2026-11-19",
+ "device": "Infinix X6878",
+ "label": "before_debug_pager",
+ "display": "fps=144.00002\nfps=120.00001\nfps=90.0\nfps=60.000004",
+ "taps": 30,
+ "sequence": [
+  "More",
+  "Home",
+  "Alerts",
+  "More",
+  "Network",
+  "Home",
+  "Scan",
+  "Alerts",
+  "More",
+  "Home"
+ ],
+ "frames": 1588.0,
+ "janky": 112.0,
+ "janky_pct": 7.05,
+ "p50": 22.0,
+ "p90": 34.0,
+ "p95": 53.0,
+ "p99": 117.0,
+ "slow_ui": 110.0,
+ "slow_draw": 110.0,
+ "gpu_p90": 10.0
+}

@@ -1,0 +1,33 @@
+{
+ "kind": "url",
+ "version": "2026-11-19",
+ "dim": 32768,
+ "ngrams": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "signals": [
+  "ip_host",
+  "punycode",
+  "many_subdomains",
+  "long_host",
+  "digits_in_name",
+  "many_hyphens",
+  "suspicious_tld",
+  "shortener",
+  "free_hosting",
+  "brand_not_official",
+  "lure_word"
+ ],
+ "thresholds": {
+  "scam": 0.6947,
+  "uncertain": 0.3702
+ },
+ "input": [
+  1,
+  32779
+ ],
+ "output": "P(scam) in [0,1]"
+}

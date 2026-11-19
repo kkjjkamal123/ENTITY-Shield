@@ -6,6 +6,7 @@ activityCompose = "1.13.0"
 executorch = "1.5.1"
 junit = "4.13.2"
 json = "20240303"
+profileinstaller = "1.4.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -16,6 +17,7 @@ compose-material3 = { module = "androidx.compose.material3:material3" }
 executorch = { module = "org.pytorch:executorch-android", version.ref = "executorch" }
 junit = { module = "junit:junit", version.ref = "junit" }
 json = { module = "org.json:json", version.ref = "json" }
+androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

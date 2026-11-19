@@ -13,8 +13,8 @@ android {
         applicationId = "app.entity.shield"
         minSdk = 29
         targetSdk = 36
-        versionCode = 300
-        versionName = "0.3.0"
+        versionCode = 400
+        versionName = "0.4.0"
         ndk { abiFilters += "arm64-v8a" } // Arm only; also drops the x86_64 ExecuTorch library
     }
 
@@ -36,8 +36,20 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false // ExecuTorch's JNI classes must keep their names
+            // R8: shrinks and optimizes our code and the Compose libraries; the JNI surface ExecuTorch
+            // reaches by name is kept by its consumer rules and app/proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+        }
+        // QA: release code (R8, startup profile, not debuggable) so it runs as smoothly as the real
+        // thing, signed with the debug key so it installs over a debug build without wiping data, and
+        // with the adb test hooks from src/debug. For our test phones; never published.
+        create("qa") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
         }
     }
 
@@ -50,12 +62,17 @@ android {
 
     // Detector models, metadata, allow-list and golden vectors come straight from training/.
     sourceSets.getByName("main").assets.srcDirs("build/generated/detector-assets")
-    androidResources { noCompress += listOf("pte") }
+    sourceSets.getByName("qa") {
+        java.srcDirs("src/debug/java")
+        res.srcDirs("src/debug/res")
+        manifest.srcFile("src/debug/AndroidManifest.xml")
+    }
+    androidResources { noCompress += listOf("pte", "bin") }
 }
 
 val copyDetectorAssets by tasks.registering(Copy::class) {
     val root = rootProject.projectDir.parentFile
-    from(root.resolve("models/detectors")) { include("*.pte") }
+    from(root.resolve("models/detectors")) { include("*.pte", "popular.bin", "phish.bin", "dns_lists.json") } // training/url/build_dns_lists.py
     from(root.resolve("training/sms")) { include("meta.json", "golden.json"); rename { "sms_$it" } }
     from(root.resolve("training/url")) { include("meta.json", "golden.json", "allowlist.txt"); rename { if (it == "allowlist.txt") it else "url_$it" } }
     into(layout.buildDirectory.dir("generated/detector-assets"))
@@ -69,6 +86,7 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
     implementation(libs.executorch)
+    implementation(libs.androidx.profileinstaller) // installs baseline-prof.txt on sideloaded builds too
     testImplementation(libs.junit)
     testImplementation(libs.json)
 }

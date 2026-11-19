@@ -1,0 +1,29 @@
+{
+ "date": "2026-11-19",
+ "device": "A015",
+ "label": "after_qa_tabhost",
+ "display": "fps=60.0\nfps=120.00001",
+ "taps": 30,
+ "sequence": [
+  "More",
+  "Home",
+  "Alerts",
+  "More",
+  "Network",
+  "Home",
+  "Scan",
+  "Alerts",
+  "More",
+  "Home"
+ ],
+ "frames": 3316.0,
+ "janky": 38.0,
+ "janky_pct": 1.15,
+ "p50": 12.0,
+ "p90": 26.0,
+ "p95": 48.0,
+ "p99": 65.0,
+ "slow_ui": 38.0,
+ "slow_draw": 38.0,
+ "gpu_p90": 5.0
+}

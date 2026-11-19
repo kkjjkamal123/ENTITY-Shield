@@ -1,0 +1,1881 @@
+{
+ "date": "2026-11-19",
+ "device": "A015",
+ "feed": "feed_live_2026-11-19.txt",
+ "thresholds": {
+  "scam": 0.8748,
+  "uncertain": 0.5539,
+  "dns_block": 0.99
+ },
+ "tag": "tuning",
+ "seed": 11,
+ "sets": {
+  "phishing": {
+   "summary": {
+    "n": 40,
+    "answered": 40,
+    "alive": 35,
+    "address_only": {
+     "SCAM": 24,
+     "UNCERTAIN": 3,
+     "SAFE": 8
+    },
+    "sandbox": {
+     "SCAM": 26,
+     "UNCERTAIN": 2,
+     "SAFE": 7
+    },
+    "dead_or_unreachable": {
+     "SCAM": 4,
+     "UNCERTAIN": 0,
+     "SAFE": 1
+    }
+   },
+   "rows": [
+    {
+     "url": "https://u500w-7w3-kuwy-qjb69-27-09-2026-hh.pages.dev/appeals/submit-appeal-form/return/",
+     "lex0": 0.997,
+     "final": "https://u500w-7w3-kuwy-qjb69-27-09-2026-hh.pages.dev/appeals/submit-appeal-form/return/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.997,
+     "page": 0.154,
+     "lex": 0.997,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.travel.sc/",
+     "lex0": 0.038,
+     "final": "https://www.hotel.sc/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.068,
+     "page": 0.0,
+     "lex": 0.068,
+     "signals": []
+    },
+    {
+     "url": "https://wvvw--roblox.com/charts",
+     "lex0": 0.676,
+     "final": "https://wvvw--roblox.com/charts",
+     "hops": 1,
+     "error": null,
+     "band": "UNCERTAIN",
+     "score": 0.689,
+     "page": 0.689,
+     "lex": 0.676,
+     "signals": [
+      "brand_mention_offdomain",
+      "hidden_iframe",
+      "lookalike_domain",
+      "imitates:roblox",
+      "new_certificate"
+     ]
+    },
+    {
+     "url": "https://vormuni-mpt-felqaro-p4h9me72.pages.dev/",
+     "lex0": 1.0,
+     "final": "https://vormuni-mpt-felqaro-p4h9me72.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 1.0,
+     "page": 0.221,
+     "lex": 1.0,
+     "signals": [
+      "free_host",
+      "new_certificate",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://decameronlosdelfines.hoteltodoincluido.org/.",
+     "lex0": 0.019,
+     "final": "https://decameronlosdelfines.hoteltodoincluido.org/.",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.019,
+     "page": 0.0,
+     "lex": 0.019,
+     "signals": []
+    },
+    {
+     "url": "https://decameronbaru.hoteltodoincluido.org/.",
+     "lex0": 0.093,
+     "final": "https://decameronbaru.hoteltodoincluido.org/.",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.093,
+     "page": 0.0,
+     "lex": 0.093,
+     "signals": []
+    },
+    {
+     "url": "http://sp25ct11-kavzuni-biz-rumvoro.pages.dev/",
+     "lex0": 0.967,
+     "final": "http://sp25ct11-kavzuni-biz-rumvoro.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.967,
+     "page": 0.154,
+     "lex": 0.967,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "http://marzelo-mpt-qavfeni-h4d7me82.pages.dev/",
+     "lex0": 0.997,
+     "final": "http://marzelo-mpt-qavfeni-h4d7me82.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.997,
+     "page": 0.154,
+     "lex": 0.997,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://decameronloscocos.hoteltodoincluido.org/.",
+     "lex0": 0.248,
+     "final": "https://decameronloscocos.hoteltodoincluido.org/.",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.248,
+     "page": 0.0,
+     "lex": 0.248,
+     "signals": []
+    },
+    {
+     "url": "https://sp28ct5-dulzari-biz-kavmoro.pages.dev/",
+     "lex0": 0.999,
+     "final": "https://sp28ct5-dulzari-biz-kavmoro.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.999,
+     "page": 0.221,
+     "lex": 0.999,
+     "signals": [
+      "free_host",
+      "new_certificate",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://dgspfc.eventzones.de/",
+     "lex0": 0.043,
+     "final": "https://mobilelegends.com/",
+     "hops": 2,
+     "error": "timeout",
+     "band": "SAFE",
+     "score": 0.341,
+     "page": 0.341,
+     "lex": 0.283,
+     "signals": [
+      "password_field",
+      "otp_field",
+      "js_redirect",
+      "login_text",
+      "scam_words_with_form"
+     ]
+    },
+    {
+     "url": "http://zptvn82-5m8w2xq-7j4d3g-rk9671.pages.dev/",
+     "lex0": 0.999,
+     "final": "http://zptvn82-5m8w2xq-7j4d3g-rk9671.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.999,
+     "page": 0.154,
+     "lex": 0.999,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "http://0528173946-kx9m2q-7v1p.pages.dev/",
+     "lex0": 0.999,
+     "final": "http://0528173946-kx9m2q-7v1p.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.999,
+     "page": 0.154,
+     "lex": 0.999,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "http://sp28ct5-nuvzaro-biz-dorkelo.pages.dev/",
+     "lex0": 0.997,
+     "final": "http://sp28ct5-nuvzaro-biz-dorkelo.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.997,
+     "page": 0.154,
+     "lex": 0.997,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://nmxqv731-4p8w2zt-6j3d9g-rk52g3.pages.dev/",
+     "lex0": 0.997,
+     "final": "https://nmxqv731-4p8w2zt-6j3d9g-rk52g3.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.997,
+     "page": 0.221,
+     "lex": 0.997,
+     "signals": [
+      "free_host",
+      "new_certificate",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://adobe.subscribenet.com/control/adbe/index/",
+     "lex0": 0.484,
+     "final": "https://adobe.subscribenet.com/control/adbe/login?nextURL=%2Fcontrol%2Fadbe%2F",
+     "hops": 2,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.976,
+     "page": 0.976,
+     "lex": 0.484,
+     "signals": [
+      "password_field",
+      "brand_impersonation",
+      "login_text",
+      "lookalike_domain",
+      "imitates:adobe"
+     ]
+    },
+    {
+     "url": "https://www.shopeejkt137.blogspot.com/",
+     "lex0": 0.999,
+     "final": "https://www.shopeejkt137.blogspot.com/",
+     "hops": 1,
+     "error": "tls_invalid",
+     "band": "SCAM",
+     "score": 0.999,
+     "page": 0.35,
+     "lex": 0.999,
+     "signals": [
+      "tls_invalid"
+     ]
+    },
+    {
+     "url": "http://bart2-fhr-6c78-8q4ad-19-09-2026-hh.pages.dev/",
+     "lex0": 0.999,
+     "final": "http://bart2-fhr-6c78-8q4ad-19-09-2026-hh.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.999,
+     "page": 0.154,
+     "lex": 0.999,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://bradescoempresa.urlx.online/",
+     "lex0": 0.985,
+     "final": "https://bradescoempresa.urlx.online/",
+     "hops": 1,
+     "error": "dns",
+     "band": "SCAM",
+     "score": 0.985,
+     "page": 0.0,
+     "lex": 0.985,
+     "signals": []
+    },
+    {
+     "url": "http://sp25ct11-kormelo-biz-nuvzavi.pages.dev/",
+     "lex0": 0.997,
+     "final": "http://sp25ct11-kormelo-biz-nuvzavi.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.997,
+     "page": 0.154,
+     "lex": 0.997,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://dfv.pages.dev/%5C%5C%5C%22https:%5C/%5C/t.myvisualiq.net%5C/impression_pixel?r=739915162&et=i&ago=212&ao=546&aca=26620495&si=4449639&ci=-7&pi=316681543&ad=-7&advt=4470647&chnl=-7&vndr=115&sz=6696&u=%5BCustom_Data%5D&pt=i%5C%5C%5C%22",
+     "lex0": 0.998,
+     "final": "https://u002f/u002Flogin.yahoo.com/u002Faccount/u002Fchallenge/u002Fpassword?pspid=159600001&activity=mail-direct&.lang=en-US&.intl=us&src=ym&display=login",
+     "hops": 2,
+     "error": "dns",
+     "band": "SCAM",
+     "score": 0.998,
+     "page": 0.958,
+     "lex": 0.998,
+     "signals": [
+      "free_host",
+      "password_field",
+      "form_offsite",
+      "js_redirect",
+      "hidden_iframe",
+      "login_text",
+      "secret_offsite"
+     ]
+    },
+    {
+     "url": "https://roblox.ly/communities/5986397121/timebomb-duels-script",
+     "lex0": 0.929,
+     "final": "https://roblox.ly/login?returnUrl=1228066889861711",
+     "hops": 2,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.929,
+     "page": 0.689,
+     "lex": 0.929,
+     "signals": [
+      "brand_mention_offdomain",
+      "js_redirect",
+      "hidden_iframe",
+      "lookalike_domain",
+      "imitates:roblox"
+     ]
+    },
+    {
+     "url": "https://auth.re/E.0zwzVx5eU3tZvXEbyw?/=userid&messageid=YWZhNDM0c2RqZjk4MjNmb2lkc2pmKC9DODk4RnNhOShGLyhBU0ZzdWlhaGRma2FzZDIoLw==",
+     "lex0": 0.08,
+     "final": "https://auth.re/E.0zwzVx5eU3tZvXEbyw?/=userid",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.945,
+     "page": 0.945,
+     "lex": 0.08,
+     "signals": [
+      "password_field",
+      "brand_impersonation",
+      "brand_mention_offdomain",
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://robiox.com.py/users/478876432166/profile",
+     "lex0": 0.963,
+     "final": "https://robiox.com.py/users/478876432166/profile",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.963,
+     "page": 0.689,
+     "lex": 0.963,
+     "signals": [
+      "brand_mention_offdomain",
+      "hidden_iframe",
+      "lookalike_domain",
+      "imitates:roblox",
+      "new_certificate"
+     ]
+    },
+    {
+     "url": "http://imtooenne.com/en.html",
+     "lex0": 0.333,
+     "final": "http://imtooenne.com/en.html",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.333,
+     "page": 0.08,
+     "lex": 0.333,
+     "signals": [
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://wvvw--roblox.com/login?returnUrl=193063391",
+     "lex0": 0.676,
+     "final": "https://www.roblox.com/Login",
+     "hops": 3,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.689,
+     "lex": 0.0,
+     "signals": [
+      "hidden_iframe",
+      "login_text",
+      "js_redirect",
+      "lookalike_domain",
+      "imitates:roblox"
+     ]
+    },
+    {
+     "url": "https://sp28ct5-melvani-biz-korduno.pages.dev/",
+     "lex0": 0.984,
+     "final": "https://sp28ct5-melvani-biz-korduno.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.984,
+     "page": 0.221,
+     "lex": 0.984,
+     "signals": [
+      "free_host",
+      "new_certificate",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "http://lucky-hill-7513.nelly-33d.workers.dev/common/oauth2/v2.0/authorize?client_id=4765445b-32c6-49b0-83e6-1d93765276ca",
+     "lex0": 0.962,
+     "final": "http://lucky-hill-7513.nelly-33d.workers.dev/error.aspx?err=504",
+     "hops": 2,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.962,
+     "page": 0.221,
+     "lex": 0.962,
+     "signals": [
+      "free_host",
+      "js_redirect",
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "http://help-io-trezo-start-cdn.typedream.app/",
+     "lex0": 0.969,
+     "final": "http://help-io-trezo-start-cdn.typedream.app/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.969,
+     "page": 0.632,
+     "lex": 0.969,
+     "signals": [
+      "lookalike_domain",
+      "imitates:trezor",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "http://sp28ct5-kavmelo-biz-zurnaki.pages.dev/",
+     "lex0": 0.997,
+     "final": "http://sp28ct5-kavmelo-biz-zurnaki.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.997,
+     "page": 0.154,
+     "lex": 0.997,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "http://myblokfil0giinz.webflow.io/",
+     "lex0": 1.0,
+     "final": "https://myblokfil0giinz.webflow.io/",
+     "hops": 2,
+     "error": null,
+     "band": "SCAM",
+     "score": 1.0,
+     "page": 0.154,
+     "lex": 1.0,
+     "signals": [
+      "free_host",
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "http://1282-5288366075-n38-fdo7m-hj0mtzona.pages.dev/",
+     "lex0": 1.0,
+     "final": "http://1282-5288366075-n38-fdo7m-hj0mtzona.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 1.0,
+     "page": 0.154,
+     "lex": 1.0,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://wzptx84-7m2k5zn-9j4d3g-rv16.pages.dev/",
+     "lex0": 0.997,
+     "final": "https://wzptx84-7m2k5zn-9j4d3g-rv16.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.997,
+     "page": 0.221,
+     "lex": 0.997,
+     "signals": [
+      "free_host",
+      "new_certificate",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.undian-hadiahshopee33.blogspot.com/",
+     "lex0": 1.0,
+     "final": "https://www.undian-hadiahshopee33.blogspot.com/",
+     "hops": 1,
+     "error": "tls_invalid",
+     "band": "SCAM",
+     "score": 1.0,
+     "page": 0.35,
+     "lex": 1.0,
+     "signals": [
+      "tls_invalid"
+     ]
+    },
+    {
+     "url": "https://3v8m1q6-72940518-xp2n9k-z4.pages.dev/",
+     "lex0": 1.0,
+     "final": "https://3v8m1q6-72940518-xp2n9k-z4.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 1.0,
+     "page": 0.221,
+     "lex": 1.0,
+     "signals": [
+      "free_host",
+      "new_certificate",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://afc-benton-fert253498.pages.dev/help/contact/514620572169335appeals/submit-appeal-form/returnappeals/submit-appeal-form/return",
+     "lex0": 0.999,
+     "final": "https://afc-benton-fert253498.pages.dev/help/contact/514620572169335appeals/submit-appeal-form/returnappeals/submit-appeal-form/return",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.999,
+     "page": 0.154,
+     "lex": 0.999,
+     "signals": [
+      "free_host",
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://sp28ct5-kavzelo-biz-rundari.pages.dev/",
+     "lex0": 0.999,
+     "final": "https://sp28ct5-kavzelo-biz-rundari.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 0.999,
+     "page": 0.221,
+     "lex": 0.999,
+     "signals": [
+      "free_host",
+      "new_certificate",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://zonacanje.click/bac.pa",
+     "lex0": 0.256,
+     "final": "https://zonacanje.click/bac.pa",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.256,
+     "page": 0.154,
+     "lex": 0.256,
+     "signals": [
+      "cloaked_empty",
+      "new_certificate"
+     ]
+    },
+    {
+     "url": "http://adobe.aneeshagroup.com/auth/creativecloud/adobe/campaign/BggAEEUYOTIJCAEQABgKGIAEMg4IAh/",
+     "lex0": 0.621,
+     "final": "http://adobe.aneeshagroup.com/auth/creativecloud/adobe/campaign/BggAEEUYOTIJCAEQABgKGIAEMg4IAh/",
+     "hops": 1,
+     "error": null,
+     "band": "UNCERTAIN",
+     "score": 0.632,
+     "page": 0.632,
+     "lex": 0.621,
+     "signals": [
+      "lookalike_domain",
+      "imitates:adobe",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "http://n4x7q2m-93058164-vk6p1z-85.pages.dev/",
+     "lex0": 1.0,
+     "final": "http://n4x7q2m-93058164-vk6p1z-85.pages.dev/",
+     "hops": 1,
+     "error": null,
+     "band": "SCAM",
+     "score": 1.0,
+     "page": 0.154,
+     "lex": 1.0,
+     "signals": [
+      "free_host",
+      "scam_words"
+     ]
+    }
+   ]
+  },
+  "brands": {
+   "summary": {
+    "n": 40,
+    "answered": 40,
+    "alive": 39,
+    "address_only": {
+     "SCAM": 0,
+     "UNCERTAIN": 0,
+     "SAFE": 39
+    },
+    "sandbox": {
+     "SCAM": 0,
+     "UNCERTAIN": 1,
+     "SAFE": 38
+    },
+    "dead_or_unreachable": {
+     "SCAM": 0,
+     "UNCERTAIN": 0,
+     "SAFE": 1
+    }
+   },
+   "rows": [
+    {
+     "url": "https://www.onlinesbi.sbi/",
+     "lex0": 0.0,
+     "final": "https://onlinesbi.sbi.bank.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.hdfcbank.com/",
+     "lex0": 0.0,
+     "final": "https://www.hdfc.bank.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "reward_text",
+      "kyc_text",
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://www.icicibank.com/",
+     "lex0": 0.0,
+     "final": "https://www.icici.bank.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.axisbank.com/",
+     "lex0": 0.0,
+     "final": "https://www.axis.bank.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.284,
+     "lex": 0.0,
+     "signals": [
+      "reward_text",
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.kotak.com/",
+     "lex0": 0.0,
+     "final": "https://www.kotak.bank.in/en/home.html",
+     "hops": 4,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "reward_text",
+      "kyc_text",
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://www.pnbindia.in/",
+     "lex0": 0.0,
+     "final": "https://pnb.bank.in/search.aspx?SrStr=",
+     "hops": 3,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.284,
+     "lex": 0.0,
+     "signals": [
+      "js_redirect",
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://paytm.com/",
+     "lex0": 0.0,
+     "final": "https://paytm.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.284,
+     "lex": 0.0,
+     "signals": [
+      "urgency_text",
+      "reward_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.phonepe.com/",
+     "lex0": 0.0,
+     "final": "https://www.phonepe.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "reward_text"
+     ]
+    },
+    {
+     "url": "https://pay.google.com/",
+     "lex0": 0.0,
+     "final": "https://accounts.google.com/v3/signin/identifier?continue=https://wallet.google.com/wallet?p%3Dpgc%26utm_source%3Dpgc%26utm_medium%3Dwebsite%26utm_campaign%3Dredirect&followup=https://wallet.google.com/wallet?p%3Dpgc%26utm_source%3Dpgc%26utm_medium%3Dwebsite%26utm_campaign%3Dredirect&osid=1&passive=1209600&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S1426089242:1795077725360048",
+     "hops": 4,
+     "error": null,
+     "band": "UNCERTAIN",
+     "score": 0.788,
+     "page": 0.08,
+     "lex": 0.788,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.irctc.co.in/",
+     "lex0": 0.0,
+     "final": "https://www.irctc.co.in/nget/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty",
+      "meta_refresh"
+     ]
+    },
+    {
+     "url": "https://www.indiapost.gov.in/",
+     "lex0": 0.0,
+     "final": "https://www.indiapost.gov.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.0,
+     "signals": [
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.amazon.in/",
+     "lex0": 0.0,
+     "final": "https://www.amazon.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.flipkart.com/",
+     "lex0": 0.0,
+     "final": "https://www.flipkart.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "reward_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://uidai.gov.in/",
+     "lex0": 0.0,
+     "final": "https://uidai.gov.in/en",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.incometax.gov.in/",
+     "lex0": 0.0,
+     "final": "https://www.incometax.gov.in/iec/foportal/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.epfindia.gov.in/",
+     "lex0": 0.0,
+     "final": "https://www.epfo.gov.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.661,
+     "lex": 0.0,
+     "signals": [
+      "kyc_text",
+      "login_text",
+      "lookalike_domain",
+      "imitates:epfo"
+     ]
+    },
+    {
+     "url": "https://www.npci.org.in/",
+     "lex0": 0.0,
+     "final": "https://www.npci.org.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.jio.com/",
+     "lex0": 0.0,
+     "final": "https://www.jio.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.airtel.in/",
+     "lex0": 0.0,
+     "final": "https://www.airtel.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://cybercrime.gov.in/",
+     "lex0": 0.018,
+     "final": "https://cybercrime.gov.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.myntra.com/",
+     "lex0": 0.0,
+     "final": "https://www.myntra.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.swiggy.com/",
+     "lex0": 0.0,
+     "final": "https://www.swiggy.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.zomato.com/",
+     "lex0": 0.0,
+     "final": "https://www.zomato.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.bigbasket.com/",
+     "lex0": 0.0,
+     "final": "https://www.bigbasket.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.nykaa.com/",
+     "lex0": 0.0,
+     "final": "https://www.nykaa.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.0,
+     "signals": [
+      "reward_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.makemytrip.com/",
+     "lex0": 0.0,
+     "final": "https://www.makemytrip.com/",
+     "hops": 1,
+     "error": "timeout",
+     "band": "SAFE",
+     "score": 0.0,
+     "page": 0.0,
+     "lex": 0.0,
+     "signals": []
+    },
+    {
+     "url": "https://zerodha.com/",
+     "lex0": 0.256,
+     "final": "https://zerodha.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.256,
+     "page": 0.154,
+     "lex": 0.256,
+     "signals": [
+      "kyc_text",
+      "new_certificate"
+     ]
+    },
+    {
+     "url": "https://groww.in/",
+     "lex0": 0.0,
+     "final": "https://groww.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.284,
+     "lex": 0.0,
+     "signals": [
+      "js_redirect",
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.policybazaar.com/",
+     "lex0": 0.158,
+     "final": "https://www.policybazaar.com/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.158,
+     "page": 0.154,
+     "lex": 0.158,
+     "signals": [
+      "js_redirect",
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://in.bookmyshow.com/",
+     "lex0": 0.0,
+     "final": "https://in.bookmyshow.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.thehindu.com/",
+     "lex0": 0.0,
+     "final": "https://www.thehindu.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.0,
+     "signals": [
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://indianexpress.com/",
+     "lex0": 0.0,
+     "final": "https://indianexpress.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.402,
+     "lex": 0.0,
+     "signals": [
+      "obfuscated_js",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.ndtv.com/",
+     "lex0": 0.0,
+     "final": "https://www.ndtv.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.0,
+     "signals": [
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.cricbuzz.com/",
+     "lex0": 0.0,
+     "final": "https://www.cricbuzz.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.naukri.com/",
+     "lex0": 0.0,
+     "final": "https://www.naukri.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.0,
+     "page": 0.0,
+     "lex": 0.0,
+     "signals": []
+    },
+    {
+     "url": "https://www.olx.in/",
+     "lex0": 0.0,
+     "final": "https://www.olx.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.meesho.com/",
+     "lex0": 0.0,
+     "final": "https://www.meesho.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://www.ajio.com/",
+     "lex0": 0.0,
+     "final": "https://www.ajio.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://licindia.in/",
+     "lex0": 0.164,
+     "final": "https://licindia.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.341,
+     "page": 0.341,
+     "lex": 0.164,
+     "signals": [
+      "js_redirect",
+      "anti_inspection",
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://www.sbicard.com/",
+     "lex0": 0.0,
+     "final": "https://www.sbicard.com/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.284,
+     "lex": 0.0,
+     "signals": [
+      "reward_text",
+      "kyc_text",
+      "login_text",
+      "scam_words"
+     ]
+    }
+   ]
+  },
+  "longtail": {
+   "summary": {
+    "n": 40,
+    "answered": 40,
+    "alive": 32,
+    "address_only": {
+     "SCAM": 0,
+     "UNCERTAIN": 2,
+     "SAFE": 30
+    },
+    "sandbox": {
+     "SCAM": 0,
+     "UNCERTAIN": 3,
+     "SAFE": 29
+    },
+    "dead_or_unreachable": {
+     "SCAM": 0,
+     "UNCERTAIN": 1,
+     "SAFE": 7
+    }
+   },
+   "rows": [
+    {
+     "url": "https://legalentityidentifier.in/",
+     "lex0": 0.14,
+     "final": "https://www.legalentityidentifier.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.14,
+     "signals": [
+      "urgency_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://uidai.net.in/",
+     "lex0": 0.014,
+     "final": "https://uidai.net.in/",
+     "hops": 1,
+     "error": "dns",
+     "band": "UNCERTAIN",
+     "score": 0.6,
+     "page": 0.6,
+     "lex": 0.014,
+     "signals": [
+      "lookalike_domain",
+      "imitates:uidai"
+     ]
+    },
+    {
+     "url": "https://famapp.in/",
+     "lex0": 0.02,
+     "final": "https://www.famapp.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.02,
+     "signals": [
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://samajaepaper.in/",
+     "lex0": 0.624,
+     "final": "https://m.samajaepaper.in/",
+     "hops": 2,
+     "error": null,
+     "band": "UNCERTAIN",
+     "score": 0.809,
+     "page": 0.154,
+     "lex": 0.809,
+     "signals": [
+      "js_redirect",
+      "new_certificate"
+     ]
+    },
+    {
+     "url": "https://isbn.gov.in/",
+     "lex0": 0.003,
+     "final": "https://isbn.gov.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://isical.ac.in/",
+     "lex0": 0.012,
+     "final": "https://isical.ac.in/",
+     "hops": 1,
+     "error": "dns",
+     "band": "SAFE",
+     "score": 0.0,
+     "page": 0.0,
+     "lex": 0.0,
+     "signals": []
+    },
+    {
+     "url": "https://vogue.in/",
+     "lex0": 0.081,
+     "final": "https://www.vogue.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.135,
+     "page": 0.0,
+     "lex": 0.135,
+     "signals": []
+    },
+    {
+     "url": "https://reliance.in/",
+     "lex0": 0.04,
+     "final": "https://reliance.in/",
+     "hops": 1,
+     "error": "tls_invalid",
+     "band": "SAFE",
+     "score": 0.35,
+     "page": 0.35,
+     "lex": 0.04,
+     "signals": [
+      "tls_invalid"
+     ]
+    },
+    {
+     "url": "https://aicte.gov.in/",
+     "lex0": 0.001,
+     "final": "https://aicte.gov.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://homecentre.in/",
+     "lex0": 0.023,
+     "final": "https://www.homecentre.in/in/en/",
+     "hops": 3,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.026,
+     "page": 0.0,
+     "lex": 0.026,
+     "signals": []
+    },
+    {
+     "url": "https://indianjob24h.in/",
+     "lex0": 0.53,
+     "final": "https://indianjob24h.in/",
+     "hops": 1,
+     "error": null,
+     "band": "UNCERTAIN",
+     "score": 0.53,
+     "page": 0.221,
+     "lex": 0.53,
+     "signals": [
+      "urgency_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://incredibleindia.gov.in/",
+     "lex0": 0.102,
+     "final": "https://www.incredibleindia.gov.in/en",
+     "hops": 4,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://lucky-star.co.in/",
+     "lex0": 0.016,
+     "final": "https://r1wmlge.com/casino/list?open=register&p=rd8i",
+     "hops": 3,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.402,
+     "page": 0.402,
+     "lex": 0.044,
+     "signals": [
+      "cloaked_empty",
+      "cross_site_redirects"
+     ]
+    },
+    {
+     "url": "https://novaco.in/",
+     "lex0": 0.003,
+     "final": "https://novaco.in/",
+     "hops": 1,
+     "error": "timeout",
+     "band": "SAFE",
+     "score": 0.003,
+     "page": 0.0,
+     "lex": 0.003,
+     "signals": []
+    },
+    {
+     "url": "https://equal.in/",
+     "lex0": 0.013,
+     "final": "https://equal.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.013,
+     "page": 0.0,
+     "lex": 0.013,
+     "signals": []
+    },
+    {
+     "url": "https://lite-host.in/",
+     "lex0": 0.568,
+     "final": "https://lite.llc/",
+     "hops": 2,
+     "error": null,
+     "band": "UNCERTAIN",
+     "score": 0.6,
+     "page": 0.6,
+     "lex": 0.568,
+     "signals": [
+      "lookalike_domain",
+      "imitates:lic"
+     ]
+    },
+    {
+     "url": "https://27-tataidc.co.in/",
+     "lex0": 0.005,
+     "final": "https://27-tataidc.co.in/",
+     "hops": 1,
+     "error": "tls_invalid",
+     "band": "SAFE",
+     "score": 0.35,
+     "page": 0.35,
+     "lex": 0.005,
+     "signals": [
+      "tls_invalid"
+     ]
+    },
+    {
+     "url": "https://scroll.in/",
+     "lex0": 0.015,
+     "final": "https://scroll.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.015,
+     "signals": [
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://kingsbazaar.in/",
+     "lex0": 0.122,
+     "final": "https://kingsbazaar.in/Ecommerce/Default.aspx",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.284,
+     "page": 0.284,
+     "lex": 0.122,
+     "signals": [
+      "page_links_apk",
+      "login_text",
+      "js_redirect",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://iinstapro.com.in/",
+     "lex0": 0.108,
+     "final": "https://iinstapro.com.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.284,
+     "page": 0.284,
+     "lex": 0.108,
+     "signals": [
+      "brand_mention_offdomain",
+      "urgency_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://nakkheeran.in/",
+     "lex0": 0.396,
+     "final": "https://www.nakkheeran.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.396,
+     "page": 0.0,
+     "lex": 0.396,
+     "signals": []
+    },
+    {
+     "url": "https://wealthmagic.in/",
+     "lex0": 0.045,
+     "final": "https://wealthmagic.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.045,
+     "signals": [
+      "kyc_text",
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://dgmhup.in/",
+     "lex0": 0.103,
+     "final": "https://dgmh.up.gov.in/en/Search?q=",
+     "hops": 3,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.221,
+     "lex": 0.0,
+     "signals": [
+      "js_redirect",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://rgu.ac.in/",
+     "lex0": 0.026,
+     "final": "https://rgu.ac.in/header",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "error_page",
+      "js_redirect"
+     ]
+    },
+    {
+     "url": "https://equifax.co.in/",
+     "lex0": 0.06,
+     "final": "https://www.equifax.co.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.06,
+     "signals": [
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://kalkine.co.in/",
+     "lex0": 0.035,
+     "final": "https://www.kalkine.co.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.284,
+     "page": 0.284,
+     "lex": 0.035,
+     "signals": [
+      "otp_field",
+      "login_text",
+      "new_certificate",
+      "scam_words_with_form"
+     ]
+    },
+    {
+     "url": "https://antiragging.in/",
+     "lex0": 0.144,
+     "final": "https://antiragging.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.144,
+     "signals": [
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://hamleys.in/",
+     "lex0": 0.019,
+     "final": "https://hamleys.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.019,
+     "signals": [
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://macrospace.in/",
+     "lex0": 0.209,
+     "final": "https://macrospace.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.209,
+     "page": 0.154,
+     "lex": 0.209,
+     "signals": [
+      "cloaked_empty",
+      "new_certificate"
+     ]
+    },
+    {
+     "url": "https://dakkarmayogi.gov.in/",
+     "lex0": 0.023,
+     "final": "https://dakkarmayogi.gov.in/doptrg/",
+     "hops": 3,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.2,
+     "page": 0.637,
+     "lex": 0.0,
+     "signals": [
+      "password_field",
+      "otp_field",
+      "js_redirect",
+      "obfuscated_js",
+      "anti_inspection",
+      "urgency_text",
+      "login_text",
+      "scam_words_with_form"
+     ]
+    },
+    {
+     "url": "https://scertpet.co.in/",
+     "lex0": 0.236,
+     "final": "https://scertpet.co.in/home",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.236,
+     "page": 0.221,
+     "lex": 0.236,
+     "signals": [
+      "page_links_apk",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://iobnet.co.in/",
+     "lex0": 0.054,
+     "final": "https://iobnet.co.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.054,
+     "page": 0.0,
+     "lex": 0.054,
+     "signals": []
+    },
+    {
+     "url": "https://1kosmos.in/",
+     "lex0": 0.274,
+     "final": "https://1kosmos.in/",
+     "hops": 1,
+     "error": "dns",
+     "band": "SAFE",
+     "score": 0.274,
+     "page": 0.0,
+     "lex": 0.274,
+     "signals": []
+    },
+    {
+     "url": "https://taxguru.in/",
+     "lex0": 0.033,
+     "final": "https://taxguru.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.284,
+     "page": 0.284,
+     "lex": 0.033,
+     "signals": [
+      "form_offsite",
+      "urgency_text",
+      "login_text",
+      "scam_words"
+     ]
+    },
+    {
+     "url": "https://navi-sa.in/",
+     "lex0": 0.064,
+     "final": "https://navi-sa.in/",
+     "hops": 1,
+     "error": "dns",
+     "band": "SAFE",
+     "score": 0.064,
+     "page": 0.0,
+     "lex": 0.064,
+     "signals": []
+    },
+    {
+     "url": "https://1cent.in/",
+     "lex0": 0.009,
+     "final": "https://1cent.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.009,
+     "signals": [
+      "password_field"
+     ]
+    },
+    {
+     "url": "https://niconline.co.in/",
+     "lex0": 0.006,
+     "final": "https://niconline.co.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.154,
+     "page": 0.154,
+     "lex": 0.006,
+     "signals": [
+      "urgency_text",
+      "login_text"
+     ]
+    },
+    {
+     "url": "https://ccsuniversity.ac.in/",
+     "lex0": 0.009,
+     "final": "https://www.ccsuniversity.ac.in/",
+     "hops": 2,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "cloaked_empty"
+     ]
+    },
+    {
+     "url": "https://zohohost.in/",
+     "lex0": 0.358,
+     "final": "https://zohohost.in/",
+     "hops": 1,
+     "error": "dns",
+     "band": "SAFE",
+     "score": 0.358,
+     "page": 0.0,
+     "lex": 0.358,
+     "signals": []
+    },
+    {
+     "url": "https://dgma.gov.in/",
+     "lex0": 0.009,
+     "final": "https://dgma.gov.in/",
+     "hops": 1,
+     "error": null,
+     "band": "SAFE",
+     "score": 0.08,
+     "page": 0.08,
+     "lex": 0.0,
+     "signals": [
+      "urgency_text"
+     ]
+    }
+   ]
+  }
+ }
+}

@@ -19,15 +19,17 @@
   "shortener",
   "free_hosting",
   "brand_not_official",
-  "lure_word"
+  "lure_word",
+  "brand_lure"
  ],
  "thresholds": {
-  "scam": 0.6947,
-  "uncertain": 0.3702
+  "scam": 0.8748,
+  "uncertain": 0.5539,
+  "dns_block": 0.99
  },
  "input": [
   1,
-  32779
+  32780
  ],
  "output": "P(scam) in [0,1]"
 }

@@ -49,7 +49,7 @@ def hashed(s: str) -> dict:
 
 BRANDS = {  # brand token -> official registrable domains
     "sbi": ["sbi.co.in", "onlinesbi.sbi", "sbi.bank.in", "sbicard.com", "yonosbi.sbi"],
-    "hdfc": ["hdfcbank.com", "hdfc.com", "hdfcbank.bank.in"],
+    "hdfc": ["hdfcbank.com", "hdfc.com", "hdfcbank.bank.in", "hdfc.bank.in"],
     "icici": ["icicibank.com", "icici.bank.in"],
     "axis": ["axisbank.com", "axis.bank.in"],
     "kotak": ["kotak.com", "kotak.bank.in"],
@@ -98,6 +98,7 @@ LURE_WORDS = ("login", "verify", "secure", "update", "kyc", "account", "support"
 URL_SIGNALS = [
     "ip_host", "punycode", "many_subdomains", "long_host", "digits_in_name", "many_hyphens",
     "suspicious_tld", "shortener", "free_hosting", "brand_not_official", "lure_word",
+    "brand_lure",  # v3 (2026-11-19): brand as its own word + a lure word, cheap TLD or free host
 ]
 
 
@@ -136,7 +137,23 @@ def url_signals(host: str) -> list:
         1 if any(host == f or host.endswith("." + f) for f in FREE_HOSTS) else 0,
         1 if brand_hit and not on_official else 0,
         1 if any(w in name or w in reg.split(".")[0] for w in LURE_WORDS) else 0,
+        1 if brand_lure(host, labels, on_official) else 0,
     ]
+
+
+def brand_lure(host: str, labels: list, on_official: bool) -> bool:
+    """A brand written as its own word (sbi-kyc, hdfcbank-login, secure-paypal) on a domain the brand does
+    not own, together with a lure word, a cheap TLD or a free host. Sharper than brand_not_official,
+    which also fires on 'axis' inside 'taxis' and is common in real DNS names."""
+    if on_official:
+        return False
+    toks = re.split(r"[.-]", host)
+    body = re.split(r"[.-]", ".".join(labels[:-1]))
+    if not any(t == b or t.startswith(b) or t.endswith(b) for t in toks for b in BRANDS if t):
+        return False
+    lure = any(w in t for t in body for w in LURE_WORDS)
+    free = any(host == f or host.endswith("." + f) for f in FREE_HOSTS)
+    return lure or labels[-1] in BAD_TLDS or free
 
 def allowlisted(host: str, allow: set) -> bool:
     """Known-good registrable domain -> skip the model. Never for free-hosting platforms, where anyone owns a subdomain."""

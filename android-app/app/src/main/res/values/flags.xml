@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- true only in debug and QA builds (src/debug/res): test hooks such as showing above the lock screen -->
+    <bool name="e2e_hooks">false</bool>
+</resources>

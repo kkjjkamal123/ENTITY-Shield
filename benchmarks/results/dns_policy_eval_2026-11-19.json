@@ -1,0 +1,142 @@
+{
+ "thresholds": {
+  "v1_scam": 0.6947,
+  "v2_scam": 0.8748,
+  "v2_dns_block": 0.99
+ },
+ "note": "popularity list simulated as Tranco top 500k; legit sets are outside it or held out",
+ "sizes": {
+  "tranco_longtail_with_prefixes": 20000,
+  "umbrella_heldout_600k_1m": 17290,
+  "phishtank_test": 3393,
+  "openphish_heldout": 297
+ },
+ "rates": {
+  "tranco_longtail_with_prefixes": {
+   "v1_shipped": {
+    "BLOCK": 0.2149,
+    "FLAG": 0.0,
+    "ALLOW": 0.7852
+   },
+   "v2_model_only": {
+    "BLOCK": 0.0004,
+    "FLAG": 0.0126,
+    "ALLOW": 0.987
+   },
+   "v2_model_and_red_flag": {
+    "BLOCK": 0.0001,
+    "FLAG": 0.0129,
+    "ALLOW": 0.987
+   }
+  },
+  "umbrella_heldout_600k_1m": {
+   "v1_shipped": {
+    "BLOCK": 0.105,
+    "FLAG": 0.0,
+    "ALLOW": 0.895
+   },
+   "v2_model_only": {
+    "BLOCK": 0.0012,
+    "FLAG": 0.0023,
+    "ALLOW": 0.9966
+   },
+   "v2_model_and_red_flag": {
+    "BLOCK": 0.0,
+    "FLAG": 0.0034,
+    "ALLOW": 0.9966
+   }
+  },
+  "phishtank_test": {
+   "v1_shipped": {
+    "BLOCK": 0.6543,
+    "FLAG": 0.0,
+    "ALLOW": 0.3457
+   },
+   "v2_model_only": {
+    "BLOCK": 0.3333,
+    "FLAG": 0.1356,
+    "ALLOW": 0.5311
+   },
+   "v2_model_and_red_flag": {
+    "BLOCK": 0.0424,
+    "FLAG": 0.4265,
+    "ALLOW": 0.5311
+   }
+  },
+  "openphish_heldout": {
+   "v1_shipped": {
+    "BLOCK": 0.9327,
+    "FLAG": 0.0,
+    "ALLOW": 0.0673
+   },
+   "v2_model_only": {
+    "BLOCK": 0.8687,
+    "FLAG": 0.0303,
+    "ALLOW": 0.101
+   },
+   "v2_model_and_red_flag": {
+    "BLOCK": 0.0337,
+    "FLAG": 0.8653,
+    "ALLOW": 0.101
+   }
+  }
+ },
+ "examples_blocked_legit": {
+  "tranco_longtail_with_prefixes/v1_shipped": [
+   "api.arrowdash.life",
+   "events.zlstar.sbs",
+   "mail.mena.nl",
+   "mail.chickenroads.mx",
+   "v2.api.morzsajatekbolt.hu",
+   "mail.championea.com.tw",
+   "v2.api.z.lighting",
+   "auth.flodin.no",
+   "track.kutumb.app",
+   "v2.api.ringier.ch",
+   "analytics.booksellersolutions.com",
+   "events.itools.pe"
+  ],
+  "tranco_longtail_with_prefixes/v2_model_only": [
+   "mail.snabbgross.se",
+   "m-bima.co.ke",
+   "orfebreria-cevallos.com",
+   "graph.aldousbio.pt",
+   "mail.plux.ge",
+   "app.halink.vn",
+   "beatosvirtuve.lt",
+   "track.mysurvey.solutions"
+  ],
+  "tranco_longtail_with_prefixes/v2_model_and_red_flag": [
+   "graph.aldousbio.pt"
+  ],
+  "umbrella_heldout_600k_1m/v1_shipped": [
+   "load.metis.voysaude.com.br",
+   "share.myfreecams.com",
+   "kube103-ingress1.g.tapclap.com",
+   "t22443.boldwin.tech",
+   "atlanticpkg0-my.sharepoint.com",
+   "outcomes.blackbaudemailservices.com",
+   "vanandelinstitute-my.sharepoint.com",
+   "ocsp.managed.entrust.com",
+   "v5-dj-reading-video-x.qznovelvod.com",
+   "anai-https.geo.mpsa.com",
+   "click.h.redrocksonline.com",
+   "unitedarrows.search.zetacx.net"
+  ],
+  "umbrella_heldout_600k_1m/v2_model_only": [
+   "lancelot-fa22c.firebaseapp.com",
+   "kamino-e359a.web.app",
+   "redirection-js.pages.dev",
+   "aerokam.github.io",
+   "americangirl-social-proofing.netlify.app",
+   "ig-horoscopo.pages.dev",
+   "pub-bf074c15de234dfa912a23c638766c75.r2.dev",
+   "chatbot-97318.web.app",
+   "ec.weebly.com",
+   "allohatv.github.io",
+   "hydra-755.pages.dev",
+   "viglesias.github.io"
+  ],
+  "umbrella_heldout_600k_1m/v2_model_and_red_flag": []
+ }
+}

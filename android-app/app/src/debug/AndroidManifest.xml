@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Debug builds only: lets scripts/e2e_phone.py drive the pipeline over adb. Not in release APKs. -->
+<!-- Debug and QA builds only: lets scripts/e2e_phone.py drive the pipeline over adb. Not in release APKs.
+     android.permission.DUMP is held by the adb shell but can never be granted to an app, so no other
+     app on the phone can send these commands. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <receiver
             android:name=".DebugReceiver"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.DUMP">
             <intent-filter>
                 <action android:name="app.entity.shield.DEBUG" />
             </intent-filter>

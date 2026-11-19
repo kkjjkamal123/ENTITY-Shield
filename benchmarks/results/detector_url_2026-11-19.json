@@ -14,83 +14,124 @@
   5
  ],
  "thresholds": {
-  "scam": 0.6947,
-  "uncertain": 0.3702
+  "scam": 0.8748,
+  "uncertain": 0.5539,
+  "dns_block": 0.99
  },
  "split": {
   "phishtank_test_from": "2026-08-07T22:39:56+00:00",
   "phishtank_train_until": "2026-06-04T07:54:41+00:00"
  },
  "sizes": {
-  "train": 35623,
-  "val": 5090,
-  "test": 10179,
+  "train": 71590,
+  "val": 10321,
+  "test": 19873,
+  "dns_longtail": 20000,
   "openphish": 297,
   "official": 41
  },
  "results": {
   "train": {
    "at_scam": {
-    "n": 35623,
+    "n": 71590,
     "pos": 11874,
-    "neg": 23749,
-    "precision": 0.9991,
-    "recall": 0.9652,
-    "f1": 0.9819,
-    "fpr": 0.0004
+    "neg": 59716,
+    "precision": 0.9939,
+    "recall": 0.8909,
+    "f1": 0.9396,
+    "fpr": 0.0011
    },
    "at_uncertain": {
-    "n": 35623,
+    "n": 71590,
     "pos": 11874,
-    "neg": 23749,
-    "precision": 0.9824,
-    "recall": 0.9984,
-    "f1": 0.9903,
-    "fpr": 0.009
+    "neg": 59716,
+    "precision": 0.9365,
+    "recall": 0.9937,
+    "f1": 0.9642,
+    "fpr": 0.0134
    },
-   "auc": 0.9999
+   "auc": 0.9993
   },
   "val": {
    "at_scam": {
-    "n": 5090,
+    "n": 10321,
     "pos": 1697,
-    "neg": 3393,
-    "precision": 0.975,
-    "recall": 0.7572,
-    "f1": 0.8524,
-    "fpr": 0.0097
+    "neg": 8624,
+    "precision": 0.927,
+    "recall": 0.6435,
+    "f1": 0.7597,
+    "fpr": 0.01
    },
    "at_uncertain": {
-    "n": 5090,
+    "n": 10321,
     "pos": 1697,
-    "neg": 3393,
-    "precision": 0.8936,
-    "recall": 0.8362,
-    "f1": 0.8639,
-    "fpr": 0.0498
+    "neg": 8624,
+    "precision": 0.7454,
+    "recall": 0.7437,
+    "f1": 0.7445,
+    "fpr": 0.05
    },
-   "auc": 0.9441
+   "auc": 0.9243
   },
   "test": {
    "at_scam": {
-    "n": 10179,
+    "n": 19873,
     "pos": 3393,
-    "neg": 6786,
-    "precision": 0.9726,
-    "recall": 0.6788,
-    "f1": 0.7995,
-    "fpr": 0.0096
+    "neg": 16480,
+    "precision": 0.928,
+    "recall": 0.5281,
+    "f1": 0.6732,
+    "fpr": 0.0084
    },
    "at_uncertain": {
-    "n": 10179,
+    "n": 19873,
     "pos": 3393,
-    "neg": 6786,
-    "precision": 0.8855,
-    "recall": 0.7725,
-    "f1": 0.8251,
-    "fpr": 0.05
+    "neg": 16480,
+    "precision": 0.7186,
+    "recall": 0.6637,
+    "f1": 0.6901,
+    "fpr": 0.0535
    },
-   "auc": 0.9253
+   "auc": 0.8901,
+   "at_dns_block": {
+    "n": 19873,
+    "pos": 3393,
+    "neg": 16480,
+    "precision": 0.9842,
+    "recall": 0.3492,
+    "f1": 0.5156,
+    "fpr": 0.0012
+   }
+  },
+  "dns_longtail": {
+   "at_scam": {
+    "n": 20000,
+    "pos": 0,
+    "neg": 20000,
+    "precision": 0.0,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.0106
+   },
+   "at_uncertain": {
+    "n": 20000,
+    "pos": 0,
+    "neg": 20000,
+    "precision": 0.0,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.0628
+   },
+   "auc": null,
+   "at_dns_block": {
+    "n": 20000,
+    "pos": 0,
+    "neg": 20000,
+    "precision": 0.0,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.001
+   }
   },
   "openphish": {
    "at_scam": {
@@ -98,8 +139,8 @@
     "pos": 297,
     "neg": 0,
     "precision": 1.0,
-    "recall": 0.9394,
-    "f1": 0.9688,
+    "recall": 0.9226,
+    "f1": 0.9597,
     "fpr": null
    },
    "at_uncertain": {
@@ -107,11 +148,20 @@
     "pos": 297,
     "neg": 0,
     "precision": 1.0,
-    "recall": 0.9495,
-    "f1": 0.9741,
+    "recall": 0.9327,
+    "f1": 0.9652,
     "fpr": null
    },
-   "auc": null
+   "auc": null,
+   "at_dns_block": {
+    "n": 297,
+    "pos": 297,
+    "neg": 0,
+    "precision": 1.0,
+    "recall": 0.8855,
+    "f1": 0.9393,
+    "fpr": null
+   }
   },
   "official": {
    "at_scam": {
@@ -121,7 +171,7 @@
     "precision": 0.0,
     "recall": null,
     "f1": null,
-    "fpr": 0.0732
+    "fpr": 0.0244
    },
    "at_uncertain": {
     "n": 41,
@@ -130,45 +180,57 @@
     "precision": 0.0,
     "recall": null,
     "f1": null,
-    "fpr": 0.1951
+    "fpr": 0.0244
    },
    "auc": null
   },
   "train_with_allowlist": {
    "at_scam": {
-    "n": 35623,
+    "n": 71590,
     "pos": 11874,
-    "neg": 23749,
-    "precision": 0.9992,
-    "recall": 0.9582,
-    "f1": 0.9783,
-    "fpr": 0.0004
+    "neg": 59716,
+    "precision": 0.9944,
+    "recall": 0.8883,
+    "f1": 0.9384,
+    "fpr": 0.001
    },
-   "auc": 0.9919
+   "auc": 0.9926
   },
   "val_with_allowlist": {
    "at_scam": {
-    "n": 5090,
+    "n": 10321,
     "pos": 1697,
-    "neg": 3393,
-    "precision": 0.9754,
-    "recall": 0.7478,
-    "f1": 0.8466,
-    "fpr": 0.0094
+    "neg": 8624,
+    "precision": 0.9357,
+    "recall": 0.6435,
+    "f1": 0.7626,
+    "fpr": 0.0087
    },
-   "auc": 0.9346
+   "auc": 0.9336
   },
   "test_with_allowlist": {
    "at_scam": {
-    "n": 10179,
+    "n": 19873,
     "pos": 3393,
-    "neg": 6786,
-    "precision": 0.9718,
-    "recall": 0.6611,
-    "f1": 0.7869,
-    "fpr": 0.0096
+    "neg": 16480,
+    "precision": 0.9375,
+    "recall": 0.5261,
+    "f1": 0.674,
+    "fpr": 0.0072
    },
-   "auc": 0.9037
+   "auc": 0.8976
+  },
+  "dns_longtail_with_allowlist": {
+   "at_scam": {
+    "n": 20000,
+    "pos": 0,
+    "neg": 20000,
+    "precision": 0.0,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.0095
+   },
+   "auc": null
   },
   "openphish_with_allowlist": {
    "at_scam": {
@@ -176,8 +238,8 @@
     "pos": 297,
     "neg": 0,
     "precision": 1.0,
-    "recall": 0.9327,
-    "f1": 0.9652,
+    "recall": 0.9226,
+    "f1": 0.9597,
     "fpr": null
    },
    "auc": null
@@ -195,23 +257,62 @@
    "auc": null
   }
  },
+ "v1_same_tests": {
+  "test": {
+   "at_scam": {
+    "n": 19873,
+    "pos": 3393,
+    "neg": 16480,
+    "precision": 0.3767,
+    "recall": 0.6788,
+    "f1": 0.4845,
+    "fpr": 0.2313
+   },
+   "auc": 0.7936
+  },
+  "openphish": {
+   "at_scam": {
+    "n": 297,
+    "pos": 297,
+    "neg": 0,
+    "precision": 1.0,
+    "recall": 0.9394,
+    "f1": 0.9688,
+    "fpr": null
+   },
+   "auc": null
+  },
+  "dns_longtail": {
+   "at_scam": {
+    "n": 20000,
+    "pos": 0,
+    "neg": 20000,
+    "precision": 0.0,
+    "recall": null,
+    "f1": null,
+    "fpr": 0.2263
+   },
+   "auc": null
+  }
+ },
  "allowlist": {
   "size": 9940,
   "shared_platforms_removed": 245
  },
  "signal_weights": {
-  "free_hosting": 5.189,
-  "ip_host": 2.222,
-  "long_host": 1.883,
-  "many_subdomains": 1.107,
-  "lure_word": 1.035,
-  "brand_not_official": 1.022,
-  "many_hyphens": 0.224,
-  "suspicious_tld": -0.051,
-  "shortener": -0.083,
-  "digits_in_name": -0.863,
-  "punycode": -2.365
+  "free_hosting": 7.118,
+  "ip_host": 5.354,
+  "brand_lure": 1.923,
+  "lure_word": 0.58,
+  "brand_not_official": 0.183,
+  "long_host": 0.069,
+  "suspicious_tld": 0.011,
+  "digits_in_name": -0.037,
+  "many_hyphens": -0.378,
+  "many_subdomains": -0.541,
+  "punycode": -0.58,
+  "shortener": -1.833
  },
  "pte_bytes": 133380,
- "pte_vs_torch_max_abs_diff": 1.1920928955078125e-07
+ "pte_vs_torch_max_abs_diff": 1.4901161193847656e-07
 }

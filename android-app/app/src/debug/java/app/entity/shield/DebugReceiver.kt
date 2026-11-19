@@ -1,5 +1,19 @@
 package app.entity.shield
 
+import app.entity.shield.core.Advice
+import app.entity.shield.core.Band
+import app.entity.shield.bench.Bench
+import app.entity.shield.net.DnsPolicy
+import app.entity.shield.llm.Explainer
+import app.entity.shield.sms.InboxAudit
+import app.entity.shield.net.NetGuard
+import app.entity.shield.core.Pipeline
+import app.entity.shield.core.Prefs
+import app.entity.shield.net.ShieldVpnService
+import app.entity.shield.core.runSelfTest
+
+import app.entity.shield.sandbox.LinkInspector
+import app.entity.shield.sandbox.SandboxClient
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -68,6 +82,20 @@ class DebugReceiver : BroadcastReceiver() {
                         Thread.sleep(1500)
                         log("net requested=$on vpnOn=${NetGuard.vpnOn} listening=${NetGuard.listening.joinToString(",")} ip=${NetGuard.phoneIp} upstream=${NetGuard.upstream}")
                     }
+                    "dns" -> { // what Network Guard would do with a lookup, without making it
+                        val host = intent.getStringExtra("host") ?: ""
+                        val d = DnsPolicy.decide(app, host, intent.getStringExtra("pkg") ?: "")
+                        log("dns host=$host action=${d.action} reason=${d.reason} score=${"%.4f".format(d.v.score)} evidence=${d.v.evidence.joinToString(",")}")
+                    }
+                    "inspect" -> { // the link sandbox end to end (visit + isolated parse + verdict)
+                        val a = LinkInspector.inspect(app, intent.getStringExtra("link") ?: "", "check")
+                        log("inspect id=${a.id} band=${a.v.band} score=${"%.4f".format(a.v.score)} family=${a.v.family} evidence=${a.v.evidence.joinToString(",")}")
+                    }
+                    "probe" -> { // is the sandbox really isolated?
+                        val i = SandboxClient.probe(app)
+                        log("probe uid=${i?.uid} isolated=${i?.isolated} files_denied=${i?.filesDenied} net_denied=${i?.netDenied}")
+                    }
+                    "netdump" -> NetGuard.dnsEvents.toList().forEach { log("netdump ${it.host}	${it.pkg}	${it.action}") }
                     "netreset" -> { NetGuard.resetForTest(); log("netreset done") }
                     "clear" -> { app.getSharedPreferences("shield", 0).edit().remove("prefill_strip_bos").commit(); Pipeline.load(app); Pipeline.clear(app); NetGuard.resetForTest(); InboxAudit.flagged.clear(); log("clear done") }
                     "lang" -> { Prefs.setLang(app, if (intent.getStringExtra("v") == "HI") Advice.Lang.HI else Advice.Lang.EN); log("lang set") }

@@ -163,16 +163,24 @@ def main():
         line = p.wait_line(r"ShieldE2E: net requested=true", 20)
         ip = re.search(r"ip=([\d.]+)", line or "")
         check("Network Guard starts (local DNS VPN + tripwire)", line and "vpnOn=true" in line, line.split("ShieldE2E: ", 1)[-1] if line else "no output")
-        p.sh("ping -c 1 -W 2 www.google.com")
-        p.sh("ping -c 1 -W 2 sbi-kyc-update.in")
-        p.sh("ping -c 1 -W 2 hdfc-netbanking-verify.top")
+        # Network Guard v2 (DnsPolicy): popular and app-owned domains pass, a host on the bundled
+        # PhishTank/OpenPhish list is blocked, a look-alike the model is not sure enough about is only flagged.
+        known_phish = "websenicatelisi.wapka.site"  # in models/detectors/phish.bin (PhishTank 2026-11-19); answered NXDOMAIN locally
+        for h in ("www.google.com", "connekt.flipkart.net", known_phish, "hdfc-netbanking-verify.top"):
+            p.sh(f"ping -c 1 -W 2 {h}")
         time.sleep(2)
         p.cmd("netstat", host="google.com")
         st = p.wait_line(r"ShieldE2E: netstat", 15) or ""
         check("benign domain resolves (ALLOW)", re.search(r"google\.com:ALLOW", st), st.split("last=", 1)[-1][:200])
-        p.cmd("netstat", host="-")
-        st2 = p.wait_line(r"ShieldE2E: netstat", 15, after=1) or ""
-        check("phishing domain blocked (BLOCK + alert)", re.search(r"(sbi-kyc-update\.in|hdfc-netbanking-verify\.top):BLOCK", st2), st2.split("last=", 1)[-1][:160])
+        p.cmd("netstat", host="flipkart")
+        st1 = p.wait_line(r"ShieldE2E: netstat", 15, after=1) or ""
+        check("app infrastructure not blocked (connekt.flipkart.net ALLOW)", re.search(r"connekt\.flipkart\.net:ALLOW", st1), st1.split("last=", 1)[-1][:160])
+        p.cmd("netstat", host="wapka")
+        st2 = p.wait_line(r"ShieldE2E: netstat", 15, after=2) or ""
+        check("reported phishing domain blocked (BLOCK + alert)", re.search(re.escape(known_phish) + r":BLOCK", st2), st2.split("last=", 1)[-1][:160])
+        p.cmd("netstat", host="netbanking")
+        st3 = p.wait_line(r"ShieldE2E: netstat", 15, after=3) or ""
+        check("look-alike domain flagged, not blocked (FLAG)", re.search(r"hdfc-netbanking-verify[.]top:FLAG", st3), st3.split("last=", 1)[-1][:160])
         # DGA-like burst: random names that do not exist
         for _ in range(10):
             name = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(14)) + ".xyz"

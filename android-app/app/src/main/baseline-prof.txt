@@ -1,0 +1,4 @@
+# Startup profile for ENTITY Shield's own code (Compose and AndroidX ship their own). ART compiles these
+# ahead of time when the app is installed, so the first frames do not run in the interpreter.
+HSPLapp/entity/shield/**->**(**)**
+Lapp/entity/shield/**;

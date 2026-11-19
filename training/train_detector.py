@@ -54,6 +54,27 @@ def sms_data():
     return out, held
 
 
+LOCAL = (".arpa", ".local", ".lan", ".home", ".internal", ".localdomain")
+
+
+def umbrella_hosts(stop, phish_set, phish_regs, start=0):
+    """Real DNS names from the Cisco Umbrella popularity list (datasets/umbrella/top-1m.csv), minus
+    anything that is, or shares a non-popular domain with, a known phishing host."""
+    out = []
+    for i, row in enumerate(csv.reader(open(DS / "umbrella" / "top-1m.csv", encoding="utf-8"))):
+        if i < start:
+            continue
+        if i >= stop:
+            break
+        h = row[1].strip().lower().rstrip(".")
+        if "." not in h or h.endswith(LOCAL) or h in phish_set or F.registrable(h) in phish_regs:
+            continue
+        if all(p.isdigit() for p in h.split(".")):
+            continue
+        out.append(h)
+    return out
+
+
 def url_data():
     r = random.Random(SEED)
     tranco = [row[1] for row in csv.reader(open(DS / "tranco" / "top-1m.csv", encoding="utf-8"))]
@@ -72,12 +93,27 @@ def url_data():
     n = len(phish)
     p_tr, p_va, p_te = phish[:int(n * .7)], phish[int(n * .7):int(n * .8)], phish[int(n * .8):]
     phish_set = set(phish)
+    phish_regs = {F.registrable(h) for h in phish} - top100k
     benign = [d for d in tranco[:200_000] if d not in phish_set]
     benign = r.sample(benign, min(len(benign), 2 * n))
     benign = [("www." + d if r.random() < 0.3 else d) for d in benign]
-    b_tr, b_va, b_te = split3(benign, r, 0.7, 0.1)
-    mk = lambda hs, lab: [dict(text=h, sender="", label=lab, source="phishtank" if lab else "tranco") for h in hs]
+    # v2 (2026-11-19): Network Guard scores the full hostnames apps look up (api.x.io, connekt.flipkart.net),
+    # not bare registrable domains. v1 never saw a benign subdomain and blocked 21% of long-tail lookups
+    # (scripts/eval_dns_policy.py). So benign also gets real DNS names from the Cisco Umbrella list
+    # (ranks 1-600k; 600k-1M stay held out for the DNS false-alarm test).
+    umb = umbrella_hosts(600_000, phish_set, phish_regs)
+    benign_umb = r.sample(umb, min(len(umb), 3 * n))
+    # split benign by registrable domain, so no domain has subdomains on both sides of a split
+    grp = lambda h: F.fnv1a32(F.registrable(h).encode()) % 10
+    b_tr = [h for h in benign + benign_umb if grp(h) < 7]
+    b_va = [h for h in benign + benign_umb if grp(h) == 7]
+    b_te = [h for h in benign + benign_umb if grp(h) >= 8]
+    umb_set = set(benign_umb)
+    mk = lambda hs, lab: [dict(text=h, sender="", label=lab, source="phishtank" if lab else ("umbrella" if h in umb_set else "tranco")) for h in hs]
     out = {"train": mk(p_tr, 1) + mk(b_tr, 0), "val": mk(p_va, 1) + mk(b_va, 0), "test": mk(p_te, 1) + mk(b_te, 0)}
+    tail = umbrella_hosts(1_000_000, phish_set, phish_regs, start=600_000)
+    train_regs = {F.registrable(h) for h in b_tr}
+    out["dns_longtail"] = mk(r.sample([h for h in tail if F.registrable(h) not in train_regs], 20_000), 0)
     seen = set(p_tr)
     op = sorted(DS.glob("openphish/feed_*.txt"))[-1]
     extra = {F.url_host(u) for u in open(op, encoding="utf-8") if u.strip()} - seen - top100k
@@ -231,6 +267,12 @@ def run_pte(path, xs):
     return [float(method.execute([x[None]])[0].reshape(-1)[0]) for x in xs]
 
 
+def run_pte_stream(path, xs):
+    from executorch.runtime import Runtime
+    method = Runtime.get().load_program(str(path)).load_method("forward")
+    return [float(method.execute([x[None]])[0].reshape(-1)[0]) for x in xs]
+
+
 def dense_x(h, s):
     x = torch.zeros(F.DIM + len(s))
     for k, v in h.items():
@@ -262,6 +304,21 @@ def main(kind):
                 if sel:
                     ps, ys = [p[k][i] for i in sel], [y[k][i] for i in sel]
                     report["results"][f"{k}_{src}"] = dict(at_scam=metrics(ps, ys, t_scam), auc=auc(ps, ys))
+    if kind == "url":
+        # Network Guard blocks lookups on its own, so it needs a much stricter operating point than a
+        # link the user is looking at: 0.1% false alarms on real DNS names (validation split).
+        sel = [i for i, x in enumerate(data["val"]) if x["label"] == 1 or x["source"] == "umbrella"]
+        t_dns = threshold_at_fpr([p["val"][i] for i in sel], [y["val"][i] for i in sel], 0.001)
+        report["thresholds"]["dns_block"] = round(max(t_dns, t_scam), 4)
+        for k in ("test", "openphish", "dns_longtail"):
+            report["results"][k]["at_dns_block"] = metrics(p[k], y[k], report["thresholds"]["dns_block"])
+        v1 = ROOT / "models" / "detectors" / "v1" / "url.pte"
+        if v1.exists():  # same test sets, previous model and its own threshold
+            t1 = json.loads((v1.parent / "url_meta.json").read_text(encoding="utf-8"))["thresholds"]["scam"]
+            report["v1_same_tests"] = {}
+            for k in ("test", "openphish", "dns_longtail"):
+                p1 = run_pte_stream(v1, (dense_x(f[0], f[1][:11]) for f in feats[k]))  # v1 had the first 11 signals
+                report["v1_same_tests"][k] = dict(at_scam=metrics(p1, y[k], t1), auc=auc(p1, y[k]))
     if kind == "url":  # what the app does: allow-list first, model second
         allow = {d for ds in F.BRANDS.values() for d in ds}
         allow |= {row[1] for i, row in zip(range(10_000), csv.reader(open(DS / "tranco" / "top-1m.csv", encoding="utf-8")))}

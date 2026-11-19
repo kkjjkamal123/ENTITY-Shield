@@ -1,0 +1,10 @@
+{
+ "date": "2026-11-19",
+ "popular": 999516,
+ "phish": 15993,
+ "phish_sources": [
+  "online-valid_2026-11-19.csv.gz",
+  "feed_2026-11-19.txt"
+ ],
+ "shared_platforms_excluded": 498
+}

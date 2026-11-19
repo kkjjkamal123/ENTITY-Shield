@@ -48,3 +48,21 @@ third_party/
 demo/raw/
 demo/build/
 release/
+
+# Claude Code worktrees and local settings
+.claude/
+
+# Small on-device detector models and Network Guard lists ARE committed, so the app builds from a clean
+# clone (the Llama .pte stays out: 1.1 GB, published with the release).
+!models/detectors/
+models/detectors/*
+!models/detectors/sms.pte
+!models/detectors/url.pte
+!models/detectors/popular.bin
+!models/detectors/phish.bin
+!models/detectors/dns_lists.json
+!models/detectors/v1/
+models/detectors/v1/*
+!models/detectors/v1/url.pte
+!models/detectors/v1/url_meta.json
+!models/detectors/v1/allowlist.txt

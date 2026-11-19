@@ -1,0 +1,29 @@
+{
+ "date": "2026-11-19",
+ "device": "A015",
+ "label": "before_debug_pager",
+ "display": "fps=60.0\nfps=120.00001",
+ "taps": 30,
+ "sequence": [
+  "More",
+  "Home",
+  "Alerts",
+  "More",
+  "Network",
+  "Home",
+  "Scan",
+  "Alerts",
+  "More",
+  "Home"
+ ],
+ "frames": 1564.0,
+ "janky": 63.0,
+ "janky_pct": 4.03,
+ "p50": 15.0,
+ "p90": 73.0,
+ "p95": 150.0,
+ "p99": 1100.0,
+ "slow_ui": 63.0,
+ "slow_draw": 62.0,
+ "gpu_p90": 6.0
+}
