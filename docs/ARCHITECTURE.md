@@ -41,7 +41,7 @@ flowchart LR
     N -- "user opens the alert" --> L --> W
 ```
 
-## Detectors (`training/`, `android-app/.../Detectors.kt`, `Featurizer.kt`)
+## Detectors (`training/`, `core/Detectors.kt`, `core/Featurizer.kt`)
 
 - **Features:** hashed character 2–5-grams (32,768 slots, FNV-1a, log counts, L2-normalised) plus named
   0/1 signals: urgency, asks for OTP/PIN, payment request, account threat, prize, job/task, authority
@@ -60,7 +60,20 @@ flowchart LR
   (`uncertain`). Allow-lists come first for URLs: official Indian brand domains + Tranco top 10k, minus
   shared platforms that phishers use.
 
-## Network Guard (`ShieldVpnService.kt`, `NetGuard.kt`, `DnsPacket.kt`, `Tripwire.kt`)
+## Network Guard (`net/ShieldVpnService.kt`, `net/NetGuard.kt`, `net/DnsPolicy.kt`, `net/DnsPacket.kt`, `net/Tripwire.kt`)
+
+**Lookup policy (v2, `DnsPolicy`).** Blocking breaks the app that asked, so the URL model alone never
+blocks. In order:
+1. Local names, OS/CDN infrastructure (`dns_infra.txt`) and sites the user allowed: allow.
+2. Exact hostnames from the bundled PhishTank/OpenPhish list (`phish.bin`): block.
+3. The official/top-10k allow-list, Tranco top-1M registrable domains (`popular.bin`, 4 MB of sorted
+   FNV-1a hashes, binary-searched), and domains whose name is part of the asking app's package
+   (Flipkart → `*.flipkart.net`): allow.
+4. URL model ≥ the DNS threshold (0.1% false alarms on real DNS names): block. The exception is a
+   free-host subdomain looked up by a non-browser app, which is only flagged.
+5. Model ≥ the link threshold: flag only (listed, never blocked or notified).
+
+`training/url/build_dns_lists.py` builds the lists; `scripts/eval_dns_policy.py` measures them.
 
 ```mermaid
 sequenceDiagram
@@ -104,7 +117,38 @@ sequenceDiagram
   - Strict Private DNS (DoT to a named host) or in-app DoH bypasses the DNS view.
   - Android allows one VPN at a time.
 
-## Llama on ExecuTorch (`Explainer.kt`, `Advice.kt`, `training/llm/`)
+## Link sandbox (`sandbox/`)
+
+When the user checks a link or opens it with Shield (never on its own), `LinkInspector` runs:
+1. **Address:** the URL model on the link as written.
+2. **Visit:** `SafeFetch`, in the main process. It is a minimal HTTP/1.1 client: it connects to the IP
+   it resolved and checked (no DNS rebinding) and refuses private, local and CGNAT addresses. TLS is
+   verified and the certificate kept. It sends no cookies, auth or referrer. Every redirect is recorded,
+   and redirects to app schemes (`intent:`, `market:`, `upi:`) are reported, not followed. Body, time
+   and decompression are capped.
+3. **Read:** the bytes go to `SandboxService` (`android:isolatedProcess="true"`) as read-only shared
+   memory. `PageAnalyzer` parses them with a linear-time tokenizer. It finds forms and the secrets they
+   ask for, brands and their official domains, look-alike domains, meta/JS redirects, obfuscation, and
+   exfiltration to Telegram/Discord bots. One HTML/JS redirect is followed.
+4. **Text:** the ExecuTorch SMS model reads the page's title and visible text.
+5. **Verdict:** fixed weights (strong / high / medium / weak), set on a tuning sample and checked on a
+   held-out one (`scripts/eval_sandbox.py`). Registry-restricted suffixes (`.gov.in`, `.bank.in`,
+   `.nic.in`) and allow-listed sites are capped at safe unless a strong signal shows compromise.
+
+Llama explains from the findings only; the page text never reaches the prompt.
+
+## UI (`ui/`)
+
+- **Shell:** a keep-alive tab host. Each tab is composed once, and a switch animates only the two tabs
+  involved, with ModulateAlpha so no offscreen buffer is needed.
+- **Glass:** `ui/glass` holds Shield's own glass. The page is recorded into a GraphicsLayer, then
+  redrawn behind the glass through a blur and an AGSL lens shader. There are three quality tiers
+  (Android 13+, Android 12, and Android 10–11 / low-RAM / Battery Saver).
+- **Adaptive layout:** `ui/Adaptive.kt` follows Android's window size classes. The content column is
+  capped at 640 dp, small phones get tighter gutters and stacked layouts, and the tab bar caps its font
+  scale.
+
+## Llama on ExecuTorch (`llm/Explainer.kt`, `core/Advice.kt`, `training/llm/`)
 
 - **Model:** Llama 3.2 1B Instruct, Meta's quantization-aware-trained `QLORA_INT4_EO8` checkpoint
   exported with ExecuTorch 1.5.1 (XNNPACK, 4-bit weights / 8-bit dynamic activations, KV cache, custom
