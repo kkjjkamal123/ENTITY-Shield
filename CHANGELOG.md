@@ -1,7 +1,70 @@
 # Changelog
 
-Versions cover the repository as a whole (scripts, docs, prompts). The Android app and the Pi gateway
-are not built yet, so there is no APK `versionCode` / `versionName` or gateway version to track.
+Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
+
+## 0.4.0 (2026-11-19)
+
+### Network Guard
+- New decision policy (`net/DnsPolicy.kt`). Lookups are let through when they are local names, OS or CDN
+  infrastructure, sites the user allowed, popular domains (Tranco top 1M) or domains that belong to the
+  app asking. Hosts on the bundled PhishTank/OpenPhish list are blocked. The URL model blocks on its
+  own only at a strict threshold (0.1% false alarms on held-out real DNS names); anything else it
+  doubts is flagged in the list, never blocked or notified.
+- False blocks on real long-tail lookups: 21.5% (v1) to 0.03% (v2). Held-out phishing still stopped by
+  the model alone: 87% (OpenPhish).
+- "Allow this site" from any network alert; one alert per app and site per 6 hours.
+
+### URL detector v3
+- Benign training data now includes real DNS hostnames (Cisco Umbrella), split by registrable domain so
+  no domain appears on both sides. New `brand_lure` signal for brand names inside unrelated domains.
+
+### Link sandbox (new)
+- The phone follows the link itself: HTTP/1.1 with no cookies and no JavaScript, private addresses
+  refused, redirects followed one by one, certificate captured, size and time capped.
+- The page is parsed inside an Android isolated process (`android:isolatedProcess`), which has no access
+  to Shield's files and no network. Verified on the device.
+- Reports the final address, the certificate, and what the page asks for (UPI PIN, ATM PIN, OTP,
+  Aadhaar, PAN, card and CVV). Flags brand copies, look-alike domains, forms posting to messengers and
+  APK downloads.
+- Link Guard shows the steps live and opens the browser only when the page is clean.
+- A page that is gone, an address that no longer exists or a server that never answers is reported
+  as "Couldn't check this link", not as safe. A link opened from a flagged message keeps that verdict.
+- A risky address that redirects to a trusted site stays flagged (cloaking: phishing kits send
+  scanners on to the real brand).
+
+### App
+- New design system: graphite and signal-lime palette, light and dark themes, Geist typefaces, a
+  custom icon set, liquid-glass tab bar and surfaces with GPU, Android-version and Battery Saver
+  fallbacks.
+- Keep-alive tab host instead of a pager. Janky frames 4.0% to 1.15% (CMF Phone 1) and 7.1% to 2.4%
+  (Infinix X6878).
+- Adaptive layout for small phones, tablets, foldables, landscape, display cutouts and large font
+  sizes.
+- R8, resource shrinking and a startup profile: APK 33 MB to 17 MB.
+- More, On-device AI, Download Llama: resumable download from the release with SHA-256 checks, or
+  import the two files from storage.
+- Source reorganized into `core`, `llm`, `net`, `sms`, `sandbox`, `bench`, `util` and `ui` packages.
+
+### Tooling
+- `scripts/eval_dns_policy.py`, `scripts/eval_sandbox.py`, `scripts/bench_ui.py`.
+- `qa` build type: release code and signing with the test hooks, for measurements. Its test receiver
+  was missing at first because AGP 9 compiles Kotlin only from `kotlin` source directories; fixed.
+- `scripts/screenshots.py`: README screenshots with a clean, cropped status bar; it captures only
+  while ENTITY Shield is the app in front.
+- `scripts/e2e_phone.py`: sandbox isolation and link checks; `--apk` to pick the build.
+
+## 0.3.0 (2026-11-19)
+
+First version of the Android app.
+- SMS and URL detectors exported to ExecuTorch (`.pte`, 130 KB each) and verified against the training
+  scores on the phone.
+- Llama 3.2 1B Instruct on ExecuTorch explains alerts in English and Hindi, with the verdict written
+  into the start of its answer and fixed, checked remediation steps.
+- Network Guard: local DNS-only VPN with per-app attribution, beacon, DGA-burst and DNS-tunnel
+  detection, plus a LAN tripwire on decoy ports.
+- Link Guard, share-to-check, "Check with Shield" on selected text, on-device inbox audit.
+- Thread ablation, explanation-quality evaluation, end-to-end phone tests, technical report and demo
+  video.
 
 ## 0.2.0 (2026-11-06)
 

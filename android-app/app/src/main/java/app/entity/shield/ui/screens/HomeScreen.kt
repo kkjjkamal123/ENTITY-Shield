@@ -52,7 +52,8 @@ fun HomeScreen(@Suppress("UNUSED_PARAMETER") shared: MutableState<String?>) {
     val checked by remember { derivedStateOf { alerts.count { it.source != "net" } } }
     val scams by remember { derivedStateOf { alerts.count { it.v.band == Band.SCAM } } }
     val stopped = scams + NetGuard.blocked
-    val avgMs = remember(alerts.size) { alerts.filter { it.source != "net" }.take(50).map { it.v.millis }.average().takeIf { !it.isNaN() } }
+    // typical check time: the median, so one cold start or GC pause does not stand for every message
+    val avgMs = remember(alerts.size) { alerts.filter { it.source != "net" }.take(50).map { it.v.millis }.sorted().let { if (it.isEmpty()) null else it[it.size / 2] } }
 
     TabPage {
         // header

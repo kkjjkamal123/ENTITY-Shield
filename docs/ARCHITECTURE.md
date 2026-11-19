@@ -154,7 +154,7 @@ Llama explains from the findings only; the page text never reaches the prompt.
   exported with ExecuTorch 1.5.1 (XNNPACK, 4-bit weights / 8-bit dynamic activations, KV cache, custom
   SDPA, context 2048), 1.12 GB. Our own 8da4w export (803 MB, faster but weaker in Hindi) is the
   low-RAM fallback.
-- **Answer = verdict prefill + fact sheet:** the app writes the start of the answer ("⚠️ No, this SMS is
+- **Answer = verdict prefill + fact sheet:** the app writes the start of the answer ("No, this SMS is
   a scam. Why:") and a short fact sheet (KYC = Know Your Customer, UPI PIN only sends money, 1930).
   Llama continues with 1–2 sentences about *this* message. Without the prefill, the 1B refused to
   explain scams at all (`training/llm/prompts/2026-10-08_v1`).

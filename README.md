@@ -1,49 +1,76 @@
 <div align="center">
 
-# 🛡️ ENTITY Shield
+# ENTITY Shield
 
-**A scam SMS, a phishing link or a misbehaving app is flagged on the phone in milliseconds, and
-Llama 3.2 explains it in English or Hindi. No cloud, works in airplane mode, on a mid-range Arm phone.**
+**On-device threat, phishing and scam detection for Arm Android phones**
 
-Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · On-device threat, phishing & scam detection · Team ENTITY
+A scam SMS, a phishing link or a misbehaving app is flagged in milliseconds, and Llama 3.2 explains
+it in English or Hindi. No cloud. Works in airplane mode on a mid-range phone.
 
-![Llama on ExecuTorch](https://img.shields.io/badge/Llama%203.2%201B-ExecuTorch%201.5.1%20in%20the%20app-success?style=for-the-badge)
-![Cloud](https://img.shields.io/badge/cloud-none-lightgrey?style=for-the-badge)
-![Phones](https://img.shields.io/badge/Arm-Dimensity%207300%20%C2%B7%20Snapdragon%207s%20Gen%203-0091BD?style=for-the-badge)
+Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · Team ENTITY
+
+[![Release](https://img.shields.io/github/v/release/kkjjkamal123/ENTITY-Shield?label=release&color=3a3d44)](../../releases/latest)
+![Android](https://img.shields.io/badge/Android-10%2B%20%C2%B7%20arm64-3a3d44)
+![Runtime](https://img.shields.io/badge/runtime-ExecuTorch%201.5.1-3a3d44)
+![Model](https://img.shields.io/badge/explainer-Llama%203.2%201B-3a3d44)
+![Cloud](https://img.shields.io/badge/cloud-none-3a3d44)
 
 </div>
 
-> **New in 0.4 (2026-11-19, evening):**
-> - **Network Guard no longer blocks ordinary sites.** v1 blocked 21.5% of real long-tail lookups;
->   v2 blocks 0.03% and still stops 87% of held-out phishing domains.
-> - **Links are followed, not guessed:** an isolated sandbox visits the link and reads the page.
-> - **A new design:** liquid glass, Geist type, no emoji.
-> - **Smoother:** janky frames 4.0% to 1.15%, worst frames 1.1 s to 65 ms.
-> - **Smaller:** the APK went from 33 MB to 17 MB.
->
-> **Status, 2026-11-19 (Phase 1 is due 23 Nov):** the app runs end to end on a real phone.
-> `scripts/e2e_phone.py` passes **15/15** checks on an Infinix X6878 (Snapdragon 7s Gen 3) in one run:
-> - detector parity;
-> - six SMS verdicts;
-> - time to first warning (median 21.6 ms);
-> - Llama 3.2 explaining in English and Hindi inside the app through ExecuTorch;
-> - Network Guard blocking phishing domains and catching a DGA burst.
->
-> Every number below is measured, with its raw file in [`benchmarks/results/`](benchmarks/results);
-> nothing is projected. The day-by-day record is [`docs/PLAN.md`](docs/PLAN.md#0-progress-log).
-
 <p align="center">
 <img src="docs/img/screens/1_home.jpg" width="19%" alt="Home">
-<img src="docs/img/screens/3_alert_en.jpg" width="19%" alt="Scam alert, English">
-<img src="docs/img/screens/4_alert_hi.jpg" width="19%" alt="Scam alert, Hindi">
-<img src="docs/img/screens/6_alerts.jpg" width="19%" alt="Alert feed with network detections">
-<img src="docs/img/screens/5_network_hi.jpg" width="19%" alt="Network Guard">
+<img src="docs/img/screens/2_alert_en.jpg" width="19%" alt="Scam SMS explained in English">
+<img src="docs/img/screens/3_alert_hi.jpg" width="19%" alt="The same alert in Hindi">
+<img src="docs/img/screens/4_link_check.jpg" width="19%" alt="Link sandbox report">
+<img src="docs/img/screens/5_network.jpg" width="19%" alt="Network Guard">
 </p>
-<p align="center"><sub>Real screenshots, Infinix X6878. Left to right: dashboard · a scam SMS explained by Llama (English) · the same alert in Hindi · alert feed with Network Guard catching a test app's DGA burst, DNS exfiltration and blocked lookups · Network Guard live view.</sub></p>
+<p align="center"><sub>Screenshots from an Infinix X6878 (Snapdragon 7s Gen 3), version 0.4.0. Left to right: home · a scam SMS explained by Llama · the same alert in Hindi · a link followed in the sandbox · Network Guard.</sub></p>
 
----
+## Overview
 
-## What it does (PS3 capability → what runs on the phone)
+ENTITY Shield is an Android app that protects the phone it runs on. Everything happens on the device:
+
+- **Two small ExecuTorch detectors decide.** An SMS model and a URL model score every message, link and
+  DNS lookup in about 1–5 ms on the Arm CPU.
+- **Links are followed, not guessed.** A sandbox visits the link, and the page is read inside an
+  Android isolated process that has no files and no network.
+- **Network Guard watches every app.** A local DNS-only VPN names the app behind each lookup, stops
+  reported phishing hosts and spots malware behaviour (beacons, DGA bursts, DNS tunnelling). A LAN
+  tripwire catches scans from the same Wi-Fi.
+- **Llama 3.2 1B on ExecuTorch explains.** It says why *this* item is dangerous, in English or Hindi,
+  and answers follow-up questions. It never decides and never writes the remediation steps.
+
+## Highlights in 0.4.0
+
+| | 0.3.0 | 0.4.0 |
+|---|---|---|
+| Real long-tail DNS lookups blocked by mistake | 21.5% | **0.03%** |
+| Held-out phishing domains stopped by the model alone (OpenPhish) | 93% | 87% |
+| Links | judged from the address | **followed and read in an isolated sandbox** |
+| Janky frames, CMF Phone 1 / Infinix X6878 | 4.0% / 7.1% | **1.15% / 2.4%** |
+| Worst frames (p99), CMF Phone 1 | 1,100 ms | **65 ms** |
+| APK size | 33 MB | **17 MB** |
+| Llama setup | `adb push` | **one tap in the app** (resumable, SHA-256 checked) |
+
+**Status, 19 Nov 2026.** `scripts/e2e_phone.py` passes **19/19** checks on both test phones, a CMF
+Phone 1 (Dimensity 7300) and an Infinix X6878 (Snapdragon 7s Gen 3), running the release code:
+- detector parity with training, and link-sandbox isolation (files and network denied);
+- a live visit to a real bank site, judged safe;
+- six SMS verdicts in English, Hindi and Hinglish;
+- Llama 3.2 explaining in English and Hindi through ExecuTorch inside the app;
+- Network Guard letting ordinary lookups through, blocking a reported phishing host, flagging a
+  look-alike and catching a DGA burst.
+
+Raw: [`e2e_A015_2026-11-19.json`](benchmarks/results/e2e_A015_2026-11-19.json),
+[`e2e_Infinix_X6878_2026-11-19.json`](benchmarks/results/e2e_Infinix_X6878_2026-11-19.json).
+
+Every number in this README is measured, and its raw file is in [`benchmarks/results/`](benchmarks/results).
+Nothing is projected. The day-by-day record is in [`docs/PLAN.md`](docs/PLAN.md#0-progress-log) and the
+full write-up is the [technical report](docs/report/ENTITY-Shield-Report.pdf).
+
+## Capabilities
+
+Each Problem Statement 3 requirement and what runs on the phone for it.
 
 | PS3 asks for | ENTITY Shield | Model / runtime |
 |---|---|---|
@@ -55,7 +82,7 @@ Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · On-device threat, ph
 | **Process data locally** | Nothing leaves the phone ([privacy](docs/PRIVACY.md)). Detection and explanation work in airplane mode | All on the Arm CPU |
 
 **Design rule: detectors decide, Llama explains.** The verdict and the steps come from the detectors and
-fixed text. The app writes the start of Llama's answer ("⚠️ No, this SMS is a scam. Why:"), so Llama
+fixed text. The app writes the opening of Llama's answer ("No, this SMS is a scam. Why:"), so Llama
 cannot overturn a verdict or invent advice. Details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Results
@@ -109,24 +136,38 @@ only when a browser asks, and only flagged inside other apps. Raw:
 ### Link sandbox: follow the link vs read the address
 
 On the CMF Phone 1, the sandbox visited live links from the OpenPhish feed of 19 Nov 2026 and real
-Indian sites. This sample was used to set the signal weights; a held-out sample is next.
+Indian sites. Two samples: the **tuning** sample set the signal weights, and the **held-out** sample
+(different links, never looked at while tuning) checks them.
 
 | Live links that answered | Address only: scam / unsure / safe | **Sandbox**: scam / unsure / safe |
 |---|---|---|
-| Phishing (35) | 24 / 3 / 8 | **26 / 2 / 7** |
+| Phishing, tuning (34) | 24 / 3 / 7 | **26 / 3 / 5** |
+| Phishing, held-out (32) | 28 / 0 / 4 | 27 / 1 / 4 |
 | Big Indian brands: banks, government, payments, shopping (39) | 0 / 0 / 39 | 0 / 1 / 38 |
-| Random long-tail `.in` sites (32) | 0 / 2 / 30 | 0 / 3 / 29 |
+| Random long-tail `.in` sites, tuning (32) | 0 / 2 / 30 | 0 / 3 / 29 |
+| Random long-tail `.in` sites, held-out (32) | 1 / 3 / 28 | 1 / 5 / 26 |
 
-- **Catches what the address hides:** for example `auth.re/…` scores 8% on its address, but its page
-  copies a brand and asks for a password.
-- **What it gets wrong:** look-alike domains such as `wvvw--roblox.com` are now caught. Some clones
-  of real hotel pages still read as safe, because nothing on the page asks for secrets.
+- **Honest reading:** on the held-out sample, following the link did not catch more phishing than the
+  address model already did, and it made two more ordinary sites "unsure". Its value is in what the
+  address cannot show: where a link really lands, what the page asks for, and where the form sends it.
+- **Catches what the address hides:** `auth.re/…` scores 8% on its address, but its page copies a
+  brand and asks for a password. A Netlify page titled "Free Fire" sends whatever is typed straight to
+  a Telegram bot (screenshot above).
+- **Found on the held-out sample, fixed in 0.4.0:** one phishing kit sent the sandbox on to the real
+  `roblox.com`, and the trusted landing site cleared the link. A risky address that redirects to a
+  trusted site now stays flagged ("cloaking"). Because the held-out sample found it, that case no
+  longer counts as held out; the table shows the held-out run before the fix.
+- **Nothing to read is not "safe":** a page that is gone (404), an address that no longer exists or a
+  server that never answers is reported as "Couldn't check this link", and a link opened from a
+  flagged message keeps that message's verdict.
 - **What did not work:** the first weights flagged 11 ordinary sites. A lone password box, right-click
   blocking, a fresh Let's Encrypt certificate and broken certificate chains are all common on honest
   Indian sites. They were demoted to weak signals.
-- **Isolation, proven on the device:** the parser runs as uid 99036, `isolated=true`, and reading
-  Shield's files and opening a socket both fail.
-- Raw: `benchmarks/results/sandbox_eval_*.json`, `scripts/eval_sandbox.py`.
+- **Isolation, checked on both phones in every end-to-end run:** the parser runs under an isolated
+  uid (`isolated=true`), and reading Shield's files and opening a socket both fail.
+- Raw: [`sandbox_eval_tuning_A015_2026-11-19.json`](benchmarks/results/sandbox_eval_tuning_A015_2026-11-19.json),
+  [`sandbox_eval_heldout_A015_2026-11-19.json`](benchmarks/results/sandbox_eval_heldout_A015_2026-11-19.json),
+  `scripts/eval_sandbox.py`.
 
 ### App smoothness (Android's own frame statistics)
 
@@ -151,13 +192,19 @@ Where it came from:
 
 ### Detectors: on the phone
 
-| | CMF Phone 1 (Dimensity 7300) |
-|---|---|
-| Same score as training, through the production path | SMS 43/43 · URL 40/40 (max diff 6×10⁻⁷) |
-| Full SMS check (featurize + both models), n = 1000 | p50 **5.0 ms** · p95 7.6 ms (was 9.4 ms before the allocation-free featurizer) |
-| URL check, n = 1000 | p50 **1.1 ms** · p95 1.2 ms |
-| Model size | 130 KB each (`.pte`) |
-| SMS in → notification posted (time to first warning) | 22 ms on the CMF; **median 21.6 ms, max 49.6 ms** on the Infinix (6 messages, e2e run) |
+| | CMF Phone 1 (Dimensity 7300) | Infinix X6878 (Snapdragon 7s Gen 3) |
+|---|---|---|
+| Same score as training, through the production path | SMS 43/43 · URL 40/40 (max diff 5×10⁻⁷) | SMS 43/43 · URL 40/40 (max diff 5×10⁻⁷) |
+| Full SMS check (featurize + both models), n = 1000 | p50 **0.64 ms** · p95 0.80 ms | p50 **0.50 ms** · p95 0.65 ms |
+| URL check, n = 1000 | p50 **0.15 ms** · p95 0.17 ms | p50 **0.11 ms** · p95 0.15 ms |
+| Model size | 130 KB each (`.pte`) | |
+| SMS in → notification posted (time to first warning), 6 messages | median 189 ms, max 380 ms | median **38 ms**, max 58 ms |
+
+- Measured in the 0.4 end-to-end runs with the code built the way it ships (R8). The 0.3 debug build
+  took 5.0 ms (SMS) and 1.1 ms (URL) on the CMF.
+- On the CMF, the later warnings ran while Llama was loading for the explanation the user is likely to
+  open next (the pre-warm, 1.1 GB from storage). We have not yet measured the two apart. In the 0.3
+  run, without Llama, the CMF warned in 22 ms.
 
 ### Llama 3.2 1B on ExecuTorch: where the threads go
 
@@ -173,7 +220,7 @@ interleaved runs per arm, plugged in, 29–30 °C.
 | 3 threads (what ExecuTorch picks on the Dimensity 7300) | 153.8 ± 2.8 | 19.0 | 1.07 s |
 | 4 threads pinned to the A520 little cores | 47.5 ± 0.1 | 9.6 | 3.48 s |
 
-**Three things we found by measuring:**
+**Findings:**
 
 1. **Android silently moves ExecuTorch to the little cores.** Our first build ran Llama on a
    `THREAD_PRIORITY_BACKGROUND` thread. `/proc/<pid>/task/*/cgroup` showed every XNNPACK worker in
@@ -225,75 +272,88 @@ same 40 messages) halved the wrong answers (6 → 3), removed the negations, and
 took correct answers from 4 to 7 with none wrong. That version ships. The steps the user acts on are
 never generated.
 
-## Try it (judges: about 60 seconds)
+## Quick start
 
-1. Install the APK from the latest release (Android 10+, arm64):
+1. Download `ENTITY-Shield-0.4.0.apk` from the [latest release](../../releases/latest) and install it
+   (Android 10 or newer, arm64):
    ```
-   adb install -r ENTITY-Shield.apk
+   adb install ENTITY-Shield-0.4.0.apk
    ```
-2. **Optional (for explanations):** put the Llama files on the phone:
+   If an older test build is installed, uninstall it first; the signing key differs.
+2. For explanations, open **More → On-device AI → Download Llama** (1.1 GB, resumable). Or copy the two
+   release files yourself:
    ```
    adb push llama3_2_1b_instruct_qlora_ctx2048.pte tokenizer.model /sdcard/Android/data/app.entity.shield/files/models/
    ```
-   Without them, detection and the fixed steps still work.
-3. Open **ENTITY Shield** → **Lab → Demo** → tap a scam sample. You get an instant verdict, the
-   warning signs, then Llama's explanation (switch **EN · हिं**, tap **Read aloud**).
-4. **Network** tab → **Turn on Network Guard**, then open any website. The test app
-   `beaconsim-debug.apk` (DGA burst, beacon, DNS exfiltration) shows malware behaviour being caught and
-   named.
+   Detection and the fixed steps work without the model.
+3. **More → Demo scams**, then tap a sample. The verdict is instant, the warning signs follow, then
+   Llama's explanation. Switch **EN / हिं** or tap **Read aloud**.
+4. **Scan** tab: paste a link and keep **Visit from the sandbox** on to see where it really goes and what the
+   page asks for.
+5. **Network** tab: turn on **Network Guard** and browse. The optional `beaconsim-test.apk` from the
+   release imitates malware lookups (DGA burst, beacon, DNS exfiltration) so detection can be seen.
 
-Sideloaded apps on Android 13+ may need **App info → ⋮ → Allow restricted settings** before the SMS
-permission can be granted.
+On Android 13 and newer, a sideloaded app may need **App info → ⋮ → Allow restricted settings** before
+the SMS permission can be granted.
 
 ## Build and reproduce
 
 | Step | Command |
 |---|---|
-| Python env (Windows/macOS/Linux) | `uv venv .venv --python 3.12` then `uv pip install torch==2.14.0 executorch==1.5.1 "torchao>=0.18,<0.19"` |
+| Python environment (Windows, macOS, Linux) | `uv venv .venv --python 3.12`, then `uv pip install torch==2.14.0 executorch==1.5.1 "torchao>=0.18,<0.19"` |
 | Datasets | `bash scripts/download_datasets.sh` |
-| Train + export + golden vectors | `python training/train_detector.py sms` · `... url` |
-| App (needs Android SDK 36) | `cd android-app && ./gradlew assembleDebug` |
+| Train, export and golden vectors | `python training/train_detector.py sms`, `python training/train_detector.py url` |
+| DNS lists (popularity and phishing hashes) | `python training/url/build_dns_lists.py` |
+| App (Android SDK 36) | `cd android-app && ./gradlew assembleRelease` (or `assembleDebug`) |
+| Unit tests | `cd android-app && ./gradlew :app:testDebugUnitTest` |
 | End-to-end on a phone | `python scripts/e2e_phone.py --serial <id> --install --hindi` |
+| Network Guard policy evaluation | `python scripts/eval_dns_policy.py` |
+| Link sandbox evaluation | `python scripts/eval_sandbox.py --serial <id>` |
+| Frame timing | `python scripts/bench_ui.py --serial <id>` |
 | Thread ablation | `python scripts/bench_threads.py --serial <id>` |
-| Explanation evaluation | `python training/llm/eval_explanations.py --serial <id> --mask f0` |
-| Llama export (macOS/Linux, gated weights) | `training/llm/export_llama.sh` (see `docs/PLAN.md`) |
+| Explanation quality | `python training/llm/eval_explanations.py --serial <id> --mask f0` |
+| Llama export (gated weights) | `training/llm/export_llama.sh`, see [`docs/PLAN.md`](docs/PLAN.md) |
 
-**Windows notes:**
-- ExecuTorch 1.5.1's wheel needs `FLATC_EXECUTABLE`; `train_detector.py` sets it.
-- Use UTF-8 file IO.
-- Call `sdkmanager --package_file …`.
+On Windows, ExecuTorch 1.5.1's wheel needs `FLATC_EXECUTABLE` (`train_detector.py` sets it), file I/O
+must be UTF-8, and `sdkmanager` needs `--package_file`.
 
-## Limits (read these before the judges find them)
+## Limitations
 
-- **Network Guard sees only this phone's own traffic**, not other devices on the Wi-Fi. Strict Private
-  DNS or in-app DNS-over-HTTPS bypasses its DNS view. Android allows one VPN at a time.
-- **Templates, not real messages:** the Indian SMS test set is hand-written templates in Hindi,
-  Hinglish and English. The real-inbox audit is the trust number and is still to do.
-- **URL recall is 0.66** on the time-split feed: the model sees hostnames only, by design (the DNS view
-  has no paths).
-- **Llama 3.2 1B is wrong 10–15% of the time** in the manual review (above). That is why it never
-  decides and never writes the steps.
-- **Llama speed is phone-dependent.** On the Dimensity 7300, ExecuTorch picks 3 threads.
+- **Network Guard sees only this phone's traffic**, not other devices on the Wi-Fi. Strict Private DNS
+  or an app's own DNS-over-HTTPS bypasses its DNS view. Android allows one VPN at a time.
+- **The Indian SMS test set is templates**, hand-written in Hindi, Hinglish and English. The audit of
+  a real inbox is the trust number and is still to do.
+- **URL recall from the address alone is 0.53 on PhishTank and 0.92 on OpenPhish.** The model sees
+  hostnames only, because the DNS view has no paths. The sandbox and the phishing list cover more.
+- **The link sandbox reads HTML without running JavaScript.** Pages that build their form in script
+  are judged on what the server sends, and some clones that ask for nothing still read as safe.
+- **Llama 3.2 1B is wrong 10–15% of the time** in the manual review. That is why it never decides and
+  never writes the steps.
+- **Llama speed depends on the phone.** On the Dimensity 7300, ExecuTorch picks 3 threads.
 
-## Repository
+## Repository layout
 
-| Path | What |
+| Path | Contents |
 |---|---|
-| `android-app/app` | The app: detectors, Network Guard, Llama explainer, UI |
+| `android-app/app` | The app. Kotlin packages: `core` (featurizer, detectors, advice, pipeline), `llm` (Llama explainer, download, import), `net` (Network Guard), `sandbox` (link fetcher, page analyzer, isolated service), `sms`, `bench`, `ui` |
 | `android-app/beaconsim` | Test-only app that imitates malware network behaviour (DNS lookups of made-up names) |
-| `training/` | Featurizer, detector training/export, golden vectors, Llama export and explanation evaluation |
-| `scripts/` | Phone end-to-end tests, thread ablation, LAN scan demo, dataset download, Mac setup |
-| `benchmarks/results/` | Raw CSV/JSON behind every number in this README |
-| `docs/` | [Plan + progress log](docs/PLAN.md), [architecture](docs/ARCHITECTURE.md), [privacy](docs/PRIVACY.md), [demo script](docs/DEMO.md) |
+| `training/` | Featurizer, detector training and export, DNS lists, golden vectors, Llama export and explanation evaluation |
+| `models/detectors/` | The shipped `.pte` detectors, thresholds and DNS lists |
+| `scripts/` | End-to-end phone tests, evaluations, frame timing, thread ablation, LAN scan demo, demo recording |
+| `benchmarks/results/` | Raw CSV and JSON behind every number in this README |
+| `docs/` | [Architecture](docs/ARCHITECTURE.md), [privacy](docs/PRIVACY.md), [demo script](docs/DEMO.md), [plan and progress log](docs/PLAN.md), [technical report](docs/report/ENTITY-Shield-Report.pdf) |
 
 ## Licence and credits
 
-Mixed licence ([`LICENSE`](LICENSE)): the detection/network/AI engine, training code, scripts and docs
-are Apache-2.0; the app's user interface and dashboard are proprietary ([`LICENSE-PROPRIETARY.md`](LICENSE-PROPRIETARY.md)).
+Mixed licence ([`LICENSE`](LICENSE)): the detection, network and AI engine, the training code, the
+scripts and the docs are Apache-2.0. The app's user interface is proprietary
+([`LICENSE-PROPRIETARY.md`](LICENSE-PROPRIETARY.md)).
 
-**Built with Llama.** Llama 3.2 is licensed under the Llama 3.2 Community License, © Meta Platforms, Inc.
+**Built with Llama.** Llama 3.2 is licensed under the Llama 3.2 Community License, Copyright © Meta
+Platforms, Inc. All Rights Reserved.
 
-Runtime: ExecuTorch (BSD-3-Clause), XNNPACK, Arm KleidiAI. Data: UCI SMS Spam Collection (CC BY 4.0),
-PhishTank, OpenPhish, Tranco. Device-probe and benchmark method reused from the author's
+Runtime: ExecuTorch (BSD-3-Clause), XNNPACK, Arm KleidiAI. Typefaces: Geist and Geist Mono (SIL OFL
+1.1). Data: UCI SMS Spam Collection (CC BY 4.0), PhishTank, OpenPhish, Tranco, Cisco Umbrella. The
+device-probe and benchmark method is reused from the author's
 [ENTITY](https://github.com/kkjjkamal123/ENTITY---Arm-Create-AI-Optimization-Challenge) (Apache-2.0).
 See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

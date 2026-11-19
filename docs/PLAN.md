@@ -30,6 +30,22 @@ The October plan (4 devices, Pi hotspot, LoRA, ENTITY policy port, lessons from 
 
 Newest first.
 
+### 2026-11-19 (evening): release 0.4.0
+
+- **Network Guard v2** (`net/DnsPolicy.kt`): real long-tail lookups blocked by mistake fell from 21.5%
+  to 0.03%; the URL model alone still stops 87% of held-out OpenPhish domains. URL model v3 learned
+  from real DNS hostnames (Cisco Umbrella), split by registrable domain.
+- **Link sandbox:** the phone follows the link and reads the page in an Android isolated process
+  (files and network denied, checked on both phones). A page that is gone or never loads is reported
+  as "Couldn't check this link", never as safe, and a link opened from a flagged message keeps that
+  verdict.
+- **New UI:** design system, liquid-glass navigation, keep-alive tabs. Janky frames 4.0% to 1.15%
+  (CMF) and 7.1% to 2.4% (Infinix). APK 33 MB to 17 MB with R8.
+- **End to end:** `scripts/e2e_phone.py` 19/19 on both phones with the release code (qa build).
+  Detector check with R8-optimized code: SMS p50 0.50 ms (Infinix) and 0.64 ms (CMF).
+- **Bug found by the e2e loop:** the qa build type had no test receiver, because AGP 9 compiles Kotlin
+  only from `kotlin` source directories. Fixed in `app/build.gradle.kts`.
+
 ### 2026-11-19 (early morning): end to end on both phones, video, report
 
 **End-to-end (`scripts/e2e_phone.py`)** with the app shown above the lock screen (debug builds only), so
@@ -145,7 +161,7 @@ DNS-only imitation of C2 beacons, DGA bursts and DNS exfiltration), `scripts/e2e
 **Blocked on the user:** both phones locked → the app cannot come to the foreground (Android blocks
 starting the VPN from the background: `BackgroundServiceStartNotAllowedException`). CMF battery at 1%.
 
-### 2026-11-13 (afternoon): both detectors trained, exported and running on the phone ✅ (day 2 work, done a day early)
+### 2026-11-13 (afternoon): both detectors trained, exported and running on the phone (day 2 work, done a day early)
 
 **Device change:** the phone connected today is an **Infinix X6878** (Snapdragon 7s Gen 3 / SM7635, 1× A720 @ 2.7 GHz + 3× A720 @ 2.4 GHz + 4× A520 @ 1.8 GHz, **i8mm + bf16**, 7.5 GB RAM, Android 16), not the CMF Phone 1. Building and measuring on it. The October Llama numbers are from the CMF and get re-measured anyway.
 
@@ -223,9 +239,9 @@ _October entries below are kept as history. Section numbers in them (§6.7, §8.
 
 | | 8da4w (ours) | QAT+LoRA (Meta) |
 |---|---|---|
-| v1, no verdict prefill | ❌ refuses | ✅ explains + "Steps to take now" (no refusal) |
-| v4 English | ✅ correct (KYC = Know Your Customer, thanks to the fact sheet) but verbose: 3 points + extra, 99 tokens | ✅ **one correct sentence, stops by itself** (19 tokens): "It asks for personal info (KYC update) and links to a non-official site." |
-| v4 **Hindi** | ❌ awkward, vague, **repeats itself** | ✅ **fluent and correct, stops by itself** (48 tokens): "यह आपके खाते को ब्लॉक करने की धमकी देता है, जो आपके खाते की सुरक्षा को खतरे में डाल सकता है।" |
+| v1, no verdict prefill | Fail: refuses | Pass: explains + "Steps to take now" (no refusal) |
+| v4 English | Pass: correct (KYC = Know Your Customer, thanks to the fact sheet) but verbose: 3 points + extra, 99 tokens | Pass: **one correct sentence, stops by itself** (19 tokens): "It asks for personal info (KYC update) and links to a non-official site." |
+| v4 **Hindi** | Fail: awkward, vague, **repeats itself** | Pass: **fluent and correct, stops by itself** (48 tokens): "यह आपके खाते को ब्लॉक करने की धमकी देता है, जो आपके खाते की सुरक्षा को खतरे में डाल सकता है।" |
 | Prefill | 105–130 tok/s | 81–90 tok/s |
 | Decode | 18–20 tok/s | 11–14 tok/s |
 | TTFT, 165-token prompt | 1.27 s | 2.04 s |
@@ -237,11 +253,11 @@ _October entries below are kept as history. Section numbers in them (§6.7, §8.
 
 **Decision (provisional, pending the controlled benchmark):** **QAT+LoRA for explanations.** A refusal or broken Hindi in a demo costs more than 0.7 s. Win the latency back with (1) system-prompt KV-cache reuse (about half of the prompt is fixed), (2) short answers (it stops at 19–48 tokens on its own), (3) the thread/pinning ablation.
 
-**Answer design (decided):** ⚠️ **verdict** (written by the app from the detector) → **why** (Llama, about this specific message: lookalike domain, the trick used) → **what to do** (**fixed, pre-checked text** per scam type in English and Hindi: never generated, so it can't be wrong). Llama also handles follow-up questions ("I already clicked, what now?"), languages and network-alert explanations, so it does real work rather than decoration.
+**Answer design (decided):** **verdict** (written by the app from the detector) → **why** (Llama, about this specific message: lookalike domain, the trick used) → **what to do** (**fixed, pre-checked text** per scam type in English and Hindi: never generated, so it can't be wrong). Llama also handles follow-up questions ("I already clicked, what now?"), languages and network-alert explanations, so it does real work rather than decoration.
 
 **Not allowed by PS 3 (asked 2026-10-08):** a non-Llama model (Gemma, Qwen, Phi) for the advisory part; Apple Intelligence (macOS/iOS are not listed hardware, and the model isn't Llama). Apple's on-device model can still be a development tool on the Mac (e.g. drafting English test messages); check Apple's terms before using its output as training data.
 
-### 2026-10-08 (evening): first Llama 3.2 1B run on the phone ✅
+### 2026-10-08 (evening): first Llama 3.2 1B run on the phone
 
 **Model:** Llama 3.2 1B Instruct (Meta `original/` checkpoint) → `training/llm/export_llama.sh` → `models/llama3_2_1b_instruct_8da4w_ctx2048.pte`: XNNPACK, 8da4w (group 128), 4-bit embeddings (group 32), KV cache + custom SDPA, context 2048, prefill chunk 512. **803 MB** (ENTITY's Q4_0 GGUF: 773 MB). Export: 130 s on the M5, 6.8 GB peak RAM.
 
@@ -261,9 +277,9 @@ So ExecuTorch on this phone is level with ENTITY's tuned llama.cpp, and the sub-
 
 | Prompt | Result |
 |---|---|
-| v1: system prompt asks to explain why a flagged message is dangerous | ❌ **Refused:** "I cannot provide instructions or advice regarding the scamming of customers." |
-| v2: framed from the victim's side ("I got this SMS. Is it safe?") | ❌ **Refused:** "I cannot advise you on how to respond to a fake SMS message." |
-| v3: **verdict prefill**: the app writes the start of the answer ("⚠️ No, this SMS is a scam.") and Llama continues | ✅ Explains the warning signs correctly in structure, **but** expands KYC as "Key Identification Card" (wrong: Know Your Customer) and runs past 160 tokens without reaching the "what to do" steps |
+| v1: system prompt asks to explain why a flagged message is dangerous | Fail. **Refused:** "I cannot provide instructions or advice regarding the scamming of customers." |
+| v2: framed from the victim's side ("I got this SMS. Is it safe?") | Fail. **Refused:** "I cannot advise you on how to respond to a fake SMS message." |
+| v3: **verdict prefill**: the app writes the start of the answer ("No, this SMS is a scam.", after a warning sign) and Llama continues | Pass. Explains the warning signs correctly in structure, **but** expands KYC as "Key Identification Card" (wrong: Know Your Customer) and runs past 160 tokens without reaching the "what to do" steps |
 
 **Decision: verdict prefill is the explanation design.** The detector's verdict is written by the app into the first sentence of the answer, and Llama only continues it. This avoids the safety refusal and also guarantees Llama can't contradict the verdict (faithfulness, §6.4).
 
@@ -356,16 +372,16 @@ Phase 1 asks for "report, source code and demo", hosted on GitHub, through the c
 
 | Day | Work | Done when | Status |
 |---|---|---|---|
-| Fri 13 | Rewrite this plan, fix dates. Find the submission form and Phase 1 rules in the registration email. Download datasets. | Plan committed; form link known or support emailed | 🟡 |
-| Sat 14 | SMS + URL detectors: data, train, evaluate, export `.pte`, golden vectors | F1 and false-positive tables; both `.pte` run on the phone | ✅ done Fri 13 (real-inbox test left) |
-| Sun 15 | App skeleton: SMS receiver, featurizer, detectors, alert card | Real SMS → alert on screen, airplane mode | ⏳ |
-| Mon 16 | Llama in the app: prefill, streaming, EN/HI, fixed steps, actions | Alert card shows the explanation; sender block works | ⏳ |
-| Tue 17 | Share-to-app links, follow-up questions, history, demo screen | **Phone-only build covers C2–C6 end to end** | ⏳ |
-| Wed 18 | Pi sentinel + alert to the phone | `nmap` from the Mac → explained alert on the phone | ⏳ |
-| Thu 19 | DNS guard (cut at end of day) | Bad domain blocked on the phone, or cut and noted | ⏳ |
-| Fri 20 | **Feature freeze.** Benchmarks of record, bug fixes | Numbers in `benchmarks/results/` | ⏳ |
-| Sat 21 | Demo video, technical report, README, signed APK release | All four deliverables exist | ⏳ |
-| Sun 22 | Final check against §8, submit | Submitted | ⏳ |
+| Fri 13 | Rewrite this plan, fix dates. Find the submission form and Phase 1 rules in the registration email. Download datasets. | Plan committed; form link known or support emailed | Done |
+| Sat 14 | SMS + URL detectors: data, train, evaluate, export `.pte`, golden vectors | F1 and false-positive tables; both `.pte` run on the phone | Done Fri 13 (real-inbox test left) |
+| Sun 15 | App skeleton: SMS receiver, featurizer, detectors, alert card | Real SMS → alert on screen, airplane mode | Done 18 Nov |
+| Mon 16 | Llama in the app: prefill, streaming, EN/HI, fixed steps, actions | Alert card shows the explanation; sender block works | Done 19 Nov |
+| Tue 17 | Share-to-app links, follow-up questions, history, demo screen | **Phone-only build covers C2–C6 end to end** | Done 19 Nov |
+| Wed 18 | Pi sentinel + alert to the phone | `nmap` from the Mac → explained alert on the phone | Dropped: phone only. The LAN tripwire on the phone catches the scan instead |
+| Thu 19 | DNS guard (cut at end of day) | Bad domain blocked on the phone, or cut and noted | Done 19 Nov (Network Guard; v2 policy in 0.4) |
+| Fri 20 | **Feature freeze.** Benchmarks of record, bug fixes | Numbers in `benchmarks/results/` | Done 19 Nov |
+| Sat 21 | Demo video, technical report, README, signed APK release | All four deliverables exist | Done 19 Nov; updated for 0.4 |
+| Sun 22 | Final check against §8, submit | Submitted | Pending |
 
 **If a day slips:** DNS guard goes first, then the Llama second opinion, then follow-up questions. The phone-only build from Tuesday is never put at risk for the network parts.
 
@@ -421,14 +437,14 @@ Rules: detection never waits for Llama; the model loads on demand and is freed a
 
 | Number | Method | Status |
 |---|---|---|
-| Time to first warning | SMS receive → alert drawn, n ≥ 10 | ⏳ |
-| Detector latency p50/p95 | On the phone, n ≥ 1000 | ✅ model only: 0.022 / 0.031 ms; with featurizing ⏳ |
-| SMS precision / recall / F1 / FPR | UCI held-out, Indian scam held-out, own inbox (FPR only) | ✅ held-out sets; own inbox ⏳ |
-| URL precision / recall / AUC | Time-split phishing feed + Tranco | ✅ |
-| Network per-class F1 | CICIDS2017 held-out, plus own lab attacks reported separately | ⏳ |
-| Llama TTFT, decode tok/s, RSS | Unplugged, screen on, n ≥ 5 (replaces the October single runs) | ⏳ |
-| Energy per explanation | Battery current × voltage over the run | ⏳ |
-| Offline proof | Airplane mode / WAN unplugged, in the video | ⏳ |
+| Time to first warning | SMS receive → alert drawn, n ≥ 10 | Done: in-app benchmark n = 20, and every e2e run |
+| Detector latency p50/p95 | On the phone, n ≥ 1000 | Done: full check p50 0.50 ms (Infinix) and 0.64 ms (CMF), n = 1000 |
+| SMS precision / recall / F1 / FPR | UCI held-out, Indian scam held-out, own inbox (FPR only) | Done for the held-out sets; own inbox pending |
+| URL precision / recall / AUC | Time-split phishing feed + Tranco | Done |
+| Network per-class F1 | CICIDS2017 held-out, plus own lab attacks reported separately | Moved to Phase 2 (flow model) |
+| Llama TTFT, decode tok/s, RSS | Unplugged, screen on, n ≥ 5 (replaces the October single runs) | Done for first token and decode (in-app benchmark, thread ablation); RSS not reported |
+| Energy per explanation | Battery current × voltage over the run | Not done |
+| Offline proof | Airplane mode / WAN unplugged, in the video | Done (demo video, scene 1) |
 
 ## 6. Cut from Phase 1
 

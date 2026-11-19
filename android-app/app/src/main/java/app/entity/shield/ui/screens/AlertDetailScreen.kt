@@ -135,7 +135,7 @@ fun AlertDetailScreen(a: Alert) {
                 val act = ctx as ComponentActivity
                 inspecting = listOf(LinkInspector.Step("address", LinkInspector.RUNNING))
                 thread(name = "inspect") {
-                    val r = LinkInspector.inspect(ctx, link, "check") { st -> act.runOnUiThread { inspecting = st } }
+                    val r = LinkInspector.inspect(ctx, link, "check", a.v) { st -> act.runOnUiThread { inspecting = st } }
                     act.runOnUiThread { nav.open(Route.AlertR(r.id)) }
                 }
             }) {

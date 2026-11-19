@@ -59,7 +59,11 @@ object LinkInspector {
         return if (Regex("^[a-zA-Z][a-zA-Z0-9+.-]*://").containsMatchIn(t)) t else "https://$t"
     }
 
-    fun inspect(ctx: Context, raw: String, source: String, onStep: (List<Step>) -> Unit = {}): Alert {
+    /**
+     * [parent] is the verdict of the message the link came in, if any: a link from a message already
+     * flagged as a scam is never reported as safe just because its page is clean or gone.
+     */
+    fun inspect(ctx: Context, raw: String, source: String, parent: Verdict? = null, onStep: (List<Step>) -> Unit = {}): Alert {
         val t0 = SystemClock.elapsedRealtimeNanos()
         val url = normalize(raw)
         val keys = listOf("address", "visit", "read", "traps", "text", "verdict")
@@ -146,15 +150,29 @@ object LinkInspector {
         val pLex = if (allowed) 0f else maxOf(if (lex.allowlisted) 0f else lex.score, lexFinal)
         var score = maxOf(pLex, pPage)
         val compromised = sig.any { it in STRONG && it != "brand_impersonation" && it != "apk_download" }
-        if (allowed && !compromised) score = minOf(score, 0.2f)
+        // A risky address that lands on a trusted site is a known cloaking trick: phishing kits send visitors
+        // that look like scanners on to the real brand. The landing site does not clear the address.
+        val cloaked = allowed && lex.band == Band.SCAM && !lex.allowlisted &&
+            Featurizer.registrable(firstHost) != Featurizer.registrable(finalHost)
+        if (cloaked) { sig += "cloaking_redirect"; score = maxOf(score, lex.score) }
+        if (allowed && !compromised && !cloaked) score = minOf(score, 0.2f)
+        // Nothing to read is not the same as safe. A page that is gone (404, an error page), an address that
+        // no longer exists or a server that never answers gives Shield nothing to judge, and scam pages are
+        // often taken down within hours. A shortener that did not lead anywhere hides its destination too.
+        // Popular and trusted sites are exempt: a broken link on them is just a broken link.
+        val dead = fetch.error != null && fetch.error != "tls_invalid" || fetch.status >= 400 || "error_page" in sig
+        val shortener = Featurizer.isShortener(finalHost)
+        if (dead && (shortener || freeHost || (!allowed && !popular)) && score < 0.5f) { sig += "unverifiable"; score = 0.5f }
+        if (parent != null && parent.band != Band.SAFE && parent.score > score) { sig += "from_flagged_message"; score = minOf(parent.score, 0.99f) }
         val band = when { score >= 0.85f -> Band.SCAM; score >= 0.5f -> Band.UNCERTAIN; else -> Band.SAFE }
         val family = when {
             "upi_pin_field" in sig -> Family.UPI
             "aadhaar_field" in sig || "pan_field" in sig || "kyc_text" in sig -> Family.KYC
             "reward_text" in sig -> Family.PRIZE
+            "from_flagged_message" in sig && parent != null && parent.family != Family.GENERIC -> parent.family
             else -> Family.LINK
         }
-        val evidence = (listOf("sandbox") + sig.filter { shown(it) || it.startsWith("imitates:") } + lex.evidence).distinct()
+        val evidence = (listOf("sandbox") + sig.filter { shown(it) || it.startsWith("imitates:") || it == "unverifiable" || it == "from_flagged_message" || it == "cloaking_redirect" } + lex.evidence).distinct()
         val v = Verdict("url", band, score, family, evidence, finalHost, lex.millis, allowed)
         set(5, Step("verdict", stateOf(band), "${band.name.lowercase()} · ${pct(score)} · ${"%.1f".format((SystemClock.elapsedRealtimeNanos() - t0) / 1e9)} s"))
 

@@ -14,20 +14,20 @@
    "summary": {
     "n": 40,
     "answered": 40,
-    "alive": 35,
+    "alive": 34,
     "address_only": {
      "SCAM": 24,
      "UNCERTAIN": 3,
-     "SAFE": 8
+     "SAFE": 7
     },
     "sandbox": {
      "SCAM": 26,
-     "UNCERTAIN": 2,
-     "SAFE": 7
+     "UNCERTAIN": 3,
+     "SAFE": 5
     },
     "dead_or_unreachable": {
      "SCAM": 4,
-     "UNCERTAIN": 0,
+     "UNCERTAIN": 1,
      "SAFE": 1
     }
    },
@@ -184,7 +184,7 @@
      "band": "SAFE",
      "score": 0.341,
      "page": 0.341,
-     "lex": 0.283,
+     "lex": 0.043,
      "signals": [
       "password_field",
       "otp_field",
@@ -261,15 +261,13 @@
      "hops": 2,
      "error": null,
      "band": "SCAM",
-     "score": 0.976,
-     "page": 0.976,
+     "score": 0.941,
+     "page": 0.941,
      "lex": 0.484,
      "signals": [
       "password_field",
       "brand_impersonation",
-      "login_text",
-      "lookalike_domain",
-      "imitates:adobe"
+      "login_text"
      ]
     },
     {
@@ -356,14 +354,12 @@
      "error": null,
      "band": "SCAM",
      "score": 0.929,
-     "page": 0.689,
+     "page": 0.221,
      "lex": 0.929,
      "signals": [
       "brand_mention_offdomain",
       "js_redirect",
-      "hidden_iframe",
-      "lookalike_domain",
-      "imitates:roblox"
+      "hidden_iframe"
      ]
     },
     {
@@ -407,12 +403,13 @@
      "final": "http://imtooenne.com/en.html",
      "hops": 1,
      "error": null,
-     "band": "SAFE",
-     "score": 0.333,
+     "band": "UNCERTAIN",
+     "score": 0.5,
      "page": 0.08,
      "lex": 0.333,
      "signals": [
-      "scam_words"
+      "scam_words",
+      "unverifiable"
      ]
     },
     {
@@ -423,7 +420,7 @@
      "error": null,
      "band": "SAFE",
      "score": 0.2,
-     "page": 0.689,
+     "page": 0.455,
      "lex": 0.0,
      "signals": [
       "hidden_iframe",
@@ -608,14 +605,13 @@
      "lex0": 0.256,
      "final": "https://zonacanje.click/bac.pa",
      "hops": 1,
-     "error": null,
-     "band": "SAFE",
-     "score": 0.256,
-     "page": 0.154,
+     "error": "dns",
+     "band": "UNCERTAIN",
+     "score": 0.5,
+     "page": 0.0,
      "lex": 0.256,
      "signals": [
-      "cloaked_empty",
-      "new_certificate"
+      "unverifiable"
      ]
     },
     {
@@ -805,7 +801,7 @@
     {
      "url": "https://pay.google.com/",
      "lex0": 0.0,
-     "final": "https://accounts.google.com/v3/signin/identifier?continue=https://wallet.google.com/wallet?p%3Dpgc%26utm_source%3Dpgc%26utm_medium%3Dwebsite%26utm_campaign%3Dredirect&followup=https://wallet.google.com/wallet?p%3Dpgc%26utm_source%3Dpgc%26utm_medium%3Dwebsite%26utm_campaign%3Dredirect&osid=1&passive=1209600&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S1426089242:1795077725360048",
+     "final": "https://accounts.google.com/v3/signin/identifier?continue=https://wallet.google.com/wallet?p%3Dpgc%26utm_source%3Dpgc%26utm_medium%3Dwebsite%26utm_campaign%3Dredirect&followup=https://wallet.google.com/wallet?p%3Dpgc%26utm_source%3Dpgc%26utm_medium%3Dwebsite%26utm_campaign%3Dredirect&osid=1&passive=1209600&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-517621307:1795104275937930",
      "hops": 4,
      "error": null,
      "band": "UNCERTAIN",
@@ -915,14 +911,12 @@
      "hops": 2,
      "error": null,
      "band": "SAFE",
-     "score": 0.2,
-     "page": 0.661,
+     "score": 0.154,
+     "page": 0.154,
      "lex": 0.0,
      "signals": [
       "kyc_text",
-      "login_text",
-      "lookalike_domain",
-      "imitates:epfo"
+      "login_text"
      ]
     },
     {
@@ -1148,10 +1142,12 @@
      "error": null,
      "band": "SAFE",
      "score": 0.2,
-     "page": 0.402,
+     "page": 0.358,
      "lex": 0.0,
      "signals": [
       "obfuscated_js",
+      "reward_text",
+      "kyc_text",
       "scam_words"
      ]
     },
@@ -1292,8 +1288,8 @@
     },
     "dead_or_unreachable": {
      "SCAM": 0,
-     "UNCERTAIN": 1,
-     "SAFE": 7
+     "UNCERTAIN": 0,
+     "SAFE": 8
     }
    },
    "rows": [
@@ -1318,14 +1314,11 @@
      "final": "https://uidai.net.in/",
      "hops": 1,
      "error": "dns",
-     "band": "UNCERTAIN",
-     "score": 0.6,
-     "page": 0.6,
+     "band": "SAFE",
+     "score": 0.014,
+     "page": 0.0,
      "lex": 0.014,
-     "signals": [
-      "lookalike_domain",
-      "imitates:uidai"
-     ]
+     "signals": []
     },
     {
      "url": "https://famapp.in/",
@@ -1348,9 +1341,9 @@
      "hops": 2,
      "error": null,
      "band": "UNCERTAIN",
-     "score": 0.809,
+     "score": 0.624,
      "page": 0.154,
-     "lex": 0.809,
+     "lex": 0.624,
      "signals": [
       "js_redirect",
       "new_certificate"
@@ -1389,10 +1382,12 @@
      "hops": 2,
      "error": null,
      "band": "SAFE",
-     "score": 0.135,
-     "page": 0.0,
-     "lex": 0.135,
-     "signals": []
+     "score": 0.081,
+     "page": 0.08,
+     "lex": 0.081,
+     "signals": [
+      "scam_words"
+     ]
     },
     {
      "url": "https://reliance.in/",
@@ -1401,8 +1396,8 @@
      "hops": 1,
      "error": "tls_invalid",
      "band": "SAFE",
-     "score": 0.35,
-     "page": 0.35,
+     "score": 0.175,
+     "page": 0.175,
      "lex": 0.04,
      "signals": [
       "tls_invalid"
@@ -1429,9 +1424,9 @@
      "hops": 3,
      "error": null,
      "band": "SAFE",
-     "score": 0.026,
+     "score": 0.023,
      "page": 0.0,
-     "lex": 0.026,
+     "lex": 0.023,
      "signals": []
     },
     {
@@ -1471,9 +1466,9 @@
      "hops": 3,
      "error": null,
      "band": "SAFE",
-     "score": 0.402,
-     "page": 0.402,
-     "lex": 0.044,
+     "score": 0.241,
+     "page": 0.241,
+     "lex": 0.016,
      "signals": [
       "cloaked_empty",
       "cross_site_redirects"
@@ -1510,13 +1505,10 @@
      "hops": 2,
      "error": null,
      "band": "UNCERTAIN",
-     "score": 0.6,
-     "page": 0.6,
+     "score": 0.568,
+     "page": 0.0,
      "lex": 0.568,
-     "signals": [
-      "lookalike_domain",
-      "imitates:lic"
-     ]
+     "signals": []
     },
     {
      "url": "https://27-tataidc.co.in/",
@@ -1525,8 +1517,8 @@
      "hops": 1,
      "error": "tls_invalid",
      "band": "SAFE",
-     "score": 0.35,
-     "page": 0.35,
+     "score": 0.175,
+     "page": 0.175,
      "lex": 0.005,
      "signals": [
       "tls_invalid"
@@ -1724,7 +1716,7 @@
      "error": null,
      "band": "SAFE",
      "score": 0.2,
-     "page": 0.637,
+     "page": 0.54,
      "lex": 0.0,
      "signals": [
       "password_field",

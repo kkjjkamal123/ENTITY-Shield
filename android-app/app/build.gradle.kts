@@ -64,6 +64,7 @@ android {
     sourceSets.getByName("main").assets.srcDirs("build/generated/detector-assets")
     sourceSets.getByName("qa") {
         java.srcDirs("src/debug/java")
+        kotlin.srcDirs("src/debug/java")   // AGP 9 compiles Kotlin from kotlin dirs; without this DebugReceiver is missing
         res.srcDirs("src/debug/res")
         manifest.srcFile("src/debug/AndroidManifest.xml")
     }

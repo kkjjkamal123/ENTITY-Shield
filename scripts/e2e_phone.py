@@ -1,6 +1,6 @@
 """End-to-end checks of ENTITY Shield on a real phone, driven over adb (debug APK).
 
-  python scripts/e2e_phone.py --serial <adb serial> [--install] [--skip-llm] [--skip-net] [--hindi]
+  python scripts/e2e_phone.py --serial <adb serial> [--install [--apk PATH]] [--skip-llm] [--skip-net] [--hindi]
 
 Every check runs the real app code on the phone through the debug-only DebugReceiver and reads the
 result back from logcat (tag ShieldE2E). Writes benchmarks/results/e2e_<model>_<date>.json.
@@ -67,9 +67,11 @@ def shell_quote(s):
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)   # Hindi checks on a cp1252 console
     ap = argparse.ArgumentParser()
     ap.add_argument("--serial", required=True)
     ap.add_argument("--install", action="store_true")
+    ap.add_argument("--apk", default=str(APK), help="APK to install (default: the debug build; the qa build also has the test hooks)")
     ap.add_argument("--skip-llm", action="store_true")
     ap.add_argument("--skip-net", action="store_true")
     ap.add_argument("--hindi", action="store_true")
@@ -87,10 +89,10 @@ def main():
     print(f"Phone: {model} ({soc}), {'LOCKED - results will be slow' if locked else 'unlocked'}")
 
     if a.install:
-        out = p.adb_all("install", "-r", "-g", str(APK))
+        out = p.adb_all("install", "-r", "-g", a.apk)
         if "INSTALL_FAILED_UPDATE_INCOMPATIBLE" in out or "signatures do not match" in out.lower():
             p.adb("uninstall", PKG)   # release build installed: switch to the debug build (history is lost)
-            out = p.adb_all("install", "-g", str(APK))
+            out = p.adb_all("install", "-g", a.apk)
         check("install", "Success" in out, out.strip().splitlines()[-1] if out.strip() else "")
     for perm in ("RECEIVE_SMS", "READ_SMS", "POST_NOTIFICATIONS"):
         p.sh(f"pm grant {PKG} android.permission.{perm}")
@@ -106,6 +108,16 @@ def main():
     line = p.wait_line(r"selftest ", 90)
     m = re.findall(r"(sms|url) golden: (\d+)/(\d+)", line or "")
     check("detector parity (Kotlin featurizer + ExecuTorch == Python)", m and all(a_ == b_ for _, a_, b_ in m), line.split("selftest ", 1)[-1] if line else "no output")
+
+    # 1b. link sandbox: the page parser must run isolated (no files, no network)
+    p.cmd("probe")
+    line = p.wait_line(r"ShieldE2E: probe ", 30) or ""
+    check("link sandbox runs in an isolated process (files and network denied)",
+          "isolated=true" in line and "files_denied=true" in line and "net_denied=true" in line, line.split("ShieldE2E: ", 1)[-1])
+    if not a.skip_net:
+        p.cmd("inspect", link="https://www.onlinesbi.sbi/")
+        line = p.wait_line(r"ShieldE2E: inspect ", 45) or ""
+        check("sandbox visits a real bank site and finds it safe", "band=SAFE" in line, line.split("ShieldE2E: ", 1)[-1][:160])
 
     # 2. SMS verdicts
     cases = [

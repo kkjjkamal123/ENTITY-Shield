@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -169,7 +171,11 @@ fun DetailScaffold(title: String, actions: (@Composable RowScope.() -> Unit)? = 
         ) {
             Column(Modifier.widthIn(max = a.maxContent).fillMaxWidth().padding(horizontal = a.gutter), verticalArrangement = Arrangement.spacedBy(Dim.m), content = content)
         }
-        Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(c.bg.copy(alpha = 0.9f)))
+        // header scrim: content scrolls away under the clock and the floating buttons instead of colliding with them
+        Column(Modifier.fillMaxWidth()) {
+            Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(c.bg))
+            Box(Modifier.fillMaxWidth().height(76.dp).background(Brush.verticalGradient(0f to c.bg, 0.6f to c.bg.copy(alpha = 0.9f), 1f to Color.Transparent)))
+        }
         Row(Modifier.statusBarsPadding().sideCutoutPadding().padding(horizontal = 14.dp, vertical = 8.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             GlassSurface(backdrop, Modifier.size(46.dp).pressable(onClick = nav.back), radius = 23.dp) {
                 Glyph(Ico.Back, c.text, 22.dp, Modifier.align(Alignment.Center))

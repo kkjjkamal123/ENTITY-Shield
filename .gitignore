@@ -49,7 +49,7 @@ demo/raw/
 demo/build/
 release/
 
-# Claude Code worktrees and local settings
+# Local tool state (worktrees, editor settings)
 .claude/
 
 # Small on-device detector models and Network Guard lists ARE committed, so the app builds from a clean

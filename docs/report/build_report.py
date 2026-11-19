@@ -106,13 +106,13 @@ if groups:
     charts["review"] = img(fig)
 
 fig, ax = plt.subplots(figsize=(8.5, 2.2))
-steps = [("SMS check, Snapdragon 7s Gen 3 (p50)", 1.15, C["cyan"]), ("SMS → notification (time to first warning, median)", 21.6, C["blue"]),
+steps = [("SMS check, Snapdragon 7s Gen 3 (p50)", 0.5, C["cyan"]), ("SMS → notification (time to first warning, median, Infinix)", 38.4, C["blue"]),
          ("Llama first token in the app, pre-warmed", 1000, C["violet"]), ("Llama first token in the app, cold", 1780, C["violet"]),
          ("Llama first token, background cgroup (A55s, CMF)", 9200, C["grey"])]
 b = ax.barh([s[0] for s in steps][::-1], [s[1] for s in steps][::-1], color=[s[2] for s in steps][::-1])
 ax.set_xscale("log")
 ax.bar_label(b, labels=[f"{s[1]:g} ms" for s in steps][::-1], padding=4, fontsize=9)
-ax.set_xlim(1, 60000)
+ax.set_xlim(0.2, 60000)
 ax.set_xlabel("milliseconds (log scale)")
 fig.tight_layout()
 charts["latency"] = img(fig)
@@ -163,7 +163,7 @@ e2e_html = ""
 for e in e2e:
     ok = sum(r["ok"] for r in e["results"])
     e2e_html += f"<h4>{e['device']} ({e['soc']}): {ok}/{len(e["results"])} checks passed</h4><ul style=\"list-style:none;padding-left:0\">" + "".join(
-        f"<li>{'✅' if r['ok'] else '❌'} {r['check']} <span class=small>{r['detail'][:140]}</span></li>" for r in e["results"]) + "</ul>"
+        f"<li><b style=\"color:{'#15803d' if r['ok'] else '#b91c1c'}\">{'PASS' if r['ok'] else 'FAIL'}</b> {r['check']} <span class=small>{r['detail'][:140]}</span></li>" for r in e["results"]) + "</ul>"
 if not e2e_html:
     e2e_html = "<p class=pending>End-to-end phone run (scripts/e2e_phone.py) pending: needs the phones unlocked.</p>"
 
@@ -199,7 +199,8 @@ code {{ background: #f3f4f6; padding: 0 3px; border-radius: 3px; font-size: 9pt;
 <div style="font-size:12.5pt">On-device threat, phishing and scam detection on an Arm phone. Detectors decide in milliseconds;
 Llama 3.2 on ExecuTorch explains in English or Hindi. Nothing leaves the phone.</div>
 <div class="k"><b>{f3(s_ind['precision'])} / {f3(s_ind['recall'])}</b>SMS precision / recall on unseen Indian templates</div>
-<div class="k"><b>5.0 ms</b>full SMS check on a Dimensity 7300</div>
+<div class="k"><b>0.64 ms</b>full SMS check on a Dimensity 7300</div>
+<div class="k"><b>0.03%</b>ordinary DNS lookups blocked by mistake</div>
 <div class="k"><b>0.89 s</b>Llama first token, Snapdragon 7s Gen 3</div>
 <div class="k"><b>0 bytes</b>sent to any cloud</div>
 </div>
@@ -220,13 +221,13 @@ extra hardware.</li>
 
 <h3>PS3 requirements → implementation</h3>
 <table><tr><th>PS3 asks for</th><th>ENTITY Shield</th><th>Evidence in this report</th></tr>
-<tr><td>Monitor/classify network traffic for anomalies and intrusions</td><td>Network Guard: DNS VPN + URL model + beacon / DGA / tunnel detectors; LAN tripwire (scan, brute force, ADB probe)</td><td>§4, §7</td></tr>
-<tr><td>Detect phishing URLs</td><td>URL detector on links in SMS, shared links, Link Guard, DNS lookups</td><td>§3</td></tr>
+<tr><td>Monitor/classify network traffic for anomalies and intrusions</td><td>Network Guard: DNS VPN + URL model + beacon / DGA / tunnel detectors; LAN tripwire (scan, brute force, ADB probe)</td><td>§4, §9</td></tr>
+<tr><td>Detect phishing URLs</td><td>URL detector on links in SMS, shared links, Link Guard, DNS lookups; the link sandbox follows the link and reads the page in an isolated process</td><td>§3, §5</td></tr>
 <tr><td>Detect scam SMS / fraudulent communications</td><td>SMS detector on every incoming SMS; inbox audit</td><td>§3</td></tr>
-<tr><td>Explain in plain language</td><td>Llama 3.2 1B (ExecuTorch), English and Hindi, read-aloud</td><td>§5</td></tr>
-<tr><td>Recommend remediation</td><td>Fixed checked steps per scam family + real actions (block, 1930, report, remove app, leave Wi-Fi)</td><td>§5</td></tr>
-<tr><td>Process data locally</td><td>All models on the Arm CPU; airplane-mode capable</td><td>§8</td></tr>
-<tr><td>Llama via ExecuTorch (required)</td><td><code>org.pytorch.executorch.extension.llm.LlmModule</code> 1.5.1 inside the APK</td><td>§5, §6</td></tr></table>
+<tr><td>Explain in plain language</td><td>Llama 3.2 1B (ExecuTorch), English and Hindi, read-aloud</td><td>§6</td></tr>
+<tr><td>Recommend remediation</td><td>Fixed checked steps per scam family + real actions (block, 1930, report, remove app, leave Wi-Fi)</td><td>§6</td></tr>
+<tr><td>Process data locally</td><td>All models on the Arm CPU; airplane-mode capable</td><td>§10</td></tr>
+<tr><td>Llama via ExecuTorch (required)</td><td><code>org.pytorch.executorch.extension.llm.LlmModule</code> 1.5.1 inside the APK</td><td>§6, §7</td></tr></table>
 
 <h2>2. Architecture</h2>
 <p>Inputs: SMS_RECEIVED, inbox, share/select-text/Link Guard, the DNS VPN and the tripwire → detectors (SMS, URL, behaviour
@@ -240,7 +241,7 @@ Llama streams the explanation. Coexistence rules:</p>
 </ul>
 <img src="{charts['latency']}">
 <p class="small">Latency budget. The warning is instant; the explanation follows on the user's screen. The grey bar is the
-mistake we measured and removed (§6).</p>
+mistake we measured and removed (§7).</p>
 
 <h2>3. Detectors</h2>
 <p><b>Features:</b> hashed character 2–5-grams (32,768 slots, FNV-1a) plus 15 named signals for SMS and 11 for URL. The signals
@@ -253,7 +254,7 @@ The test sets hold out whole <i>templates</i> and the <i>newest</i> phishing.</p
 <table><tr><th>Detector · test set</th><th>n</th><th>Precision</th><th>Recall</th><th>False-alarm rate</th><th>AUC</th></tr>
 <tr><td>SMS · UCI held out</td><td>{s_uci['n']}</td><td>{f3(s_uci['precision'])}</td><td>{f3(s_uci['recall'])}</td><td>{pct(s_uci['fpr'])}</td><td>{f3(auc_uci)}</td></tr>
 <tr><td>SMS · Indian templates never seen in training</td><td>{s_ind['n']}</td><td>{f3(s_ind['precision'])}</td><td>{f3(s_ind['recall'])}</td><td>{pct(s_ind['fpr'])}</td><td>{f3(auc_ind)}</td></tr>
-<tr><td>URL · PhishTank newer than training + Tranco (allow-list on)</td><td>{u_t['n']}</td><td>{f3(u_t['precision'])}</td><td>{f3(u_t['recall'])}</td><td>{pct(u_t['fpr'])}</td><td>{f3(auc_u)}</td></tr>
+<tr><td>URL v3 · PhishTank newer than training + real DNS hostnames and Tranco (allow-list on)</td><td>{u_t['n']}</td><td>{f3(u_t['precision'])}</td><td>{f3(u_t['recall'])}</td><td>{pct(u_t['fpr'])}</td><td>{f3(auc_u)}</td></tr>
 <tr><td>URL · OpenPhish feed, 19 Nov 2026</td><td>{u_op['n']}</td><td>—</td><td>{f3(u_op['recall'])}</td><td>—</td><td>—</td></tr>
 <tr><td>URL · 41 official Indian bank/UPI/government domains</td><td>{u_of['n']}</td><td>—</td><td>—</td><td>{pct(u_of['fpr'])}</td><td>—</td></tr></table>
 <p><b>Same answer on the phone.</b> The app's Kotlin featurizer is a line-by-line port of the Python one. The golden vectors pass
@@ -262,7 +263,13 @@ in Python, on the JVM (unit tests) and on the phone through the production path:
 <p><b>Faster by measuring.</b> 98% of detection time was featurizing: a String per n-gram, plus a fresh 131 KB dense vector copied
 into a tensor on every call. An allocation-free featurizer and one reused direct <code>FloatBuffer</code> per ExecuTorch model
 (<code>Tensor.fromBlob</code>) took the full SMS check from 9.4 ms to <b>5.0 ms p50</b> and the URL check from 2.7 to <b>1.1 ms</b>
-on the Dimensity 7300, with parity unchanged.</p>
+on the Dimensity 7300, with parity unchanged. Built the way it ships (R8), the same checks take <b>0.64 ms</b> (SMS) and
+<b>0.15 ms</b> (URL) on the Dimensity 7300 and 0.50 / 0.11 ms on the Snapdragon 7s Gen 3.</p>
+<p><b>URL v3.</b> The first URL model learned benign data from bare domains only (<code>flipkart.com</code>). DNS lookups are full
+hostnames (<code>connekt.flipkart.net</code>), so it called many of them phishing. v3 adds real DNS hostnames from the Cisco Umbrella
+list, split by registrable domain so no domain is on both sides, and a <code>brand_lure</code> signal for brand names inside
+unrelated domains. On 20,000 held-out real hostnames it raises 1.06% false alarms at the link threshold and 0.1% at Network
+Guard's blocking threshold.</p>
 
 <h2>4. Network Guard: network intrusion and malware behaviour, on the phone</h2>
 <ul>
@@ -270,6 +277,16 @@ on the Dimensity 7300, with parity unchanged.</p>
 through Shield. Each question is parsed (IPv4/UDP/DNS, unit-tested) and attributed to its app with
 <code>getConnectionOwnerUid</code>. It is scored on the phone (allow-lists, then the URL model), then either forwarded to the
 network's own resolver or answered NXDOMAIN if dangerous.</li>
+<li><b>Lookup policy v2</b> (<code>DnsPolicy</code>). v1 blocked whenever the URL model said "scam" and stopped ordinary
+traffic: on the Infinix, the phone maker's Messages servers, Airtel's backend and an Indian SMS-link service. v2 lets through
+local names, OS/CDN infrastructure, sites the user allowed, Tranco top-1M domains and the asking app's own domains; blocks
+hosts on the bundled PhishTank/OpenPhish list; blocks on the model only above a 0.1%-false-alarm threshold; and only flags
+the rest.
+<table><tr><th>Blocked by mistake / phishing caught</th><th>v1</th><th>v2</th></tr>
+<tr><td>Long-tail legitimate domains with real subdomain prefixes (20,000)</td><td>21.5%</td><td><b>0.03%</b></td></tr>
+<tr><td>Held-out real DNS hostnames, Umbrella ranks 600k–1M (20,000)</td><td>10.5%</td><td><b>0.12%</b></td></tr>
+<tr><td>PhishTank time-split (3,393), model alone</td><td>65%</td><td>33% (the feed list adds the known ones)</td></tr>
+<tr><td>OpenPhish held-out (297), model alone</td><td>93%</td><td>87%</td></tr></table></li>
 <li><b>Malware behaviour</b> (per app):
 <ul>
 <li><i>Beacon:</i> 6 or more lookups of one domain at a near-constant interval.</li>
@@ -284,7 +301,25 @@ ADB-worm probe (port 5555).</li>
 made-up names, so the alerts name a real installed app.</li>
 </ul>
 
-<h2>5. Llama 3.2 1B on ExecuTorch: the explanation layer</h2>
+<h2>5. Link sandbox: follow the link instead of guessing</h2>
+<p>The phone visits the link itself over raw HTTP/1.1: no cookies, no JavaScript, private addresses refused, redirects
+followed one by one, the certificate captured, size and time capped. The page is parsed inside an Android
+<code>isolatedProcess</code> service that has no access to Shield's files and no network; both are checked on every
+end-to-end run. The report shows where the link really lands, the certificate, and what the page asks for (UPI PIN, ATM PIN,
+OTP, Aadhaar, PAN, card and CVV). Strong signals: secret fields, forms or scripts that send data to Telegram or Discord bots,
+brand copies, look-alike domains, APK downloads. Weak signals (common on honest Indian sites) only nudge.</p>
+<table><tr><th>Live links that answered (CMF Phone 1)</th><th>Address only: scam / unsure / safe</th><th>Sandbox: scam / unsure / safe</th></tr>
+<tr><td>Phishing, tuning (34)</td><td>24 / 3 / 7</td><td><b>26 / 3 / 5</b></td></tr>
+<tr><td>Phishing, held-out (32)</td><td>28 / 0 / 4</td><td>27 / 1 / 4</td></tr>
+<tr><td>Big Indian brands (39)</td><td>0 / 0 / 39</td><td>0 / 1 / 38</td></tr>
+<tr><td>Long-tail .in sites, tuning (32)</td><td>0 / 2 / 30</td><td>0 / 3 / 29</td></tr>
+<tr><td>Long-tail .in sites, held-out (32)</td><td>1 / 3 / 28</td><td>1 / 5 / 26</td></tr></table>
+<div class="box"><b>Honest reading.</b> On the held-out sample the sandbox did not catch more phishing than the address
+model. Its value is what the address cannot show. The held-out sample also found a cloaking kit that sent the sandbox on to
+the real roblox.com; since 0.4.0 a risky address that lands on a trusted site stays flagged. A page that is gone or never
+answers is reported as "Couldn't check this link", never as safe.</div>
+
+<h2>6. Llama 3.2 1B on ExecuTorch: the explanation layer</h2>
 <p><b>Model:</b> Meta's quantization-aware-trained <code>Llama-3.2-1B-Instruct-QLORA_INT4_EO8</code>, exported with ExecuTorch
 1.5.1 (XNNPACK, 4-bit groupwise weights, 8-bit dynamic activations, KV cache, custom SDPA, context 2048; 1.12 GB). It runs in the
 APK through <code>LlmModule</code>. It was chosen over our own 8da4w export (faster) because it never refused and wrote fluent
@@ -313,7 +348,7 @@ first token arrives after <b>1.00 s pre-warmed vs 1.78 s cold (−44%)</b>. The 
 summation order when the prompt is prefilled in two chunks; we have not confirmed it directly. Removing the literal BOS token
 from the prefilled text diverged from the first sentence, so <code>prefillPrompt</code> adds no BOS of its own.</p>
 
-<h2 class="pb">6. Arm SoC: where the time goes</h2>
+<h2 class="pb">7. Arm SoC: where the time goes</h2>
 <p>Measured with ExecuTorch's own <code>llama_main</code> under <code>taskset</code>. The only things that change are the thread
 count and the allowed cores. Masks come from each phone's <code>cpuinfo_max_freq</code>; arms are interleaved over 3 runs.</p>
 {"".join(f'<img src="{v}">' for k, v in charts.items() if k.startswith("threads_"))}
@@ -331,23 +366,37 @@ it falls back. On the Snapdragon, 3 instead of 4 big-core threads costs 17% of p
 the big cores gives the fastest and steadiest prefill (±0.6 vs ±6.6 tok/s).</li>
 </ol></div>
 
-<h2>7. End-to-end on the phones</h2>
+<h2>8. App: design and smoothness</h2>
+<p>A new design system (graphite and signal lime, light and dark, Geist type, a custom icon set) with a liquid-glass tab bar
+rendered by the app itself: the backdrop is recorded into a GraphicsLayer and redrawn through an AGSL lens and a blur. The
+glass falls back to blur-only on Android 12 and to a frosted tint on Android 10–11, low-RAM phones and Battery Saver.
+Tabs are built once and kept, so a switch never builds a screen mid-animation. <code>scripts/bench_ui.py</code> taps
+through the tabs 30 times and reads <code>dumpsys gfxinfo</code>:</p>
+<table><tr><th>Phone</th><th>Janky frames</th><th>p95 frame</th><th>p99 frame</th></tr>
+<tr><td>CMF Phone 1 (Dimensity 7300, 120 Hz)</td><td>4.0% → <b>1.15%</b></td><td>150 → <b>48 ms</b></td><td>1100 → <b>65 ms</b></td></tr>
+<tr><td>Infinix X6878 (Snapdragon 7s Gen 3, 120 Hz)</td><td>7.1% → <b>2.4%</b></td><td>53 → <b>27 ms</b></td><td>117 → <b>30 ms</b></td></tr></table>
+<p>R8, resource shrinking and a startup profile took the APK from 33 MB to 17 MB. Llama installs from inside the app
+(resumable download from the release, SHA-256 checked).</p>
+
+<h2>9. End-to-end on the phones</h2>
 {e2e_html}
 
-<h2>8. Privacy, security and limits</h2>
+<h2>10. Privacy, security and limits</h2>
 <p>No account, analytics or cloud call. Messages, links and lookups are judged on the phone. The INTERNET permission is used
-only to forward the phone's own DNS lookups to its usual resolver. The inbox audit exports counts only. Debug hooks exist only
-in debug builds. Full table: <code>docs/PRIVACY.md</code>.</p>
+to forward the phone's own DNS lookups to its usual resolver, to visit a link in the sandbox when the user asks, and for the
+optional one-time Llama download. The inbox audit exports counts only. Test hooks exist only in debug and QA builds, behind
+the DUMP permission. Full table: <code>docs/PRIVACY.md</code>.</p>
 <ul>
 <li><b>Network Guard</b> sees this phone's own traffic, not other devices. Strict Private DNS or in-app DNS-over-HTTPS bypasses
 its DNS view.</li>
 <li><b>Test data:</b> the Indian SMS test set is templated. The real-inbox audit is the trust number
 ({'done' if audit else 'pending'}).</li>
-<li><b>URL recall is 0.66</b> on the time-split feed: hostname only, by design.</li>
+<li><b>URL recall from the address alone is 0.53</b> on the PhishTank time split and 0.92 on OpenPhish: hostname only, by
+design. The sandbox reads HTML without running JavaScript.</li>
 <li><b>Llama 1B is wrong 10–15% of the time</b> on hard inputs, so it explains but never decides.</li>
 </ul>
 
-<h2>9. Phase 2 plan</h2>
+<h2>11. Phase 2 plan</h2>
 <ul><li><b>Network:</b>
 <ul>
 <li>A full-tunnel flow meter with NetFlow features.</li>
@@ -364,10 +413,10 @@ ExecuTorch Windows <code>flatc</code> lookup fix and the core-count heuristic fi
 {f'<h2>Screens</h2><div class="grid">{screens_html}</div>' if screens_html else ''}
 
 <h2>Reproducibility and credits</h2>
-<p>Source: github.com/kkjjkamal123/ENTITY-Shield (branch <code>phase1</code>). Commands are listed in the README. The raw data
+<p>Source: github.com/kkjjkamal123/ENTITY-Shield (branch <code>main</code>). Commands are listed in the README. The raw data
 behind every number is in <code>benchmarks/results/</code>. Runtime: ExecuTorch 1.5.1 (BSD-3-Clause), XNNPACK, Arm KleidiAI.
-<b>Built with Llama</b>: Llama 3.2 is licensed under the Llama 3.2 Community License, © Meta Platforms, Inc. Data: UCI SMS Spam
-Collection (CC BY 4.0), PhishTank, OpenPhish, Tranco. Device-probe and benchmark method reused from ENTITY (Apache-2.0, same
+<b>Built with Llama</b>: Llama 3.2 is licensed under the Llama 3.2 Community License, © Meta Platforms, Inc. Typefaces: Geist (SIL OFL 1.1). Data: UCI SMS Spam
+Collection (CC BY 4.0), PhishTank, OpenPhish, Tranco, Cisco Umbrella. Device-probe and benchmark method reused from ENTITY (Apache-2.0, same
 author).</p>
 </body></html>"""
 

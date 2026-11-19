@@ -66,7 +66,7 @@ fun Card(modifier: Modifier = Modifier, pad: Dp = Dim.l, tone: Tone? = null, onC
     val bg = if (tone == null) c.surface else lerpOver(c.surface, c.fill(tone), if (c.dark) 0.10f else 0.08f)
     val line = if (tone == null) c.line else c.fill(tone).copy(alpha = 0.28f)
     Column(
-        modifier.clip(shape).background(bg).border(1.dp, line, shape)
+        modifier.fillMaxWidth().clip(shape).background(bg).border(1.dp, line, shape)
             .then(if (onClick != null) Modifier.pressable(onClick = onClick) else Modifier).padding(pad),
         content = content,
     )

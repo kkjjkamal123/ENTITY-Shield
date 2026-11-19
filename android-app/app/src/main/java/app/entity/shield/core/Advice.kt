@@ -123,6 +123,9 @@ object Advice {
         "scam_words", "scam_words_with_form" -> "the page's own words read like a scam"
         "mpin_field" -> "the page asks for your MPIN"
         "secret_offsite" -> "the form sends your password or codes to a different website"
+        "unverifiable" -> "the page is gone or would not load, so Shield could not check it. Scam pages are often taken down within hours"
+        "from_flagged_message" -> "it came in a message Shield already flagged"
+        "cloaking_redirect" -> "the link sends visitors on to the real site, a trick scam kits use to hide from checkers"
         "secret_on_free_host" -> "it asks for passwords or codes on a free website anyone can make"
         "lookalike_domain" -> v.evidence.firstOrNull { it.startsWith("imitates:") }?.let { "the address imitates ${it.removePrefix("imitates:").replaceFirstChar { c -> c.uppercase() }}" } ?: "the address imitates a well-known brand"
         else -> null // sender_dlt, dont_share_otp, digits_in_name, counters: point to safety or are details
@@ -185,6 +188,9 @@ object Advice {
         "scam_words", "scam_words_with_form" -> "पेज के शब्द धोखे जैसे हैं"
         "mpin_field" -> "पेज आपका MPIN मांगता है"
         "secret_offsite" -> "फ़ॉर्म आपका पासवर्ड या कोड किसी दूसरी वेबसाइट को भेजता है"
+        "unverifiable" -> "पेज हट चुका है या खुला नहीं, इसलिए Shield इसे जांच नहीं सका। धोखे वाले पेज अक्सर कुछ घंटों में हटा दिए जाते हैं"
+        "from_flagged_message" -> "यह उस मैसेज में आया जिसे Shield पहले ही ख़तरनाक बता चुका है"
+        "cloaking_redirect" -> "लिंक जांचने वालों को असली साइट पर भेज देता है, धोखेबाज़ ख़ुद को छिपाने के लिए यही चाल चलते हैं"
         "secret_on_free_host" -> "यह ऐसी मुफ़्त वेबसाइट पर पासवर्ड या कोड मांगता है जिसे कोई भी बना सकता है"
         "lookalike_domain" -> v.evidence.firstOrNull { it.startsWith("imitates:") }?.let { "पता ${it.removePrefix("imitates:").replaceFirstChar { c -> c.uppercase() }} की नकल करता है" } ?: "पता किसी जाने-माने ब्रांड की नकल करता है"
         else -> null
@@ -203,6 +209,8 @@ object Advice {
     fun headline(v: Verdict, lang: Lang): String {
         val hi = lang == Lang.HI
         if (v.band == Band.SAFE) return if (hi) "कोई ख़तरा नहीं मिला" else "No threat found"
+        if (v.band == Band.UNCERTAIN && "unverifiable" in v.evidence && "from_flagged_message" !in v.evidence)
+            return if (hi) "यह लिंक जांचा नहीं जा सका" else "Couldn't check this link"
         val name = when (v.family) {
             Family.NET_DOMAIN -> return if (hi) "Shield ने एक जोखिम भरी साइट रोकी" else "Shield stopped a risky site"
             Family.NET_BEACON -> return if (hi) "ऐप मैलवेयर जैसा व्यवहार कर रहा है" else "App behaving like malware"
