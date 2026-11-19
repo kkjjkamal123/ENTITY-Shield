@@ -13,6 +13,14 @@ Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · On-device threat, ph
 
 </div>
 
+> **New in 0.4 (2026-11-19, evening):**
+> - **Network Guard no longer blocks ordinary sites.** v1 blocked 21.5% of real long-tail lookups;
+>   v2 blocks 0.03% and still stops 87% of held-out phishing domains.
+> - **Links are followed, not guessed:** an isolated sandbox visits the link and reads the page.
+> - **A new design:** liquid glass, Geist type, no emoji.
+> - **Smoother:** janky frames 4.0% to 1.15%, worst frames 1.1 s to 65 ms.
+> - **Smaller:** the APK went from 33 MB to 17 MB.
+>
 > **Status, 2026-11-19 (Phase 1 is due 23 Nov):** the app runs end to end on a real phone.
 > `scripts/e2e_phone.py` passes **15/15** checks on an Infinix X6878 (Snapdragon 7s Gen 3) in one run:
 > - detector parity;
@@ -39,8 +47,8 @@ Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · On-device threat, ph
 
 | PS3 asks for | ENTITY Shield | Model / runtime |
 |---|---|---|
-| **Monitor network traffic for anomalies and intrusions** | **Network Guard** has two parts. (1) A local DNS-only VPN: every app's lookups are scored and attributed to the app ("Chrome tried to open sbi-kyc-update.in · blocked"); malware behaviour is flagged (fixed-timer beacons, DGA lookup bursts, DNS tunnelling). (2) A LAN tripwire on decoy ports catches port scans, password guessing and ADB-worm probes from the same Wi-Fi | URL detector (ExecuTorch) + behaviour rules |
-| **Detect phishing URLs** | Links inside SMS, links shared to Shield, **Link Guard** (open any link with Shield: checked first, then your browser), "Check with Shield" on selected text | URL detector, `url.pte` (ExecuTorch, XNNPACK) |
+| **Monitor network traffic for anomalies and intrusions** | **Network Guard** has two parts. (1) A local DNS-only VPN: every app's lookups are checked and attributed to the app. Only reported phishing hosts and near-certain fakes are stopped; popular sites, the app's own servers and sites the user allowed never are. Malware behaviour is flagged (fixed-timer beacons, DGA lookup bursts, DNS tunnelling). (2) A LAN tripwire on decoy ports catches port scans, password guessing and ADB-worm probes from the same Wi-Fi | URL detector (ExecuTorch) + behaviour rules |
+| **Detect phishing URLs** | Links inside SMS, links shared to Shield, **Link Guard** (open any link with Shield: checked first, then your browser), "Check with Shield" on selected text. **The link sandbox follows the link:** the phone fetches it with no cookies and no JavaScript. It parses the page inside an Android *isolated process*, which has no files and no network. It reports where the link really goes and what the page asks for (UPI PIN, OTP, Aadhaar, card + CVV). It also flags brand copies, look-alike domains and data sent to Telegram bots | URL detector, `url.pte` + page analysis + the SMS model on the page's words |
 | **Detect scam SMS and fraudulent communications** | Every incoming SMS, plus an on-device audit of the whole inbox | SMS detector, `sms.pte` (ExecuTorch, XNNPACK) |
 | **Explain threats to non-experts in plain language** | "Why" for *this* message, streamed, in **English or Hindi**, read aloud | **Llama 3.2 1B Instruct on ExecuTorch** (`LlmModule`) |
 | **Recommend remediation** | Fixed, pre-checked steps per scam family (never generated) + actions that act: block the sender, call 1930, report on cybercrime.gov.in, copy a report, remove the app, leave the Wi-Fi; follow-up questions answered by Llama inside the checked steps | Rules + Llama |
@@ -58,8 +66,9 @@ cannot overturn a verdict or invent advice. Details: [`docs/ARCHITECTURE.md`](do
 |---|---:|---:|---:|---:|---:|
 | SMS · UCI SMS Spam (held out) | 837 | 0.974 | 0.942 | 0.42% | 0.997 |
 | SMS · **Indian scam/legit templates never seen in training** | 840 | 0.978 | 0.903 | 1.82% | 0.982 |
-| URL · PhishTank **newer than all training data** + Tranco (with allow-list) | 10,179 | 0.972 | 0.661 | 0.96% | 0.904 |
-| URL · OpenPhish feed of 19 Nov 2026 (recall only) | 297 | — | 0.933 | — | — |
+| URL v3 · PhishTank **newer than all training data** + real DNS hostnames and Tranco domains (with allow-list) | 19,873 | 0.938 | 0.526 | 0.72% | 0.898 |
+| URL v3 · OpenPhish feed of 19 Nov 2026 (recall only) | 297 | — | 0.923 | — | — |
+| URL v3 · 20,000 held-out real DNS hostnames (Umbrella ranks 600k–1M), false alarms only | 20,000 | — | — | 1.06% (0.1% at Network Guard's threshold) | — |
 | URL · 41 official Indian bank/UPI/government domains | 41 | — | — | **0%** | — |
 
 - **Splits:** the SMS test uses *templates*, not just messages, that were never trained on. The URL
@@ -67,6 +76,78 @@ cannot overturn a verdict or invent advice. Details: [`docs/ARCHITECTURE.md`](do
 - **Reproducibility:** retraining the SMS model on Windows reproduced the 13 Nov Mac model
   exactly (43/43 golden scores, max difference 0.0).
 - **Real-inbox false-alarm audit:** pending.
+- **URL v3 vs v1:** v1's benign data held only bare domains (flipkart.com). On the new test, whose
+  benign side includes real hostnames (api.x.io, connekt.flipkart.net), v1 had precision 0.38 and 23%
+  false alarms. v3 adds real DNS names from the Cisco Umbrella list, split by domain so nothing leaks,
+  and a sharper `brand_lure` signal. Recall on this harder test is lower than v1's 0.661 on the easier
+  old one. Raw: [`detector_url_2026-11-19.json`](benchmarks/results/detector_url_2026-11-19.json).
+
+### Network Guard: false alarms (v1 → v2)
+
+v1 blocked a lookup whenever the URL model said "scam". Apps look up thousands of hostnames a day, so
+it blocked ordinary traffic. On the Infinix it stopped the phone maker's own Messages servers,
+Airtel's backend and an Indian SMS-link service. v2 (`net/DnsPolicy.kt`) decides in this order:
+1. Local names, OS/CDN infrastructure and sites the user allowed: let through.
+2. Hosts on the bundled PhishTank/OpenPhish list: blocked.
+3. Popular domains (Tranco top 1M) and domains that belong to the app asking: let through.
+4. The URL model at a strict threshold: blocked.
+5. Anything else the model doubts: flagged in the list, never blocked or notified.
+
+| Blocked by mistake / phishing caught | v1 | **v2** |
+|---|---:|---:|
+| Long-tail legitimate domains with real subdomain prefixes (20,000) | 21.5% | **0.03%** |
+| Held-out real DNS hostnames, Umbrella ranks 600k–1M (20,000) | 10.5% | **0.12%** |
+| PhishTank time-split test (3,393), by the model alone | 65% | 33% (the feed list adds the known ones) |
+| OpenPhish held-out (297), by the model alone | 93% | 87% |
+| The 4 hosts v1 wrongly blocked on the Infinix | blocked | **allowed** |
+
+The leftover v2 mistakes are mostly app backends on free hosts (Firebase, Pages). Those are blocked
+only when a browser asks, and only flagged inside other apps. Raw:
+[`dns_policy_eval_2026-11-19.json`](benchmarks/results/dns_policy_eval_2026-11-19.json),
+`scripts/eval_dns_policy.py`.
+
+### Link sandbox: follow the link vs read the address
+
+On the CMF Phone 1, the sandbox visited live links from the OpenPhish feed of 19 Nov 2026 and real
+Indian sites. This sample was used to set the signal weights; a held-out sample is next.
+
+| Live links that answered | Address only: scam / unsure / safe | **Sandbox**: scam / unsure / safe |
+|---|---|---|
+| Phishing (35) | 24 / 3 / 8 | **26 / 2 / 7** |
+| Big Indian brands: banks, government, payments, shopping (39) | 0 / 0 / 39 | 0 / 1 / 38 |
+| Random long-tail `.in` sites (32) | 0 / 2 / 30 | 0 / 3 / 29 |
+
+- **Catches what the address hides:** for example `auth.re/…` scores 8% on its address, but its page
+  copies a brand and asks for a password.
+- **What it gets wrong:** look-alike domains such as `wvvw--roblox.com` are now caught. Some clones
+  of real hotel pages still read as safe, because nothing on the page asks for secrets.
+- **What did not work:** the first weights flagged 11 ordinary sites. A lone password box, right-click
+  blocking, a fresh Let's Encrypt certificate and broken certificate chains are all common on honest
+  Indian sites. They were demoted to weak signals.
+- **Isolation, proven on the device:** the parser runs as uid 99036, `isolated=true`, and reading
+  Shield's files and opening a socket both fail.
+- Raw: `benchmarks/results/sandbox_eval_*.json`, `scripts/eval_sandbox.py`.
+
+### App smoothness (Android's own frame statistics)
+
+`scripts/bench_ui.py` taps through the tabs 30 times, including the far jumps (Home ↔ More), and
+reads `dumpsys gfxinfo`. "Before" is the 0.3 pager-based debug build; "after" is the 0.4 code
+optimized the way it ships (R8, startup profile).
+
+| Phone | Janky frames | p95 frame | p99 frame |
+|---|---|---|---|
+| CMF Phone 1 (Dimensity 7300, 120 Hz) | 4.0% → **1.15%** | 150 → **48 ms** | 1100 → **65 ms** |
+| Infinix X6878 (Snapdragon 7s Gen 3, 120 Hz) | 7.1% → **2.4%** | 53 → **27 ms** | 117 → **30 ms** |
+
+Where it came from:
+- **Tab host:** each tab is built once and kept, so a switch never builds a screen mid-animation.
+  This replaced a pager that built every page in between.
+- **No offscreen buffers** for the page fades.
+- **Nothing per frame:** no file checks or icon decoding on the main thread, and the nav animates
+  without recomposing.
+- **Glass costs nothing measurable:** a run with the glass forced off had the same frame times.
+- **Every device:** the glass falls back to blur-only on Android 12, and to a plain frosted tint on
+  Android 10–11, low-RAM phones and Battery Saver.
 
 ### Detectors: on the phone
 

@@ -1,0 +1,29 @@
+{
+ "date": "2026-11-19",
+ "device": "Infinix X6878",
+ "label": "glass_Frosted",
+ "display": "fps=144.00002\nfps=120.00001\nfps=90.0\nfps=60.000004",
+ "taps": 30,
+ "sequence": [
+  "More",
+  "Home",
+  "Alerts",
+  "More",
+  "Network",
+  "Home",
+  "Scan",
+  "Alerts",
+  "More",
+  "Home"
+ ],
+ "frames": 1492.0,
+ "janky": 39.0,
+ "janky_pct": 2.61,
+ "p50": 24.0,
+ "p90": 27.0,
+ "p95": 29.0,
+ "p99": 34.0,
+ "slow_ui": 33.0,
+ "slow_draw": 39.0,
+ "gpu_p90": 16.0
+}

@@ -206,8 +206,9 @@ fun DeviceCard() {
                 Text(ex.modelLabel(), style = Sh.t.headline, color = c.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("ExecuTorch 1.5.1 · " + (info?.backends?.joinToString(" · ")?.ifEmpty { null } ?: "XNNPACK"), style = Sh.t.caption, color = c.text2, maxLines = 1)
             }
-            Tag(if (ex.loaded) tr("Loaded", "लोड") else if (ex.available()) tr("Ready", "तैयार") else tr("Missing", "नहीं है"),
-                if (ex.available()) Tone.Accent else Tone.Warn)
+            val nav = LocalNav.current
+            if (ex.available()) Tag(if (ex.loaded) tr("Loaded", "लोड") else tr("Ready", "तैयार"), Tone.Accent)
+            else Chip(tr("Install", "इंस्टॉल")) { nav.tab(app.entity.shield.ui.TAB_MORE) }
         }
         info?.let { i ->
             Spacer(Modifier.height(Dim.l))

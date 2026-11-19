@@ -44,11 +44,11 @@ android {
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
         // QA: release code (R8, startup profile, not debuggable) so it runs as smoothly as the real
-        // thing, signed with the debug key so it installs over a debug build without wiping data, and
-        // with the adb test hooks from src/debug. For our test phones; never published.
+        // thing, signed like the release so it updates a release install in place, plus the adb test
+        // hooks from src/debug (reachable only from the adb shell). For our test phones; never published.
         create("qa") {
             initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
         }
     }

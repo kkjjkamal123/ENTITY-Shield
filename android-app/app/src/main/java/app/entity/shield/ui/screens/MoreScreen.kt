@@ -19,6 +19,7 @@ import app.entity.shield.core.Pipeline
 import app.entity.shield.core.SAMPLES
 import app.entity.shield.core.runSelfTest
 import app.entity.shield.llm.Explainer
+import app.entity.shield.llm.ModelDownload
 import app.entity.shield.llm.ModelImport
 import app.entity.shield.net.DnsPolicy
 import app.entity.shield.net.NetGuard
@@ -42,18 +43,14 @@ fun MoreScreen() {
     var prewarm by remember { mutableStateOf(ctx.getSharedPreferences("shield", 0).getBoolean("prewarm", true)) }
     TabPage {
         ScreenTitle(tr("More", "और"))
+        SectionHeader(tr("On-device AI", "इसी फ़ोन पर AI"))
+        LlamaCard()
         SectionHeader(tr("Settings", "सेटिंग"))
         Card(pad = Dim.l) {
             ListRow(tr("Language", "भाषा"), tr("Alerts, steps and explanations", "अलर्ट, कदम और समझाना"), Ico.Language, trailing = { LangSwitch() })
             Divider()
             ListRow(tr("Fast explanations", "तेज़ समझाना"), tr("Load Llama as soon as a threat arrives (first word in about 1 s)", "ख़तरा आते ही Llama तैयार करें (पहला शब्द ~1 सेकंड में)"), Ico.Chip,
                 trailing = { Toggle(prewarm) { prewarm = it; ctx.getSharedPreferences("shield", 0).edit().putBoolean("prewarm", it).apply() } })
-            Divider()
-            val ex = remember { Explainer.get(ctx) }
-            ListRow(tr("Llama model", "Llama मॉडल"),
-                ModelImport.status.ifEmpty { if (ex.available()) ex.modelLabel() else tr("Not installed: import llama…pte and tokenizer.model", "इंस्टॉल नहीं: llama…pte और tokenizer.model चुनें") },
-                Ico.Download, if (ex.available()) Tone.Accent else Tone.Warn,
-                trailing = { if (ModelImport.busy) TypingDots() else Chip(tr("Import", "चुनें")) { (ctx as app.entity.shield.MainActivity).importModel() } })
             Divider()
             ListRow(tr("Allowed sites", "चालू की गई साइटें"), tr("${DnsPolicy.allowed().size} sites Network Guard always lets through", "${DnsPolicy.allowed().size} साइटें जिन्हें नेटवर्क गार्ड हमेशा जाने देता है"), Ico.Check,
                 trailing = { Glyph(Ico.Chevron, c.text3, 18.dp) }) { nav.open(Route.Allowed) }
@@ -264,6 +261,50 @@ private fun AllowedScreen() {
                 if (i > 0) Divider()
                 ListRow(d, icon = Ico.Globe, trailing = { Chip(tr("Remove", "हटाएं"), icon = Ico.Close) { DnsPolicy.disallow(ctx, d); NetGuard.forgetVerdicts(); list = DnsPolicy.allowed() } })
             }
+        }
+    }
+}
+
+/** Llama status, and the two ways to install it: one-tap download, or import from files. */
+@Composable
+fun LlamaCard() {
+    val ctx = LocalContext.current
+    val c = Sh.c
+    val ex = remember { Explainer.get(ctx) }
+    val installed = ex.available() && !ModelDownload.busy
+    Card {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconTile(Ico.Chip, if (installed) Tone.Accent else Tone.Warn, 40.dp)
+            Spacer(Modifier.width(Dim.m))
+            Column(Modifier.weight(1f)) {
+                Text(if (installed) ex.modelLabel() else tr("Llama 3.2 1B is not installed", "Llama 3.2 1B इंस्टॉल नहीं है"), style = Sh.t.headline, color = c.text)
+                Text(if (installed) tr("Explanations run on this phone", "समझाना इसी फ़ोन पर चलता है")
+                    else tr("Detection already works. Llama adds the plain-language \"why\".", "पहचान पहले से चलती है। Llama आसान भाषा में \"क्यों\" बताता है।"),
+                    style = Sh.t.caption, color = c.text2)
+            }
+        }
+        if (ModelDownload.busy) {
+            Spacer(Modifier.height(Dim.l))
+            Meter(ModelDownload.progress, c.accent, Modifier.fillMaxWidth())
+            Row(Modifier.padding(top = Dim.s), verticalAlignment = Alignment.CenterVertically) {
+                Text(ModelDownload.status, style = Sh.t.monoSmall, color = c.text2, modifier = Modifier.weight(1f))
+                Chip(tr("Pause", "रोकें"), icon = Ico.Stop) { ModelDownload.stop() }
+            }
+        } else if (!installed) {
+            Spacer(Modifier.height(Dim.l))
+            PrimaryButton(tr("Download Llama · ${ModelDownload.totalBytes shr 20} MB", "Llama डाउनलोड करें · ${ModelDownload.totalBytes shr 20} MB"),
+                Modifier.fillMaxWidth(), Ico.Download, busy = ModelImport.busy) { ModelDownload.start(ctx) }
+            Spacer(Modifier.height(Dim.s))
+            SecondaryButton(tr("Import files instead", "फ़ाइलें चुनें"), Modifier.fillMaxWidth(), icon = Ico.Inbox, enabled = !ModelImport.busy) {
+                (ctx as app.entity.shield.MainActivity).importModel()
+            }
+            val note = listOfNotNull(
+                ModelDownload.status.ifEmpty { null },
+                ModelImport.status.ifEmpty { null },
+                if (ModelDownload.onMobileData(ctx)) tr("You are on mobile data: Wi-Fi is better for 1 GB.", "आप मोबाइल डेटा पर हैं: 1 GB के लिए Wi-Fi बेहतर है।") else null,
+                tr("One download, checked with SHA-256. Nothing about you is sent.", "एक बार डाउनलोड, SHA-256 से जांचा गया। आपकी कोई जानकारी नहीं भेजी जाती।"),
+            )
+            note.forEach { Text(it, style = Sh.t.caption, color = c.text3, modifier = Modifier.padding(top = 6.dp)) }
         }
     }
 }

@@ -1,0 +1,29 @@
+{
+ "date": "2026-11-19",
+ "device": "Infinix X6878",
+ "label": "glass_High",
+ "display": "fps=144.00002\nfps=120.00001\nfps=90.0\nfps=60.000004",
+ "taps": 30,
+ "sequence": [
+  "More",
+  "Home",
+  "Alerts",
+  "More",
+  "Network",
+  "Home",
+  "Scan",
+  "Alerts",
+  "More",
+  "Home"
+ ],
+ "frames": 1446.0,
+ "janky": 36.0,
+ "janky_pct": 2.49,
+ "p50": 23.0,
+ "p90": 25.0,
+ "p95": 28.0,
+ "p99": 32.0,
+ "slow_ui": 32.0,
+ "slow_draw": 35.0,
+ "gpu_p90": 18.0
+}

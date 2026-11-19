@@ -98,6 +98,11 @@ class DebugReceiver : BroadcastReceiver() {
                     "netdump" -> NetGuard.dnsEvents.toList().forEach { log("netdump ${it.host}	${it.pkg}	${it.action}") }
                     "netreset" -> { NetGuard.resetForTest(); log("netreset done") }
                     "clear" -> { app.getSharedPreferences("shield", 0).edit().remove("prefill_strip_bos").commit(); Pipeline.load(app); Pipeline.clear(app); NetGuard.resetForTest(); InboxAudit.flagged.clear(); log("clear done") }
+                    "glass" -> { // force a glass tier (High, Blur, Frosted) or "auto"; applies on next launch
+                        val v = intent.getStringExtra("v") ?: "auto"
+                        app.getSharedPreferences("shield", 0).edit().apply { if (v == "auto") remove("glass") else putString("glass", v) }.commit()
+                        log("glass set $v")
+                    }
                     "lang" -> { Prefs.setLang(app, if (intent.getStringExtra("v") == "HI") Advice.Lang.HI else Advice.Lang.EN); log("lang set") }
                     "netstat" -> log("netstat vpnOn=${NetGuard.vpnOn} queries=${NetGuard.queries} blocked=${NetGuard.blocked} flagged=${NetGuard.flagged} apps=${NetGuard.apps} trip=${NetGuard.tripHits} last=" +
                         NetGuard.dnsEvents.toList().filter { e -> intent.getStringExtra("host")?.let { it in e.host } ?: true }.take(8)

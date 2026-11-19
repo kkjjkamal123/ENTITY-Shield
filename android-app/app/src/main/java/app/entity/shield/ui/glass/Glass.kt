@@ -53,6 +53,7 @@ import app.entity.shield.ui.theme.Sh
 enum class GlassQuality { High, Blur, Frosted }
 
 fun glassQuality(ctx: android.content.Context): GlassQuality {
+    ctx.getSharedPreferences("shield", 0).getString("glass", null)?.let { o -> GlassQuality.entries.firstOrNull { it.name == o }?.let { return it } }
     if (Build.VERSION.SDK_INT < 31) return GlassQuality.Frosted
     val am = ctx.getSystemService(android.app.ActivityManager::class.java)
     val pm = ctx.getSystemService(android.os.PowerManager::class.java)
@@ -96,6 +97,7 @@ half4 main(float2 coord) {
     float2 p = coord - hs;
     float d = sdBox(p, hs, radius);
     float t = clamp(1.0 + d / rim, 0.0, 1.0);
+    if (t <= 0.0) return content.eval(coord);   // interior: no bending, one sample (most pixels)
     float e = 1.0;
     float2 g = float2(sdBox(p + float2(e, 0.0), hs, radius) - sdBox(p - float2(e, 0.0), hs, radius),
                       sdBox(p + float2(0.0, e), hs, radius) - sdBox(p - float2(0.0, e), hs, radius));
