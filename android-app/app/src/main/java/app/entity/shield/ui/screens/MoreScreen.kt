@@ -325,7 +325,7 @@ fun LlamaCard() {
                 broken?.let { tr("Load error: $it", "लोड त्रुटि: $it") },
                 found.takeIf { it != "No model files found" }?.let { tr("On this phone: $it", "इस फ़ोन पर: $it") },
                 if (blocked) tr("You are on mobile data. The download uses about 1.1 GB of your plan.", "आप मोबाइल डेटा पर हैं। डाउनलोड आपके प्लान का लगभग 1.1 GB लेगा।") else null,
-                tr("Import: pick the .pte model and tokenizer.model from Downloads, together or one at a time.", "इम्पोर्ट: Downloads से .pte मॉडल और tokenizer.model चुनें, साथ में या एक-एक करके।"),
+                tr("Import: pick only the .pte model from Downloads. The tokenizer is built into the app.", "इम्पोर्ट: Downloads से सिर्फ़ .pte मॉडल चुनें। टोकनाइज़र ऐप में पहले से है।"),
                 tr("One download, checked with SHA-256. Nothing about you is sent.", "एक बार डाउनलोड, SHA-256 से जांचा गया। आपकी कोई जानकारी नहीं भेजी जाती।"),
             )
             note.forEach { Text(it, style = Sh.t.caption, color = c.text3, modifier = Modifier.padding(top = 6.dp)) }

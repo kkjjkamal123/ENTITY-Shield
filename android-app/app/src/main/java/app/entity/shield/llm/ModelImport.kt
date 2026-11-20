@@ -3,6 +3,7 @@ package app.entity.shield.llm
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,7 @@ import kotlin.concurrent.thread
  * half-finished browser download is caught here instead of failing later when Llama loads.
  */
 object ModelImport {
+    private const val TAG = "ShieldLLM"
     var status by mutableStateOf("")
         private set
     var busy by mutableStateOf(false)
@@ -73,6 +75,7 @@ object ModelImport {
                 val dir = Explainer.modelDir(app)
                 data class Pick(val uri: Uri, val name: String, val size: Long, val kind: Kind)
                 val picks = uris.map { u -> val (n, s) = meta(app, u); Pick(u, n, s, classify(head(app, u), n)) }
+                picks.forEach { Log.i(TAG, "picked ${it.name} size=${it.size} kind=${it.kind} uri=${it.uri}") }
                 val use = picks.filter { it.kind != Kind.UNKNOWN }
                 if (use.isEmpty()) throw IllegalArgumentException("That is not a Llama model (.pte) or tokenizer.model")
                 if (use.count { it.kind == Kind.MODEL } > 1 || use.count { it.kind == Kind.TOKENIZER } > 1)
@@ -111,6 +114,7 @@ object ModelImport {
                         val out = File(dir, target)
                         out.delete()
                         if (!tmp.renameTo(out)) throw IllegalStateException("Could not save $target")
+                        Log.i(TAG, "saved ${out.path} (${out.length()} bytes)")
                     } finally {
                         tmp.delete()
                     }
@@ -122,6 +126,7 @@ object ModelImport {
                 val hasModel = dir.listFiles { f -> f.name.startsWith("llama") && f.name.endsWith(".pte") }?.isNotEmpty() == true
                 val hasTok = File(dir, ModelDownload.TOKENIZER.name).length() > 0
                 progress = 1f
+                Log.i(TAG, "after import: available=${ex.available()} files=${ex.diagnose()}")
                 status = when {
                     ex.available() -> "Llama installed"
                     !hasModel -> "Tokenizer saved. Now import the model (.pte)."
@@ -129,6 +134,7 @@ object ModelImport {
                     else -> "Files saved but Llama was not found: ${ex.diagnose()}"
                 }
             } catch (t: Throwable) {
+                Log.e(TAG, "import failed", t)
                 status = t.message ?: "Import failed"
             } finally {
                 busy = false

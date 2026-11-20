@@ -9,8 +9,9 @@ The patch keeps the Java API unchanged. Before the pool is reset it reads two en
 which the app sets with android.system.Os.setenv() before creating the LlmModule:
 
   ET_NUM_THREADS=<n>   pool size (calling thread included), 1..16; unset = upstream heuristic
-  ET_PIN_BIG=1         pin the calling thread to the n fastest cores (by cpuinfo_max_freq) first;
-                       the pool's worker threads are created by the reset and inherit that mask
+  ET_PIN_BIG=1         pin the calling thread to the n fastest cores (by cpuinfo_max_freq) first,
+                       then rebuild the pool (via a 1-thread reset, since a reset to the same count
+                       is a no-op) so its worker threads are created here and inherit that mask
 
 Usage: python patch_threads.py <executorch checkout>
 """
@@ -46,6 +47,11 @@ new = """#if defined(ET_USE_THREADPOOL)
       if (const char* env_pin = std::getenv("ET_PIN_BIG")) {
         if (env_pin[0] == '1' && num_performant_cores > 0) {
           shield_pin_fastest_cores(num_performant_cores);
+          // _unsafe_reset_threadpool() does nothing when the count is unchanged, and the pool may
+          // already exist (created by another model on another thread, unpinned). Go through 1
+          // thread first so the pool is rebuilt here and its workers inherit the pinned mask.
+          ::executorch::extension::threadpool::get_threadpool()
+              ->_unsafe_reset_threadpool(num_performant_cores == 1 ? 2 : 1);
         }
       }
       if (num_performant_cores > 0) {

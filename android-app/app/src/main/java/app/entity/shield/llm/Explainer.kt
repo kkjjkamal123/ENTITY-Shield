@@ -63,8 +63,25 @@ class Explainer private constructor(private val ctx: Context) {
             val pte = ptes.firstOrNull { pref in it.name } ?: ptes.maxByOrNull { it.name } ?: continue
             val tok = File(d, "tokenizer.model")
             if (tok.canRead() && tok.length() > 0) return pte to tok
+            // No tokenizer next to the model: use the one bundled in the APK (2 MB, identical to the
+            // release's), so importing or pushing only the .pte is enough.
+            bundledTokenizer()?.let { return pte to it }
         }
         return null
+    }
+
+    /** The Llama 3.2 tokenizer shipped in the APK, copied once into private storage. */
+    private fun bundledTokenizer(): File? = synchronized(Explainer::class.java) {
+        val out = File(modelDir(ctx), "tokenizer.model")
+        if (out.length() == ModelDownload.TOKENIZER.bytes) return out
+        return try {
+            val tmp = File(out.path + ".part")
+            ctx.assets.open("llama_tokenizer.model").use { i -> tmp.outputStream().use { o -> i.copyTo(o) } }
+            out.delete()
+            if (tmp.renameTo(out)) out.also { Log.i(TAG, "tokenizer taken from the APK") } else null
+        } catch (e: Exception) {
+            Log.w(TAG, "bundled tokenizer: ${e.message}"); null
+        }
     }
 
     // The UI asks on every frame it draws; listing external storage there would stall it. Cache the
