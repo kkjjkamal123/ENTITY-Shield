@@ -51,6 +51,11 @@ object Pipeline {
     private var loaded = false
     private val main = Handler(Looper.getMainLooper())
     private val ids = AtomicLong(System.currentTimeMillis())
+    private const val NET_NOTIFY_MS = 20_000L
+    private const val MAX_KEEP = 500
+    private const val MAX_FILE = 1000
+    private val lastNetNotify = AtomicLong(-NET_NOTIFY_MS)
+    private var appended = 0L
 
     private fun file(ctx: Context) = File(ctx.filesDir, "alerts.jsonl")
 
@@ -85,17 +90,36 @@ object Pipeline {
     private fun record(ctx: Context, source: String, sender: String, text: String, v: Verdict, t0: Long, extra: String = ""): Alert {
         load(ctx)
         var a = Alert(ids.incrementAndGet(), System.currentTimeMillis(), source, sender, text, v, 0.0, extra)
-        if (v.band != Band.SAFE && (source == "sms" || source == "demo" || source == "net")) notify(ctx, a)
+        // Network alerts: at most one notification per NET_NOTIFY_MS. A malware burst can block many
+        // different sites in seconds; each is still recorded and listed, just not posted separately.
+        val netQuiet = source == "net" && SystemClock.elapsedRealtime() - lastNetNotify.get() < NET_NOTIFY_MS
+        if (v.band != Band.SAFE && (source == "sms" || source == "demo" || source == "net") && !netQuiet) {
+            if (source == "net") lastNetNotify.set(SystemClock.elapsedRealtime())
+            notify(ctx, a)
+        }
         a = a.copy(warnMs = (SystemClock.elapsedRealtimeNanos() - t0) / 1e6)
         // The user will probably open this alert next: load Llama and pre-fill the fixed system prompt now,
         // off the detection path, so the explanation only pays for the message-specific tokens.
         // Only when the screen is on: a sleeping phone's owner won't open the alert within the idle window.
         val interactive = ctx.getSystemService(android.os.PowerManager::class.java).isInteractive
-        if (v.band != Band.SAFE && source != "bench" && interactive && ctx.getSharedPreferences("shield", 0).getBoolean("prewarm", true) && Explainer.get(ctx).available())
+        // Not for network alerts: they arrive while the user is busy in another app, and loading 1.1 GB
+        // then competes with that app for memory.
+        if (v.band != Band.SAFE && source != "bench" && source != "net" && interactive && ctx.getSharedPreferences("shield", 0).getBoolean("prewarm", true) && Explainer.get(ctx).available())
             Explainer.get(ctx).prewarm(Advice.explainPrefix(Prefs.lang(ctx)))
         Log.i(TAG, "verdict source=$source band=${v.band} score=${"%.3f".format(v.score)} family=${v.family} detectMs=${"%.3f".format(v.millis)} warnMs=${"%.2f".format(a.warnMs)}")
-        synchronized(this) { file(ctx).appendText(a.toJson().toString() + "\n") }
-        main.post { alerts.add(0, a) }
+        synchronized(this) {
+            val f = file(ctx)
+            f.appendText(a.toJson().toString() + "\n")
+            // Keep the history file bounded: past MAX_FILE lines, keep the newest MAX_KEEP.
+            if (++appended % 100 == 0L) runCatching {
+                val lines = f.readLines()
+                if (lines.size > MAX_FILE) f.writeText(lines.takeLast(MAX_KEEP).joinToString("\n", postfix = "\n"))
+            }
+        }
+        main.post {
+            alerts.add(0, a)
+            if (alerts.size > MAX_KEEP) alerts.removeRange(MAX_KEEP, alerts.size)
+        }
         return a
     }
 

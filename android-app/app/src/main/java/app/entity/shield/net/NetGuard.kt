@@ -16,6 +16,8 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.LruCache
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -97,7 +99,8 @@ object NetGuard {
         if (pkg.isEmpty()) return null
         icons.get(pkg)?.let { return it }
         val d = runCatching { ctx.packageManager.getApplicationIcon(pkg) }.getOrNull() ?: return null
-        val bmp = if (d is BitmapDrawable && d.bitmap != null) d.bitmap else {
+        // Always a 96 px copy: an app's own bitmap can be 512 px (1 MB), and 64 of those is 64 MB.
+        val bmp = if (d is BitmapDrawable && d.bitmap != null) Bitmap.createScaledBitmap(d.bitmap, 96, 96, true) else {
             val b = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888)
             val c = Canvas(b); d.setBounds(0, 0, 96, 96); d.draw(c); b
         }
@@ -127,14 +130,8 @@ object NetGuard {
         val app = label(ctx, uid)
         val action = when { blockedIt -> "BLOCK"; d.action != DnsPolicy.Action.ALLOW -> "FLAG"; else -> "ALLOW" }
         val ev = DnsEvent(System.currentTimeMillis(), uid, app.label, app.pkg, host, qtype, action, v.score, rcode, ms)
-        main.post {
-            queries++
-            if (blockedIt) blocked++
-            if (action == "FLAG") flagged++
-            if (appsSeen.add(uid)) apps = appsSeen.size
-            dnsEvents.add(0, ev)
-            if (dnsEvents.size > 400) dnsEvents.removeRange(400, dnsEvents.size)
-        }
+        pending.add(ev)
+        if (flushQueued.compareAndSet(false, true)) main.postDelayed(::flush, FLUSH_MS)
         // One alert per app and site every 6 hours (a malware burst would otherwise post dozens);
         // every block is still counted and listed live on the Network screen. FLAG never alerts.
         if (blockedIt) alertOnce(ctx, "dom|$uid|${Featurizer.registrable(host)}", 6 * 60 * 60_000L) {
@@ -147,15 +144,52 @@ object NetGuard {
         if (!v.allowlisted) behaviour(ctx, uid, app, host, rcode, v.band)
     }
 
+    // Lookups reach the screen in batches: one main-thread update per FLUSH_MS, however many lookups
+    // arrived. Posting one update per lookup flooded the main thread during lookup storms (ANR).
+    private const val FLUSH_MS = 300L
+    private const val MAX_EVENTS = 400
+    private val pending = ConcurrentLinkedQueue<DnsEvent>()
+    private val flushQueued = AtomicBoolean(false)
+
+    private fun flush() {
+        flushQueued.set(false)
+        val batch = ArrayList<DnsEvent>()
+        while (true) { batch.add(pending.poll() ?: break) }
+        if (batch.isEmpty()) return
+        queries += batch.size
+        blocked += batch.count { it.action == "BLOCK" }
+        flagged += batch.count { it.action == "FLAG" }
+        for (e in batch) appsSeen.add(e.uid)
+        apps = appsSeen.size
+        val newest = batch.asReversed().take(MAX_EVENTS)
+        val merged = newest + dnsEvents.take((MAX_EVENTS - newest.size).coerceAtLeast(0))
+        dnsEvents.clear(); dnsEvents.addAll(merged)
+    }
+
     // ---------------------------------------------------------------- behaviour detectors
     private val times = HashMap<String, ArrayDeque<Long>>()                 // uid|registrable -> query times
     private val nx = HashMap<Int, ArrayDeque<Pair<Long, String>>>()          // uid -> NXDOMAIN (time, host)
     private val subs = HashMap<String, ArrayDeque<Pair<Long, String>>>()     // uid|registrable -> (time, label)
     private val lastAlert = HashMap<String, Long>()
 
+    private var prunedAt = 0L
+
+    /** Drop history no detector can still use, so a long session with many domains does not grow forever. */
+    private fun prune(now: Long) {
+        if (now - prunedAt < 60_000 && times.size + subs.size + nx.size < 4000) return
+        prunedAt = now
+        times.values.removeAll { it.isEmpty() || now - it.last() > 2 * 60 * 60_000L }   // beacon: up to 12 x 30 min apart
+        subs.values.removeAll { it.isEmpty() || now - it.last().first > 60_000 }
+        nx.values.removeAll { it.isEmpty() || now - it.last().first > 60_000 }
+        trip.values.removeAll { it.isEmpty() || now - it.last().first > 60_000 }
+        if (times.size > 3000) times.entries.sortedBy { it.value.last() }.take(times.size - 3000).map { it.key }.forEach { times.remove(it) }
+        synchronized(lastAlert) { lastAlert.values.removeAll { now - it > 6 * 60 * 60_000L } }
+    }
+
     @Synchronized
     private fun behaviour(ctx: Context, uid: Int, app: AppId, host: String, rcode: Int, band: Band) {
         val now = System.currentTimeMillis()
+        prune(now)
         val reg = Featurizer.registrable(host)
         val key = "$uid|$reg"
 
@@ -245,6 +279,7 @@ object NetGuard {
     /** Tests only: forget behaviour history and alert de-duplication, so each run starts clean. */
     fun resetForTest() {
         synchronized(this) { times.clear(); nx.clear(); subs.clear(); trip.clear() }
+        pending.clear()
         synchronized(lastAlert) { lastAlert.clear() }
         verdicts.evictAll()
         reset()

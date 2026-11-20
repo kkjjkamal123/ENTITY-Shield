@@ -19,8 +19,11 @@ import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.SocketTimeoutException
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 /**
@@ -68,7 +71,10 @@ class ShieldVpnService : VpnService() {
         }
         tun = fd
         out = FileOutputStream(fd.fileDescriptor)
-        pool = Executors.newFixedThreadPool(6)
+        // Bounded: a lookup storm (or a slow resolver holding every worker for 2.5 s) must not queue
+        // queries without limit. When full, the oldest waiting query is dropped: its app has already
+        // timed out and will retry.
+        pool = ThreadPoolExecutor(6, 6, 30, TimeUnit.SECONDS, ArrayBlockingQueue(MAX_QUEUED), ThreadPoolExecutor.DiscardOldestPolicy())
         running = true
         thread(name = "dns-tun") { readLoop(fd) }
         NetGuard.setVpn(true)
@@ -81,12 +87,19 @@ class ShieldVpnService : VpnService() {
     private fun readLoop(fd: ParcelFileDescriptor) {
         val input = FileInputStream(fd.fileDescriptor)
         val buf = ByteArray(32767)
+        var errors = 0
         while (running) {
-            val n = try { input.read(buf) } catch (e: IOException) { if (!running) break else continue }
+            val n = try { input.read(buf) } catch (e: IOException) {
+                if (!running) break
+                // A broken TUN fd fails every read: back off instead of spinning a core at 100%.
+                if (++errors > 50) { Log.w(TAG, "tun keeps failing (${e.message}), stopping"); break }
+                SystemClock.sleep(minOf(1000L, 20L * errors)); continue
+            }
             if (n <= 0) continue
-            val q = DnsPacket.parse(buf, n) ?: continue
+            errors = 0
+            val q = try { DnsPacket.parse(buf, n) } catch (t: Throwable) { null } ?: continue
             val t0 = SystemClock.elapsedRealtimeNanos()
-            pool?.execute { handle(q, t0) }
+            try { pool?.execute { handle(q, t0) } } catch (e: RejectedExecutionException) { if (!running) break }
         }
     }
 
@@ -185,6 +198,7 @@ class ShieldVpnService : VpnService() {
 
     companion object {
         private const val TAG = "ShieldNet"
+        private const val MAX_QUEUED = 256
         const val VPN_ADDR = "10.215.173.1"
         const val DNS_ADDR = "10.215.173.2"
         const val ACTION_START = "app.entity.shield.NET_START"

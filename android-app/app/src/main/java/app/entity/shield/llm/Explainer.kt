@@ -41,6 +41,7 @@ class Explainer private constructor(private val ctx: Context) {
     private val thread = HandlerThread("llama", priority).apply { start() }
     private val h = Handler(thread.looper)
     private var module: LlmModule? = null
+    private val boost = LlmBoost(ctx)
     private var modelName = ""
     @Volatile var loaded = false; private set
     private var warmPrefix: String? = null   // system prefix already in the KV cache, if any
@@ -185,9 +186,11 @@ class Explainer private constructor(private val ctx: Context) {
                 var stats = ""
                 var ended = false
                 val cfg = LlmGenerationConfig.create().echo(false).maxNewTokens(maxNew).temperature(0f).numBos(0).build()
+                boost.begin(LlmBoost.DECODE_TARGET_NS)
                 module!!.generate(input, cfg, object : LlmCallback {
                     override fun onResult(result: String) {
                         if (ended) return
+                        boost.step()
                         if (n == 0) first = System.currentTimeMillis() - tStart
                         n++
                         if (SPECIAL.containsMatchIn(result)) {
@@ -201,11 +204,13 @@ class Explainer private constructor(private val ctx: Context) {
                     override fun onStats(s: String) { stats = s }
                     override fun onError(code: Int, msg: String) = l.onError("Llama error $code: $msg")
                 })
+                boost.end()
                 val st = Stats(loadMs, first, System.currentTimeMillis() - tStart, n, stats, modelName, warm)
                 Log.i(TAG, "run model=$modelName warm=$warm prio=$priority loadMs=$loadMs ttftMs=$first tokens=$n prefill=${st.prefillTps} decode=${st.decodeTps}")
                 module!!.resetContext()
                 l.onDone(st)
             } catch (e: Throwable) {
+                boost.end()
                 module?.close(); module = null; loaded = false; warmPrefix = null
                 l.onError("Llama failed: ${e.message}")
             } finally {

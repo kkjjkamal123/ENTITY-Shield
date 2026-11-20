@@ -6,6 +6,10 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 /**
@@ -16,6 +20,10 @@ import kotlin.concurrent.thread
  */
 class Tripwire(private val ctx: Context) {
     private val sockets = mutableListOf<ServerSocket>()
+    // A fast scan opens hundreds of connections a second: inspect them on a small bounded pool, not a
+    // new thread each (that ran the process out of threads). When it is full, the connection is still
+    // counted, just without reading its first bytes.
+    private val pool = ThreadPoolExecutor(4, 4, 30, TimeUnit.SECONDS, ArrayBlockingQueue(64)).apply { allowCoreThreadTimeOut(true) }
 
     @Synchronized
     fun start() {
@@ -40,7 +48,11 @@ class Tripwire(private val ctx: Context) {
     private fun accept(ss: ServerSocket, port: Int) {
         while (!ss.isClosed) {
             val c: Socket = try { ss.accept() } catch (e: IOException) { break }
-            thread(isDaemon = true) { inspect(c, port) }
+            try { pool.execute { inspect(c, port) } } catch (e: RejectedExecutionException) {
+                val ip = c.inetAddress?.hostAddress ?: "?"
+                runCatching { c.close() }
+                if (ip != "127.0.0.1" && ip != "::1") NetGuard.onTrip(ctx, ip, port, "")
+            }
         }
     }
 
