@@ -5,6 +5,8 @@
     <!-- Scam SMS: check every incoming message; read the inbox only for the on-device inbox audit. -->
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
+    <!-- Only to check whether an SMS sender is a saved contact (never read, stored or sent anywhere). -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Network Guard: the local DNS VPN forwards the phone's own lookups to the network's resolver.
          Link sandbox: visits a link only when the user checks it or opens it with Shield.
@@ -86,6 +88,10 @@
             android:name=".llm.ModelDownloadService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+        <service
+            android:name=".llm.LlmRunService"
+            android:exported="false"
+            android:foregroundServiceType="shortService" />
         <!-- Link sandbox: page bytes are parsed only here. isolatedProcess = a throw-away UID with no
              permissions, no files and no network. -->
         <service

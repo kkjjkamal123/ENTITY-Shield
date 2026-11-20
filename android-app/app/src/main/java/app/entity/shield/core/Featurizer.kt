@@ -230,13 +230,16 @@ object Featurizer {
         "asks_secret" to "\\botp\\b|\\bpin\\b|\\bcvv\\b|password|passcode|card number|ओटीपी|पिन",
         "money_request" to "pay |payment|transfer|deposit|send rs|\\bfee\\b|charge|refundable|processing fee|upi|collect request|भुगतान|पैसे",
         "account_threat" to "block|suspend|deactivat|disconnect|close[d]? |freeze|band ho|बंद|ब्लॉक",
-        "prize_lottery" to "\\bwon\\b|winner|lottery|prize|lucky draw|cashback of|reward|congratulation|जीत|इनाम|लॉटरी",
+        "prize_lottery" to "\\bwon\\b(?!')|winner|lottery|prize|lucky draw|cashback of|reward|congratulation|जीत|इनाम|लॉटरी",
         "job_task" to "part.?time|work from home|daily income|earn rs|per day|\\btasks?\\b|like (and|&) subscribe|telegram|कमाएं|घर बैठे",
         "authority_threat" to "police|cbi|customs|court|arrest|narcotics|cyber cell|rbi|trai|ed officer|गिरफ्तार|पुलिस",
         "kyc_identity" to "\\bkyc\\b|\\bpan\\b|aadhaa?r|e-?kyc|केवाईसी|आधार",
     ).map { it.first to Regex(it.second) }
     private val MOBILE = Regex("\\+?(91)?[6-9]\\d{9}")
-    private val DLT = Regex("[A-Z]{2}-[A-Z0-9]{3,9}(-[A-Z])?")
+    // Registered sender ID, with or without the "XX-" prefix (same as is_business_sender in training/featurize.py)
+    private val DLT = Regex("([A-Z]{2}-)?[A-Z0-9]{3,11}(-[A-Z])?")
+    private val LETTERS3 = Regex("[A-Z]{3}")
+    fun isBusinessSender(sender: String): Boolean { val s = sender.trim().uppercase(); return DLT.matches(s) && LETTERS3.containsMatchIn(s) }
     private val DONT_SHARE = Regex("(do not|don't|never) share|किसी के साथ साझा न")
     private val CALL_NUM = Regex("call\\s*(on|at|us)?\\s*:?\\s*\\+?\\d[\\d -]{8,}")
 
@@ -261,7 +264,7 @@ object Featurizer {
             b(hosts.any { urlSignals(it)[brandIdx] > 0 }),
             b(hosts.any { urlSignals(it)[shortIdx] > 0 }),
             b(MOBILE.matches(s.replace(" ", ""))),
-            b(DLT.matches(s)),
+            b(isBusinessSender(s)),
             b(DONT_SHARE.containsMatchIn(t)),
             b(CALL_NUM.containsMatchIn(t)),
         )

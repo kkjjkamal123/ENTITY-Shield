@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
         if (resources.getBoolean(R.bool.e2e_hooks) && intent?.getBooleanExtra("e2e", false) == true) { setShowWhenLocked(true); setTurnScreenOn(true) }
         Pipeline.ensureChannel(this)
         Pipeline.load(this)
-        requestPermissions(arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS, Manifest.permission.POST_NOTIFICATIONS), 1)
+        requestPermissions(arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS, Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.READ_CONTACTS), 1)
         // Off the main thread: detectors (so the first SMS doesn't pay the load) and the device probe.
         thread(name = "warm") { Detectors.get(this); DeviceInfo.get(this); app.entity.shield.llm.Explainer.get(this).available() }
         window.decorView.post { Speaker.init(this) } // text-to-speech binds a service: after the first frame

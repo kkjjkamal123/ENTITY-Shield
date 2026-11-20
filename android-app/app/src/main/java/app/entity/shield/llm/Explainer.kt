@@ -119,6 +119,7 @@ class Explainer private constructor(private val ctx: Context) {
 
     private fun complete(f: File) = when (f.name) {
         ModelDownload.MODEL.name -> f.length() == ModelDownload.MODEL.bytes
+        ModelDownload.HF_MODEL.name -> f.length() == ModelDownload.HF_MODEL.bytes
         else -> f.length() > (100L shl 20)
     }
 
@@ -212,6 +213,7 @@ class Explainer private constructor(private val ctx: Context) {
                 var stats = ""
                 var ended = false
                 val cfg = LlmGenerationConfig.create().echo(false).maxNewTokens(maxNew).temperature(0f).numBos(0).build()
+                LlmRunService.start(ctx)
                 boost.begin(LlmBoost.DECODE_TARGET_NS)
                 module!!.generate(input, cfg, object : LlmCallback {
                     override fun onResult(result: String) {
@@ -240,6 +242,7 @@ class Explainer private constructor(private val ctx: Context) {
                 module?.close(); module = null; loaded = false; warmPrefix = null
                 l.onError("Llama failed: ${e.message}")
             } finally {
+                LlmRunService.stop(ctx)
                 h.postDelayed(unload, IDLE_MS)
             }
         }

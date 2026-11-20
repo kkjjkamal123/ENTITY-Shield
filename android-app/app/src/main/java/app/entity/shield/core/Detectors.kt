@@ -10,7 +10,7 @@ import java.io.File
 enum class Band { SAFE, UNCERTAIN, SCAM }
 
 /** Which fixed advice applies. Picked by rules from the message, never by the LLM. */
-enum class Family { KYC, POWER, PARCEL, ARREST, JOB, PRIZE, UPI, OTP, LOAN, INVEST, FAMILY, LINK, GENERIC, NET_SCAN, NET_BEACON, NET_BRUTE, NET_ANOMALY, NET_DOMAIN, NET_DGA, NET_TUNNEL }
+enum class Family { PROMO, KYC, POWER, PARCEL, ARREST, JOB, PRIZE, UPI, OTP, LOAN, INVEST, FAMILY, LINK, GENERIC, NET_SCAN, NET_BEACON, NET_BRUTE, NET_ANOMALY, NET_DOMAIN, NET_DGA, NET_TUNNEL }
 
 data class Verdict(
     val kind: String,              // "sms" | "url" | "net"
@@ -25,6 +25,7 @@ data class Verdict(
 
 /** The two ExecuTorch detectors (sms.pte, url.pte), plus the allow-list. Thread-safe enough for one caller at a time. */
 class Detectors private constructor(ctx: Context) {
+    private val app = ctx.applicationContext
     private val sms = Module.load(asset(ctx, "sms.pte"))
     private val url = Module.load(asset(ctx, "url.pte"))
     private val smsT = thresholds(ctx, "sms_meta.json")
@@ -89,6 +90,11 @@ class Detectors private constructor(ctx: Context) {
     /** OS, CDN and SDK infrastructure the phone looks up all day (assets/dns_infra.txt): never scored by Network Guard. */
     fun isInfra(host: String) = dnsInfra.any { host == it || host.endsWith(".$it") }
 
+    /**
+     * SMS verdict, in order: the two models (message, and every non-official link), the scam gate
+     * (ScamGate: SCAM needs a fraud-specific cue), then what the user told Shield: a saved contact is
+     * never a scam, and a pattern the user labelled decides on its own ([SmsTrust]).
+     */
     @Synchronized
     fun checkSms(text: String, sender: String): Verdict {
         val t0 = System.nanoTime()
@@ -97,13 +103,28 @@ class Detectors private constructor(ctx: Context) {
         var worst: String? = null
         var pUrl = 0f
         var urlBand = Band.SAFE
-        for (h in Featurizer.riskyHosts(text)) {
+        val hosts = Featurizer.riskyHosts(text)
+        val scamHosts = ArrayList<String>(2)
+        for (h in hosts) {
             val p = if (Featurizer.allowlisted(h, allow)) 0f else Featurizer.hashedSparse(h).let { (sl, v) -> urlIn.score(sl, v, Featurizer.urlSignals(h)) }
+            if (band(p, urlT) == Band.SCAM) scamHosts += h
             if (p >= pUrl) { pUrl = p; worst = h; urlBand = band(p, urlT) }
         }
-        val ev = Featurizer.SMS_SIGNALS.filterIndexed { i, _ -> sigs[i] > 0 }
-        val b = maxOf(band(pSms, smsT), urlBand)
-        return Verdict("sms", b, maxOf(pSms, pUrl), family(text, ev), ev, worst, (System.nanoTime() - t0) / 1e6)
+        val ev = Featurizer.SMS_SIGNALS.filterIndexed { i, _ -> sigs[i] > 0 }.toMutableList()
+        val g = ScamGate.apply(maxOf(band(pSms, smsT), urlBand), sigs, scamHosts, text, sender, hosts)
+        var b = g.band
+        var fam = if (g.promo) Family.PROMO else family(text, ev)
+        val trust = SmsTrust.get(app)
+        if (b != Band.SAFE && trust.isContact(sender)) {
+            b = if (scamHosts.isNotEmpty()) Band.UNCERTAIN else Band.SAFE
+            ev += "in_contacts"
+        }
+        when (trust.label(text, sender)) {
+            true -> { b = Band.SCAM; ev += "your_label"; if (fam == Family.PROMO) fam = family(text, ev) }
+            false -> { b = Band.SAFE; ev += "your_label" }
+            null -> {}
+        }
+        return Verdict("sms", b, maxOf(pSms, pUrl), fam, ev, worst, (System.nanoTime() - t0) / 1e6)
     }
 
     private fun band(p: Float, t: Pair<Float, Float>) = when {

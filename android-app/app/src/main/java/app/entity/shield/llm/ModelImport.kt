@@ -50,6 +50,7 @@ object ModelImport {
     fun modelTarget(name: String, size: Long): String {
         val n = name.lowercase()
         return when {
+            size == ModelDownload.HF_MODEL.bytes -> ModelDownload.HF_MODEL.name
             size == ModelDownload.MODEL.bytes || "qlora" in n -> ModelDownload.MODEL.name
             "8da4w" in n -> "llama3_2_1b_instruct_8da4w_ctx2048.pte"
             else -> "llama_imported.pte"
@@ -102,7 +103,7 @@ object ModelImport {
                                 o.fd.sync()
                             }
                         }
-                        val known = listOf(ModelDownload.MODEL, ModelDownload.TOKENIZER).firstOrNull { it.name == target && it.bytes == tmp.length() }
+                        val known = listOf(ModelDownload.MODEL, ModelDownload.HF_MODEL, ModelDownload.TOKENIZER).firstOrNull { it.name == target && it.bytes == tmp.length() }
                         if (p.kind == Kind.MODEL && tmp.length() < (100L shl 20))
                             throw IllegalStateException("${p.name} is only ${tmp.length() shr 20} MB: the download is incomplete")
                         if (target == ModelDownload.MODEL.name && known == null && p.size == ModelDownload.MODEL.bytes)

@@ -33,8 +33,22 @@ object ModelDownload {
     internal data class Item(val name: String, val sha256: String, val bytes: Long)
     internal val TOKENIZER = Item("tokenizer.model", "82e9d31979e92ab929cd544440f129d9ecd797b69e327f80f17e1c50d5551b55", 2_183_982)
     internal val MODEL = Item("llama3_2_1b_instruct_qlora_ctx2048.pte", "dc3a0369b5b57742e46e46d63ccd90def99e6e47747389c5152caa2afb629b15", 1_120_643_584)
-    private val FILES = listOf(TOKENIZER, MODEL)
-    val totalBytes = FILES.sumOf { it.bytes }
+    /** Meta/PyTorch's own ExecuTorch export of the same QAT+LoRA checkpoint, public on Hugging Face. */
+    internal val HF_MODEL = Item("llama3_2_1b_instruct_qlora_hf.pte", "ab7b7ebf97421c7770ad97d4abfdf8650a7d9f9dc1ce9a0c4663d49f7b7a08ac", 1_181_451_008)
+    const val HF_URL = "https://huggingface.co/executorch-community/Llama-3.2-1B-Instruct-QLORA_INT4_EO8-ET/resolve/main/Llama-3.2-1B-Instruct-QLORA_INT4_EO8.pte"
+
+    /**
+     * Where the model comes from, tried in order. Hugging Face first: public, ungated, and independent
+     * of this project's GitHub repo (checked 2026-11-20: loads and answers with Shield's ExecuTorch
+     * 1.5.1 on the Infinix X6878, context 2048). The project's release is the fallback. The tokenizer
+     * is bundled in the APK, so only the model is downloaded.
+     */
+    private data class Source(val item: Item, val url: String, val host: String)
+    private val SOURCES = listOf(
+        Source(HF_MODEL, HF_URL, "Hugging Face"),
+        Source(MODEL, BASE + MODEL.name, "GitHub"),
+    )
+    val totalBytes = HF_MODEL.bytes
 
     private const val PREF_MOBILE = "llm_dl_mobile"
     private const val RETRIES = 8
@@ -75,24 +89,37 @@ object ModelDownload {
         thread(name = "model-download") {
             try {
                 val dir = Explainer.modelDir(app)
-                val need = FILES.sumOf { f -> if (File(dir, f.name).length() == f.bytes) 0L else f.bytes - File(dir, f.name + ".part").length().coerceAtMost(f.bytes) }
-                if (dir.usableSpace < need + (200L shl 20)) throw IllegalStateException("Not enough free space: need ${(need shr 20) + 200} MB")
-                var doneBefore = 0L
-                for (f in FILES) {
-                    val out = File(dir, f.name)
-                    if (out.length() == f.bytes) { doneBefore += f.bytes; continue }
-                    val part = File(dir, f.name + ".part")
-                    if (part.length() > f.bytes) part.delete()
-                    fetchWithRetry(app, BASE + f.name, part, f.bytes) { got ->
-                        progress = (doneBefore + got).toFloat() / totalBytes
-                        status = "${(doneBefore + got) shr 20} / ${totalBytes shr 20} MB"
-                        ModelDownloadService.update(app, progress)
+                if (SOURCES.none { File(dir, it.item.name).length() == it.item.bytes }) {
+                    var lastError: Throwable? = null
+                    for ((i, src) in SOURCES.withIndex()) {
+                        if (cancel) throw InterruptedException("paused")
+                        val f = src.item
+                        val part = File(dir, f.name + ".part")
+                        if (part.length() > f.bytes) part.delete()
+                        val need = f.bytes - part.length()
+                        if (dir.usableSpace < need + (200L shl 20)) throw IllegalStateException("Not enough free space: need ${(need shr 20) + 200} MB")
+                        try {
+                            fetchWithRetry(app, src.url, part, f.bytes) { got ->
+                                progress = got.toFloat() / f.bytes
+                                status = "${got shr 20} / ${f.bytes shr 20} MB from ${src.host}"
+                                ModelDownloadService.update(app, progress)
+                            }
+                            status = "Checking the model…"
+                            if (sha256(part) != f.sha256) { part.delete(); throw IllegalStateException("The model from ${src.host} failed its checksum") }
+                            val out = File(dir, f.name)
+                            out.delete()
+                            if (!part.renameTo(out)) throw IllegalStateException("Could not save the model")
+                            SOURCES.filter { it !== src }.forEach { File(dir, it.item.name + ".part").delete() }
+                            lastError = null
+                            break
+                        } catch (e: InterruptedException) { throw e
+                        } catch (e: Blocked) { throw e
+                        } catch (e: Exception) {
+                            lastError = e
+                            if (i < SOURCES.lastIndex) status = "${src.host} failed (${e.message}), trying ${SOURCES[i + 1].host}…"
+                        }
                     }
-                    status = "Checking ${f.name}…"
-                    if (sha256(part) != f.sha256) { part.delete(); throw IllegalStateException("${f.name} failed its checksum, tap Download to try again") }
-                    out.delete()
-                    if (!part.renameTo(out)) throw IllegalStateException("Could not save ${f.name}")
-                    doneBefore += f.bytes
+                    lastError?.let { throw it }
                 }
                 Explainer.get(app).refreshFiles()
                 progress = 1f; status = "Llama installed"
@@ -144,8 +171,7 @@ object ModelDownload {
                 val code = c.responseCode
                 if (code in 300..399) { u = URL(u, c.getHeaderField("Location")); return@repeat }
                 if (code == 416) return   // already complete
-                if (code == 404 || code == 403 || code == 401) throw IllegalStateException(
-                    "The download link is not reachable (HTTP $code): the v0.4.0 release must be public. Get the two files another way and use Import.")
+                if (code == 404 || code == 403 || code == 401) throw IllegalStateException("not reachable (HTTP $code)")
                 if (code != 200 && code != 206) throw IOException("server answered $code")
                 val resume = code == 206
                 RandomAccessFile(part, "rw").use { raf ->

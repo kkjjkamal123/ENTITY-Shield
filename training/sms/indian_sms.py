@@ -43,8 +43,45 @@ def mobile(r):
     return r.choice(["+91", "", "+91 "]) + n
 
 
-def dlt(r, tag):
-    return f"{r.choice(DLT_PREFIX)}-{tag}" + r.choice(["", "-S", "-T"])
+def dlt(r, tag, promo=False):
+    # TRAI header suffixes (2025+): -P promotional, -S service, -T transactional, -G government.
+    # Some phones show only the bare ID ("JIOPAY"), some keep the brand's mixed case ("JT-JioPay").
+    h = f"{r.choice(DLT_PREFIX)}-{tag}" + (r.choice(["", "-P", "-P"]) if promo else r.choice(["", "-S", "-T", "-G"]))
+    x = r.random()
+    return tag if x < 0.15 else h.title() if x < 0.25 else h
+
+
+def service_number(r):
+    """Operator alert services send from long numbers (missed-call alerts, "now available")."""
+    return r.choice(["+91", "91", ""]) + str(r.choice([6, 7, 8, 9])) + "".join(str(r.randint(0, 9)) for _ in range(9))
+
+
+# v4 (2026-11-21): brands' own marketing links. Real promos nearly always carry one, often through a
+# brand shortener or app-link service; v3 had no promo with a link, so every link read as fraud.
+PROMO_BRANDS = ["lifestyle", "pepperfry", "firstcry", "boat", "purplle", "dmart", "trends", "cultfit", "practo",
+                "pharmeasy", "tata1mg", "cleartrip", "yatra", "redbus", "rapido", "blinkit", "zepto", "westside",
+                "shoppersstop", "bata", "titan", "tanishq", "caratlane", "policybazaar", "acko", "groww", "angelone",
+                "byjus", "vedantu", "mamaearth", "wowskin", "sugar", "bewakoof", "snitch", "pantaloons"]
+
+
+def promo_link(r, brand):
+    code = "".join(r.choice("abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(r.randint(4, 8)))
+    style = r.randrange(7)
+    if style == 0:
+        u = f"{brand}.com/{r.choice(['sale', 'offers', 'deals', 'app', 'shop'])}"
+    elif style == 1:
+        u = f"{brand}.in/{code}"
+    elif style == 2:
+        u = f"{brand}.app.link/{code}"
+    elif style == 3:
+        u = f"{brand}.onelink.me/{r.randint(1000, 99999999)}"
+    elif style == 4:
+        u = f"bit.ly/{brand[:4]}{code}"
+    elif style == 5:
+        u = f"{brand[:4]}.co/{code}"
+    else:
+        u = f"www.{brand}.com/{code}"
+    return r.choice(["https://", "http://", ""]) + u
 
 
 def fill(r, t):
@@ -58,6 +95,10 @@ def fill(r, t):
         time=r.choice(["10:15", "14:32", "21:05", "08:47"]),
         num=mobile(r).replace(" ", ""),
         link=scam_link(r, bank.split()[0]),
+        pbrand=(pb := r.choice(PROMO_BRANDS)).title(),
+        plink=promo_link(r, pb),
+        pct=r.choice(["20", "30", "40", "50", "60", "70", "80"]),
+        tollfree="1800-" + "".join(str(r.randint(0, 9)) for _ in range(3)) + "-" + "".join(str(r.randint(0, 9)) for _ in range(4)),
         anylink=scam_link(r),
         ref="".join(str(r.randint(0, 9)) for _ in range(12)),
         awb="".join(str(r.randint(0, 9)) for _ in range(10)),
@@ -189,6 +230,51 @@ HAM = [
     ("promo1", "dlt:MYNTRA", "End of Season Sale is LIVE! Flat 50-80% off on top brands. Shop now on the Myntra app. T&C apply"),
     ("promo2", "dlt:SWIGGY", "Craving biryani? Get 40% off up to Rs 80 on your next order. Use code TRYNEW. Order on Swiggy app"),
     ("promo3", "dlt:BIGBSK", "Fresh fruits and vegetables at up to 30% off this weekend only. Order on BigBasket"),
+    # v4 (2026-11-21): promotions as they really arrive: links, "win", cashback, deadlines, toll-free numbers
+    ("promo4", "promo", "{pbrand} Mega Sale is LIVE! Flat {pct}% off on 5000+ styles. Shop now: {plink} T&C apply"),
+    ("promo5", "promo", "Last day! Extra {pct}% off on everything at {pbrand}. Offer ends tonight. Hurry: {plink}"),
+    ("promo6", "promo", "Congratulations! You have won a Rs {amt} {pbrand} voucher on your next purchase. Use it before {date}: {plink}"),
+    ("promo7", "promo", "Get assured cashback up to Rs 150 on your first order with {pbrand}. Download the app: {plink}"),
+    ("promo8", "promo", "Buy 1 Get 1 FREE this weekend only at {pbrand} stores. Visit today or call {tollfree}"),
+    ("promo9", "promo", "Dear customer, you are pre-approved for a {bank} credit card with lifetime free offer. Apply: {plink} T&C. SMS STOP to opt out"),
+    ("promo10", "promo", "Hurry! Prices dropped on {pbrand}. Starting at Rs 199 only. Free delivery today. {plink}"),
+    ("promo11", "promo", "{pbrand} Festive Bonanza: shop for Rs 999 and enter the lucky draw to win exciting gifts! In stores now."),
+    ("promo12", "promo", "Recharge with Rs 299 & get 2GB extra data daily for 28 days. Limited period offer. Recharge now: {plink}"),
+    ("promo13", "promo", "Pay your bills on {pbrand} and win scratch cards worth up to Rs 500. Pay now: {plink}"),
+    ("promo14", "promo", "Get a personal loan up to Rs 5 lakh in 10 mins. Low interest, no paperwork. Apply on the {pbrand} app: {plink}. T&C"),
+    ("promo15", "promo", "Last chance to grab {pct}% OFF on annual plans! Offer expires in 24 hours. Upgrade: {plink}"),
+    ("promo16", "promo", "{pbrand} की सेल शुरू! हर ऑर्डर पर {pct}% तक की छूट। अभी खरीदें: {plink}"),
+    ("promo17", "promo", "Diwali dhamaka! {pbrand} par flat {pct}% off. Aaj hi order karein: {plink}"),
+    ("promo18", "promo", "Open a free Demat account in 5 minutes with {pbrand}. Zero brokerage on delivery trades. {plink}"),
+    ("promo19", "promo", "Your cart is waiting! Complete your order now and get free shipping. {plink}"),
+    ("promo20", "promo", "Book tickets on {pbrand} and get Rs 150 off with code FLY150. Valid till {date}. {plink}"),
+    # service messages with links and payment words (real bills, statements, tracking)
+    ("svc5", "dltbank", "Your {bank} Credit Card statement is ready. Total due Rs {amt}, due date {date}. View and pay: {plink}"),
+    ("svc6", "dlt:DLVERY", "Shipment {awb} is out for delivery today. Track: {plink}. Share OTP {otp} only with the delivery agent."),
+    ("svc7", "dlt:AIRTEL", "Your broadband bill of Rs {amt} is due on {date}. Pay on time to avoid disconnection: {plink}"),
+    ("svc8", "dlt:PAYTMB", "Rs {amt} sent to {name} from your UPI. Ref {ref}. Not you? Call {tollfree}"),
+    ("svc9", "dlt:GOIBIB", "Booking confirmed! Booking ID {ref}. Manage your booking: {plink}"),
+    # v4 (2026-11-21): message kinds seen flagged on a real phone (Infinix, 4620-message inbox)
+    ("mca1", "svcnum", "Dear Customer, You have a missed call from {num} The last missed call was at {time} on {date}. Thank you."),
+    ("mca2", "svcnum", "Dear Customer, You have 3 missed calls from {num} The last missed call was at {time}."),
+    ("mca3", "svcnum", "Dear Customer, {num} is now available to take calls."),
+    ("mca4", "dlt:JIOPAY", "You missed a call from {num} at {time}. Caller did not leave a voice message."),
+    ("data1", "dlt:JIOPAY", "ATTENTION!\n\n{pct}% of daily data used as on {date} {time} !\n\nJio Number : {acct}\nUse MyJio app to recharge."),
+    ("data2", "dlt:JIOPAY", "{pct}% Daily Data quota used as on {date} {time} Hrs.\n\nJio Number : {acct}\nTo continue enjoying high speed data, recharge."),
+    ("data3", "dlt:AIRTEL", "You have used 100% of your daily data. Speed is now reduced. Buy a data booster on Airtel Thanks app."),
+    ("sec1", "dltbank", "Dear Customer You have made 1 invalid MPIN attempt with Login ID **{acct}. If not done by you, contact the bank. -{bank}"),
+    ("sec2", "dltbank", "Dear Customer You have successfully reset your mobile banking MPIN for Login ID **{acct} on {date} {time}. -{bank}"),
+    ("sec3", "dltbank", "Dear Customer You have made 2 invalid login attempts on {bank} NetBanking. Your access is temporarily locked for 24 hours for security."),
+    ("sec4", "dltbank", "Dear Customer You have successfully registered for {bank} Mobile Banking on {date}. If not done by you, call {tollfree}."),
+    ("adv1", "dlt:TRAIND", "TRAI never sends any message or makes any call for verification or disconnection of mobile numbers. Report such calls at sancharsaathi.gov.in"),
+    ("adv2", "dlt:NSESMS", "Beware while dealing based on unsolicited tips through WhatsApp, Telegram or SMS. Do not trust guaranteed return schemes. -NSE"),
+    ("adv3", "dlt:DOTGOI", "Check mobile connections issued in your name and report connections which are not yours at sancharsaathi.gov.in -DoT"),
+    ("adv4", "dlt:RBISAY", "RBI says: Never share your card details, PIN, CVV or OTP with anyone. Report frauds at 1930. -RBI"),
+    ("gov4", "dlt:VAAHAN", "A challan {ref} has been issued against your vehicle number for overspeeding. Pay at echallan.parivahan.gov.in or ignore if already paid."),
+    ("per13", "mobile", "No I won't come today, you go ahead. Congratulations on the result btw"),
+    ("per14", "mobile", "Unit 3 notes: transmission gate, master slave flip flop, CMOS inverter. Send me unit 4 also"),
+    ("per15", "mobile", "let me know when you reach, I won't call now since you are driving"),
+    ("per16", "mobile", "Bro your parcel came, I kept it with the watchman. Pick it up when you are back"),
     # personal, more
     ("per10", "mobile", "Bro send me the notes of yesterday's class, exam is tomorrow"),
     ("per11", "mobile", "Didi train 2 ghante late hai, station pe mat aana abhi"),
@@ -211,6 +297,10 @@ def generate(per_template=40, seed=7):
                     sender = dlt(r, v["tag"])
                 elif skind.startswith("dlt:"):
                     sender = dlt(r, skind[4:])
+                elif skind == "svcnum":
+                    sender = service_number(r)
+                elif skind == "promo":
+                    sender = dlt(r, v["pbrand"].upper()[:6], promo=True)
                 else:
                     sender = ""
                 if r.random() < 0.1:  # sender not always available (shared text, notification preview)

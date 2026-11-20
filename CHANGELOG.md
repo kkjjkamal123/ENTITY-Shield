@@ -2,6 +2,42 @@
 
 Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
 
+## 0.5.1 (2026-11-21)
+
+### Scam detection: fraud, not marketing
+- Measured on a real 4,620-message inbox (Infinix X6878, evaluated locally, not kept): 0.5.0 called
+  537 messages a scam and 1,573 suspicious (Jio data and missed-call alerts, bank login alerts, TRAI
+  and DoT advisories, promotions). 0.5.1: 6 scam, 46 suspicious.
+- New scam gate (`core/ScamGate.kt`, same rules as `sms_gate` in `training/featurize.py`, checked case
+  by case by `ScamGateTest` on 1,590 cases): SCAM needs a fraud-specific cue: asking you to hand over a
+  code or PIN, a threat tied to a link or a number to call, a brand look-alike link, a task job, or a
+  link the URL model calls phishing. Registered business senders without one are safe ("Promotion
+  (spam), not a scam" when it reads like marketing); a login code being delivered is safe.
+- Business senders are recognised with or without the "XX-" prefix (`JIOPAY`, `JT-JioPay-S`); before,
+  phones that drop the prefix saw the same Jio alert scored as a scam. "won't" no longer reads as "won".
+- SMS model retrained: UCI "spam" that is only marketing (322 of 747) is no longer a scam example;
+  +40 Indian templates (promotions with links, missed-call and data alerts, bank security alerts,
+  advisories, chats).
+- Held-out challenge set written for this (`training/sms/challenge.py`, `scripts/eval_sms_challenge.py`,
+  `benchmarks/results/sms_challenge_2026-11-21.json`): promotions and service messages called scam
+  12 of 48 -> 0 of 48; scams caught or flagged 20 of 20 -> 20 of 20 (14 scam, 6 suspicious).
+- Saved contacts are never called a scam (only a phishing link still shows "be careful"). Needs the
+  contacts permission; only a lookup, nothing is copied.
+- "Not a scam" / "It's a scam" on an SMS alert saves the message's pattern (numbers, codes and links
+  reduced) and applies to every similar message from the same kind of sender (`core/SmsTrust.kt`).
+
+### Llama
+- Back to the official ExecuTorch library: in the app the patched build measured 7.8-11 tok/s decode
+  (Android resets thread affinity when the app changes cpuset). Kept in `backup/executorch/`.
+- An answer keeps Shield in the foreground (short-service notification). The Infinix's app freezer had
+  frozen Shield 4 s into an answer for 12.6 minutes when the user switched apps.
+- The model downloads from Hugging Face (Meta/PyTorch's own ExecuTorch export, checked on the phone),
+  with the project's GitHub release as fallback. The tokenizer ships in the APK, so importing only the
+  .pte works.
+
+### Other
+- Credits: created by V S Kamalesh. About shows the real version.
+
 ## 0.5.0 (2026-11-20)
 
 ### Llama speed

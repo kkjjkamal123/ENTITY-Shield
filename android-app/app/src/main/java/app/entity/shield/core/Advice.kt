@@ -23,6 +23,7 @@ object Advice {
     )
 
     private val EN = mapOf(
+        Family.PROMO to listOf("This reads like marketing from a registered business, not a scam.", "Use offers only in the brand's own app or website.", "To stop these, reply STOP or register on DND (call 1909)."),
         Family.KYC to listOf("Do not open the link. Banks never ask for KYC through SMS links.", "Update KYC only at your branch or in the bank's official app.", "Block the sender."),
         Family.POWER to listOf("Do not call the number. Electricity boards do not cut power over SMS or phone calls.", "Check your bill only on the official board website or app.", "Block the sender."),
         Family.PARCEL to listOf("Do not pay any 'fee' or open the link.", "Track parcels only on the courier's official website.", "Block the sender."),
@@ -44,6 +45,7 @@ object Advice {
         Family.NET_TUNNEL to listOf("The app named above is hiding data inside internet lookups, a way to sneak information out.", "Uninstall that app now, especially if it was installed from a link or APK file.", "Change your banking and email passwords from a trusted device."),
     )
     private val HI = mapOf(
+        Family.PROMO to listOf("यह किसी पंजीकृत कंपनी का प्रचार मैसेज लगता है, धोखा नहीं।", "ऑफ़र सिर्फ़ उसी ब्रांड के ऐप या वेबसाइट पर इस्तेमाल करें।", "ऐसे मैसेज बंद करने के लिए STOP भेजें या DND (1909) पर रजिस्टर करें।"),
         Family.KYC to listOf("लिंक न खोलें। बैंक कभी SMS लिंक से KYC नहीं मांगते।", "KYC सिर्फ़ ब्रांच में या बैंक के आधिकारिक ऐप में करें।", "भेजने वाले को ब्लॉक करें।"),
         Family.POWER to listOf("नंबर पर कॉल न करें। बिजली विभाग SMS या फ़ोन पर बिजली नहीं काटता।", "बिल सिर्फ़ आधिकारिक वेबसाइट या ऐप पर देखें।", "भेजने वाले को ब्लॉक करें।"),
         Family.PARCEL to listOf("कोई 'फ़ीस' न भरें और लिंक न खोलें।", "पार्सल सिर्फ़ कूरियर की आधिकारिक वेबसाइट पर ट्रैक करें।", "भेजने वाले को ब्लॉक करें।"),
@@ -125,6 +127,8 @@ object Advice {
         "secret_offsite" -> "the form sends your password or codes to a different website"
         "unverifiable" -> "the page is gone or would not load, so Shield could not check it. Scam pages are often taken down within hours"
         "from_flagged_message" -> "it came in a message Shield already flagged"
+        "your_label" -> if (v.band == Band.SCAM) "you marked messages like this as a scam" else null
+        "in_contacts" -> "it is from a saved contact, but the link looks like phishing (their account may be hacked)"
         "cloaking_redirect" -> "the link sends visitors on to the real site, a trick scam kits use to hide from checkers"
         "secret_on_free_host" -> "it asks for passwords or codes on a free website anyone can make"
         "lookalike_domain" -> v.evidence.firstOrNull { it.startsWith("imitates:") }?.let { "the address imitates ${it.removePrefix("imitates:").replaceFirstChar { c -> c.uppercase() }}" } ?: "the address imitates a well-known brand"
@@ -190,6 +194,8 @@ object Advice {
         "secret_offsite" -> "फ़ॉर्म आपका पासवर्ड या कोड किसी दूसरी वेबसाइट को भेजता है"
         "unverifiable" -> "पेज हट चुका है या खुला नहीं, इसलिए Shield इसे जांच नहीं सका। धोखे वाले पेज अक्सर कुछ घंटों में हटा दिए जाते हैं"
         "from_flagged_message" -> "यह उस मैसेज में आया जिसे Shield पहले ही ख़तरनाक बता चुका है"
+        "your_label" -> if (v.band == Band.SCAM) "आपने ऐसे मैसेज को धोखा बताया था" else null
+        "in_contacts" -> "यह आपके सेव किए संपर्क से है, पर लिंक फ़िशिंग जैसा है (उनका खाता हैक हो सकता है)"
         "cloaking_redirect" -> "लिंक जांचने वालों को असली साइट पर भेज देता है, धोखेबाज़ ख़ुद को छिपाने के लिए यही चाल चलते हैं"
         "secret_on_free_host" -> "यह ऐसी मुफ़्त वेबसाइट पर पासवर्ड या कोड मांगता है जिसे कोई भी बना सकता है"
         "lookalike_domain" -> v.evidence.firstOrNull { it.startsWith("imitates:") }?.let { "पता ${it.removePrefix("imitates:").replaceFirstChar { c -> c.uppercase() }} की नकल करता है" } ?: "पता किसी जाने-माने ब्रांड की नकल करता है"
@@ -213,6 +219,7 @@ object Advice {
             return if (hi) "यह लिंक जांचा नहीं जा सका" else "Couldn't check this link"
         val name = when (v.family) {
             Family.NET_DOMAIN -> return if (hi) "Shield ने एक जोखिम भरी साइट रोकी" else "Shield stopped a risky site"
+            Family.PROMO -> return if (hi) "प्रचार मैसेज (स्पैम)" else "Promotion (spam), not a scam"
             Family.NET_BEACON -> return if (hi) "ऐप मैलवेयर जैसा व्यवहार कर रहा है" else "App behaving like malware"
             Family.NET_DGA -> return if (hi) "ऐप छिपा सर्वर ढूंढ रहा है" else "App hunting for a hidden server"
             Family.NET_TUNNEL -> return if (hi) "लुकअप में छिपाकर डेटा भेजा जा रहा है" else "Data hidden in web lookups"

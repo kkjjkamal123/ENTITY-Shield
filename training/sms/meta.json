@@ -1,6 +1,6 @@
 {
  "kind": "sms",
- "version": "2026-11-13",
+ "version": "2026-11-21",
  "dim": 32768,
  "ngrams": [
   2,
@@ -26,8 +26,8 @@
   "call_number"
  ],
  "thresholds": {
-  "scam": 0.5,
-  "uncertain": 0.2
+  "scam": 0.7788,
+  "uncertain": 0.5345
  },
  "input": [
   1,

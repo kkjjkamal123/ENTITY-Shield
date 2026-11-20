@@ -345,6 +345,8 @@ must be UTF-8, and `sdkmanager` needs `--package_file`.
 
 ## Licence and credits
 
+**Created by V S Kamalesh** ([@kkjjkamal123](https://github.com/kkjjkamal123)), Team ENTITY.
+
 Mixed licence ([`LICENSE`](LICENSE)): the detection, network and AI engine, the training code, the
 scripts and the docs are Apache-2.0. The app's user interface is proprietary
 ([`LICENSE-PROPRIETARY.md`](LICENSE-PROPRIETARY.md)).

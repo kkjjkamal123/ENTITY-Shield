@@ -19,7 +19,7 @@ import java.io.File
  * the XNNPACK workers can be found: Linux threads inherit their creator's name, so every worker
  * ExecuTorch starts from the "llama" HandlerThread is also called "llama" in /proc/self/task.
  *
- * Inert where the vendor has no hint HAL (session is null). Off with prefs "llm_adpf" = false.
+ * Inert where the vendor has no hint HAL (session is null). Off by default (0.5.1: slower than 0.4 in the app on the Infinix); on with prefs "llm_adpf" = true.
  */
 class LlmBoost(private val ctx: Context) {
     private var session: PerformanceHintManager.Session? = null
@@ -35,7 +35,7 @@ class LlmBoost(private val ctx: Context) {
     /** Open a session for one generation. [targetNs] = time we want per decoded token. */
     fun begin(targetNs: Long) {
         end()
-        if (!ctx.getSharedPreferences("shield", 0).getBoolean("llm_adpf", true)) return
+        if (!ctx.getSharedPreferences("shield", 0).getBoolean("llm_adpf", false)) return
         try {
             val mgr = ctx.getSystemService(PerformanceHintManager::class.java) ?: return
             val ids = tids(Thread.currentThread().name).let { if (it.isEmpty()) intArrayOf(Process.myTid()) else it }

@@ -32,6 +32,7 @@ import app.entity.shield.core.Alert
 import app.entity.shield.core.Band
 import app.entity.shield.core.Family
 import app.entity.shield.core.Featurizer
+import app.entity.shield.core.SmsTrust
 import app.entity.shield.llm.Explainer
 import app.entity.shield.net.NetGuard
 import app.entity.shield.sandbox.LinkInspector
@@ -125,6 +126,28 @@ fun AlertDetailScreen(a: Alert) {
                 Text(a.sender, style = Sh.t.mono, color = c.text, modifier = Modifier.padding(top = 2.dp, bottom = Dim.m))
             }
             Text(highlight(a.text, c), style = Sh.t.body, color = c.text)
+        }
+
+        // 2a. the user's own say: saves this message's pattern (SmsTrust), so similar messages follow it
+        if (a.v.kind == "sms") {
+            val trust = remember { SmsTrust.get(ctx) }
+            var mine by remember(a.id) { mutableStateOf(trust.label(a.text, a.sender)) }
+            Card(pad = Dim.l) {
+                Text(
+                    when (mine) {
+                        true -> tr("You marked messages like this as a scam.", "आपने ऐसे मैसेज को धोखा बताया है।")
+                        false -> tr("You marked messages like this as safe.", "आपने ऐसे मैसेज को सुरक्षित बताया है।")
+                        null -> tr("Is Shield right? Your answer applies to every message like this one.", "क्या Shield सही है? आपका जवाब ऐसे सभी मैसेज पर लागू होगा।")
+                    },
+                    style = Sh.t.callout, color = c.text2,
+                )
+                Spacer(Modifier.height(Dim.s))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (mine != false) Chip(tr("Not a scam", "धोखा नहीं"), icon = Ico.Check) { trust.save(a.text, a.sender, false); mine = false }
+                    if (mine != true) Chip(tr("It's a scam", "यह धोखा है"), icon = Ico.Close) { trust.save(a.text, a.sender, true); mine = true }
+                    if (mine != null) Chip(tr("Undo", "वापस लें")) { trust.forget(a.text, a.sender); mine = null }
+                }
+            }
         }
 
         // 2b. what the sandbox saw (links that were visited), or the offer to visit

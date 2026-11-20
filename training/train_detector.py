@@ -11,6 +11,7 @@ import csv
 import datetime
 import gzip
 import json
+import re
 import random
 import sys
 from pathlib import Path
@@ -35,12 +36,22 @@ def split3(items, r, a=0.6, b=0.2):
     return items[:i], items[i:j], items[j:]
 
 
+UCI_FRAUD = re.compile(r"\b(won|win|winner|prize|claim|award(ed)?|selected|guaranteed|cash|lottery|bonus|urgent|verify|"
+                       r"account|password|pin|reward|voucher|holiday|tenerife)\b|[£$]\s?\d|\b0?9\d{8,}\b", re.I)
+
+
 def sms_data():
     import indian_sms
     r = random.Random(SEED)
     uci = []
     for line in open(DS / "uci_sms" / "SMSSpamCollection", encoding="utf-8"):
         lab, text = line.rstrip("\n").split("\t", 1)
+        # v4 (2026-11-21): UCI's "spam" is mostly marketing (ringtones, chat lines, "txt STOP"
+        # subscriptions). Shield detects fraud, not marketing, so only spam with a fraud cue (a prize or
+        # cash claim, premium-rate call-back, account/verification lure) stays a positive; the rest is
+        # dropped as neither scam nor normal mail.
+        if lab == "spam" and not UCI_FRAUD.search(text):
+            continue
         uci.append(dict(text=text, sender="", label=int(lab == "spam"), template="uci", source="uci"))
     u_tr, u_va, u_te = split3(uci, r, 0.7, 0.15)
     ind = indian_sms.generate()

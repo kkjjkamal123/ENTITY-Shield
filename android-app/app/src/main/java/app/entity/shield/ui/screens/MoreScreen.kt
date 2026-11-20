@@ -218,7 +218,8 @@ private fun AboutScreen() {
     val ex = remember { Explainer.get(ctx) }
     DetailScaffold(tr("Privacy and models", "प्राइवेसी और मॉडल")) {
         Card {
-            Text("ENTITY Shield 0.4", style = Sh.t.title2, color = c.text)
+            val ver = remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "" }
+            Text("ENTITY Shield $ver", style = Sh.t.title2, color = c.text)
             Text("Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · Team ENTITY", style = Sh.t.caption, color = c.text2, modifier = Modifier.padding(top = 2.dp))
             Spacer(Modifier.height(Dim.m))
             Text("${info.model} · ${info.soc}", style = Sh.t.monoSmall, color = c.text2)
@@ -234,12 +235,20 @@ private fun AboutScreen() {
                 tr("The link sandbox visits a link only when you check it or open it with Shield, never on its own. It runs in an isolated process with no access to your files, and sends no cookies.",
                     "लिंक सैंडबॉक्स सिर्फ़ तब लिंक खोलता है जब आप जांचें या Shield से खोलें, ख़ुद से कभी नहीं। यह एक अलग बंद प्रोसेस में चलता है, आपकी फ़ाइलों तक पहुंच नहीं, कोई कुकी नहीं भेजता।"),
                 tr("The inbox audit exports counts only, never message text.", "इनबॉक्स ऑडिट सिर्फ़ गिनती निर्यात करता है, मैसेज कभी नहीं।"),
+                tr("Contacts are only looked up to see if a sender is saved: a saved contact is never called a scam. Nothing is copied or sent.",
+                    "संपर्क सिर्फ़ यह देखने के लिए जांचे जाते हैं कि भेजने वाला सेव है या नहीं: सेव संपर्क को कभी धोखा नहीं कहा जाता। कुछ भी कॉपी या भेजा नहीं जाता।"),
+                tr("\"Scam / Not a scam\" answers are saved on this phone as patterns (numbers and codes removed), not as messages.",
+                    "\"धोखा / धोखा नहीं\" जवाब इस फ़ोन पर पैटर्न के रूप में सेव होते हैं (नंबर और कोड हटाकर), मैसेज नहीं।"),
             ).forEachIndexed { i, s ->
                 if (i > 0) Divider()
                 ListRow(s, icon = null)
             }
         }
         SectionHeader(tr("Credits", "श्रेय"))
+        Card {
+            Text(tr("Created by V S Kamalesh", "निर्माता: वी एस कमलेश"), style = Sh.t.headline, color = c.text)
+            Text("Team ENTITY · github.com/kkjjkamal123", style = Sh.t.caption, color = c.text2, modifier = Modifier.padding(top = 2.dp))
+        }
         Card {
             Text("Built with Llama", style = Sh.t.headline, color = c.text)
             Text("Llama 3.2 is licensed under the Llama 3.2 Community License, Copyright © Meta Platforms, Inc. All Rights Reserved.", style = Sh.t.caption, color = c.text2, modifier = Modifier.padding(top = 4.dp))

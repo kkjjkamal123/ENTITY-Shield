@@ -177,11 +177,19 @@ _KW = {
     "asks_secret": r"\botp\b|\bpin\b|\bcvv\b|password|passcode|card number|ओटीपी|पिन",
     "money_request": r"pay |payment|transfer|deposit|send rs|\bfee\b|charge|refundable|processing fee|upi|collect request|भुगतान|पैसे",
     "account_threat": r"block|suspend|deactivat|disconnect|close[d]? |freeze|band ho|बंद|ब्लॉक",
-    "prize_lottery": r"\bwon\b|winner|lottery|prize|lucky draw|cashback of|reward|congratulation|जीत|इनाम|लॉटरी",
+    "prize_lottery": r"\bwon\b(?!')|winner|lottery|prize|lucky draw|cashback of|reward|congratulation|जीत|इनाम|लॉटरी",
     "job_task": r"part.?time|work from home|daily income|earn rs|per day|\btasks?\b|like (and|&) subscribe|telegram|कमाएं|घर बैठे",
     "authority_threat": r"police|cbi|customs|court|arrest|narcotics|cyber cell|rbi|trai|ed officer|गिरफ्तार|पुलिस",
     "kyc_identity": r"\bkyc\b|\bpan\b|aadhaa?r|e-?kyc|केवाईसी|आधार",
 }
+
+
+def is_business_sender(s: str) -> bool:
+    """A registered sender ID, not a phone number: "JT-JIOPAY-S", "JM-KVBANK", or the bare "JIOPAY" some
+    phones show. In India only DLT-registered businesses can send from letter IDs (v4, 2026-11-21: v3
+    required the "XX-" prefix, so the same Jio alert scored as a scam on phones that drop it)."""
+    s = s.strip().upper()
+    return bool(re.fullmatch(r"([A-Z]{2}-)?[A-Z0-9]{3,11}(-[A-Z])?", s)) and bool(re.search(r"[A-Z]{3}", s))
 
 
 def sms_signals(text: str, sender: str = "") -> list:
@@ -199,10 +207,90 @@ def sms_signals(text: str, sender: str = "") -> list:
         1 if any(url_signals(h)[URL_SIGNALS.index("brand_not_official")] for h in hosts) else 0,
         1 if any(url_signals(h)[URL_SIGNALS.index("shortener")] for h in hosts) else 0,
         1 if re.fullmatch(r"\+?(91)?[6-9]\d{9}", s.replace(" ", "")) else 0,
-        1 if re.fullmatch(r"[A-Z]{2}-[A-Z0-9]{3,9}(-[A-Z])?", s) else 0,
+        1 if is_business_sender(s) else 0,
         1 if re.search(r"(do not|don't|never) share|किसी के साथ साझा न", t) else 0,
         1 if re.search(r"call\s*(on|at|us)?\s*:?\s*\+?\d[\d -]{8,}", t) else 0,
     ]
+
+def risky_hosts(text: str) -> list:
+    """Link hosts in a message that are not an official brand domain (same as Featurizer.riskyHosts)."""
+    official = {d for ds in BRANDS.values() for d in ds}
+    hosts = [url_host(l if "://" in l else "http://" + l) for l in URL_RE.findall(text)]
+    return [h for h in hosts if not any(h == d or h.endswith("." + d) for d in official)]
+
+
+SECRET_REQUEST = re.compile(r"(?:\b(?:share|send|tell|give|provide|forward|enter|reply with|confirm|batao|bata do|bhejo)\b|दें|बताएं|भेजें)"
+                            r"[^.!?\n]{0,40}(?:\b(?:otp|pin|cvv|password|passcode|code|card number)\b|ओटीपी|पिन)", re.I)
+CODE_DELIVERED = re.compile(r"(otp|code|password|passcode|pin|कोड|ओटीपी)[^\n.!?]{0,40}?(?<![\d#,.₹])(?<!rs )(?<!rs\.)(?<!inr )(G-)?\d{4,8}(?![\d,])|(?<![\d#,.₹])(?<!rs )(?<!rs\.)(?<!inr )(G-)?\d{4,8}(?![\d,])[^\n.!?]{0,40}?(otp|code|password|passcode|pin|कोड|ओटीपी)|\b\d{3}-\d{3}\b", re.I)
+CALL_TO_MOBILE = re.compile(r"(call|contact|whatsapp|dial|ring|reach|message|msg|sampark|संपर्क|कॉल)[^\d\n]{0,25}(?:\+?91[\s-]?)?[6-9]\d{4}\s?\d{5}(?!\d)", re.I)
+PROMO_WORDS = re.compile(r"\b(?:sale|offers?|discount|cashback|coupon|code|deals?|shop|order now|free delivery|t&c|"
+                         r"opt.?out|sms stop|bogo|buy 1|recharge|subscription|apply now|book now)\b|% ?off|%|छूट|सेल", re.I)
+
+
+# App deep-link and attribution services: brands' marketing links go through them. Like a shortener,
+# the destination is not visible, so on their own they are not evidence of fraud.
+LINK_SERVICES = ("app.link", "onelink.me", "page.link", "smart.link", "go.link", "lnk.to", "branch.io", "adj.st")
+
+
+GOV_DOMAINS = ("gov.in", "nic.in")  # only government bodies can register these
+
+
+def sender_owns(host: str, sender: str) -> bool:
+    """A DLT header (VM-HDFCBK-S) and a link on the same brand's own short domain (hdfcbk.io)."""
+    parts = sender.strip().upper().split("-")
+    if len(parts) < 2 or not re.fullmatch(r"[A-Z]{2}", parts[0]):
+        return False
+    tag = parts[1].lower()
+    name = registrable(host).split(".")[0]
+    k = min(4, len(tag), len(name))
+    return k >= 3 and (name.startswith(tag[:k]) or tag.startswith(name[:k]))
+
+
+def sms_gate(band: str, sig: dict, scam_hosts: list, text: str, sender: str = "", hosts: list = ()):
+    """v4 (2026-11-21): SCAM needs a fraud-specific cue, not just "sounds like marketing".
+
+    The model scores promotional spam high: links, offers, "win", deadlines and phone numbers are in
+    promos as much as in fraud. Fraud is something more specific: asking for a secret, a threat (police,
+    block, disconnect) tied to a link or a personal number, a brand look-alike link, a task job, a
+    risky link by the URL model. Without one of those:
+      - a registered business sender (DLT header) is SAFE, labelled PROMO when it reads like marketing
+      - any other sender is at most UNCERTAIN (still listed, no "scam" alarm)
+    Returns (band, family or None). Same rules as Detectors.gate() in the app.
+    """
+    t = text.lower()
+    has_link = sig["has_link"]
+    own = lambda h: sender_owns(h, sender) or any(h == d or h.endswith("." + d) for d in LINK_SERVICES + GOV_DOMAINS)
+    link_scam = any(not own(h) for h in scam_hosts)
+    lookalike = sig["brand_link_mismatch"] and any(not own(h) for h in hosts)
+    dlt = sig["sender_dlt"]
+    mobile_no = bool(CALL_TO_MOBILE.search(text))  # "call/contact/WhatsApp 98...": not the user's own number in an alert
+    # an OTP given to you is normal; asking you to hand one over is the fraud
+    delivered = bool(CODE_DELIVERED.search(text))  # the code itself is in the message: it is being given, not asked for
+    secret = sig["asks_secret"] and not sig["dont_share_otp"] and not delivered and bool(SECRET_REQUEST.search(t))
+    pressure = sig["account_threat"] or sig["money_request"] or sig["prize_lottery"] or sig["kyc_identity"] or sig["authority_threat"] or "refund" in t
+    if dlt:  # registered senders: advisories and bank alerts name TRAI, KYC, PIN all the time
+        strong = secret or lookalike or link_scam or (mobile_no and pressure)
+    else:
+        strong = (secret or sig["authority_threat"] or lookalike or link_scam or sig["job_task"]
+                  or (sig["kyc_identity"] and (has_link or sig["call_number"] or mobile_no))
+                  or (sig["account_threat"] and has_link)
+                  or (mobile_no and pressure))
+    promo = "PROMO" if PROMO_WORDS.search(t) else None
+    if strong:  # a fraud-specific cue: never fully SAFE, even when the model is unsure
+        return ("UNCERTAIN" if band == "SAFE" else band), None
+    if band == "SAFE":
+        return band, None
+    if delivered and not has_link:  # "Your Discord code is 123456": a login code, from any kind of sender
+        return "SAFE", None
+    if dlt:
+        return "SAFE", promo
+    weak = sig["prize_lottery"] or sig["money_request"] or (sig["urgency"] and has_link) or (sig["sender_mobile"] and has_link)
+    if not weak and not has_link and not sig["call_number"]:  # nothing to click, call or pay: an ordinary message
+        return "SAFE", None
+    if band == "SCAM" and not weak:
+        return "UNCERTAIN", promo
+    return band, None
+
 
 # ---------------------------------------------------------------- full vectors
 
