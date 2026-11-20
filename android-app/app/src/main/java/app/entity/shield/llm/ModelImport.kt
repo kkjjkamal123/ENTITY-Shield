@@ -70,7 +70,7 @@ object ModelImport {
         status = "Checking files…"
         thread(name = "model-import") {
             try {
-                val dir = app.getExternalFilesDir("models") ?: throw IllegalStateException("No storage for the model")
+                val dir = Explainer.modelDir(app)
                 data class Pick(val uri: Uri, val name: String, val size: Long, val kind: Kind)
                 val picks = uris.map { u -> val (n, s) = meta(app, u); Pick(u, n, s, classify(head(app, u), n)) }
                 val use = picks.filter { it.kind != Kind.UNKNOWN }
@@ -126,7 +126,7 @@ object ModelImport {
                     ex.available() -> "Llama installed"
                     !hasModel -> "Tokenizer saved. Now import the model (.pte)."
                     !hasTok -> "Model saved. Now import tokenizer.model."
-                    else -> "Files saved but Llama was not found, restart the app"
+                    else -> "Files saved but Llama was not found: ${ex.diagnose()}"
                 }
             } catch (t: Throwable) {
                 status = t.message ?: "Import failed"

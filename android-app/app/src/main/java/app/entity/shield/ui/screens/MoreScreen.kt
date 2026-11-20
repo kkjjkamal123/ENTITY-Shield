@@ -318,9 +318,12 @@ fun LlamaCard() {
             ListRow(tr("Use mobile data", "मोबाइल डेटा इस्तेमाल करें"),
                 tr("Allow the 1.1 GB download without Wi-Fi", "Wi-Fi के बिना 1.1 GB डाउनलोड की अनुमति दें"),
                 trailing = { Toggle(mobileOk) { ModelDownload.setAllowMobile(ctx, it) } })
+            val found = remember(ModelImport.status, ModelDownload.status, broken) { ex.diagnose() }
             val note = listOfNotNull(
                 ModelDownload.status.ifEmpty { null },
                 ModelImport.status.ifEmpty { null },
+                broken?.let { tr("Load error: $it", "लोड त्रुटि: $it") },
+                found.takeIf { it != "No model files found" }?.let { tr("On this phone: $it", "इस फ़ोन पर: $it") },
                 if (blocked) tr("You are on mobile data. The download uses about 1.1 GB of your plan.", "आप मोबाइल डेटा पर हैं। डाउनलोड आपके प्लान का लगभग 1.1 GB लेगा।") else null,
                 tr("Import: pick the .pte model and tokenizer.model from Downloads, together or one at a time.", "इम्पोर्ट: Downloads से .pte मॉडल और tokenizer.model चुनें, साथ में या एक-एक करके।"),
                 tr("One download, checked with SHA-256. Nothing about you is sent.", "एक बार डाउनलोड, SHA-256 से जांचा गया। आपकी कोई जानकारी नहीं भेजी जाती।"),

@@ -74,7 +74,7 @@ object ModelDownload {
         ModelDownloadService.start(app)
         thread(name = "model-download") {
             try {
-                val dir = app.getExternalFilesDir("models") ?: throw IllegalStateException("No storage for the model")
+                val dir = Explainer.modelDir(app)
                 val need = FILES.sumOf { f -> if (File(dir, f.name).length() == f.bytes) 0L else f.bytes - File(dir, f.name + ".part").length().coerceAtMost(f.bytes) }
                 if (dir.usableSpace < need + (200L shl 20)) throw IllegalStateException("Not enough free space: need ${(need shr 20) + 200} MB")
                 var doneBefore = 0L

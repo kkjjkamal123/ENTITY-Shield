@@ -2,6 +2,18 @@
 
 Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
 
+## 0.4.2 (2026-11-20)
+
+### Llama install
+- Download and Import now save the model in Shield's private storage instead of the shared
+  `Android/data` folder. There, a folder made by `adb` before the app's first start could be unreadable
+  by the app, and phone cleaners may delete large files, so Llama asked to be installed again. Models
+  pushed with `adb` to the old folder are still found; once a private copy exists, the duplicate is
+  removed.
+- A background file check that started before an import finished could overwrite the result and
+  report Llama as missing; fixed.
+- The Llama card lists the model files it finds (size, readable, complete) and the load error, if any.
+
 ## 0.4.1 (2026-11-20)
 
 ### Llama install
