@@ -13,8 +13,8 @@ android {
         applicationId = "app.entity.shield"
         minSdk = 29
         targetSdk = 36
-        versionCode = 402
-        versionName = "0.4.2"
+        versionCode = 500
+        versionName = "0.5.0"
         ndk { abiFilters += "arm64-v8a" } // Arm only; also drops the x86_64 ExecuTorch library
     }
 
@@ -86,7 +86,17 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)
-    implementation(libs.executorch)
+    // ExecuTorch: Shield's build of 1.5.1 when present (app-chosen thread count and big-core pinning,
+    // .github/workflows/executorch-android.yml), otherwise the official release. Same Java API.
+    val patchedEt = file("libs/executorch-android-1.5.1-shield.aar")
+    if (patchedEt.exists()) {
+        implementation(files(patchedEt))
+        implementation("com.facebook.fbjni:fbjni:0.7.0")
+        implementation("com.facebook.soloader:nativeloader:0.10.5")
+        implementation("androidx.core:core-ktx:1.13.1")
+    } else {
+        implementation(libs.executorch)
+    }
     implementation(libs.androidx.profileinstaller) // installs baseline-prof.txt on sideloaded builds too
     testImplementation(libs.junit)
     testImplementation(libs.json)

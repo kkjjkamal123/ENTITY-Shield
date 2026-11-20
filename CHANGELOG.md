@@ -2,6 +2,24 @@
 
 Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
 
+## 0.5.0 (2026-11-20)
+
+### Llama speed
+- Shield now ships its own build of ExecuTorch 1.5.1 (`android-app/app/libs`, built by
+  `.github/workflows/executorch-android.yml`; same Java API and the same 274 operators as the official
+  library). The app sets the LLM thread pool to 4 threads pinned to the phone's 4 fastest cores, the
+  fastest arm of the thread ablation (Infinix X6878: 185 tok/s prefill vs 168 for ExecuTorch's default).
+  Upstream picks "performance cores - 1", which is 3 on the CMF Phone 1. Settings: `llm_threads`,
+  `llm_pin_big`. Not yet re-measured inside the app.
+- ADPF performance hints over the Llama thread and its XNNPACK workers (`llm_adpf`). Not yet measured.
+
+### Network Guard stability
+- No more crashes under heavy DNS traffic: bounded query queue, lookups shown in 300 ms batches
+  instead of one main-thread update each, pruned behaviour history, 96 px icon cache, a read loop
+  that backs off on errors, and a bounded tripwire pool instead of one thread per connection.
+- Network alerts: at most one notification per 20 s, no background Llama load; alert history capped
+  at 500.
+
 ## 0.4.2 (2026-11-20)
 
 ### Llama install

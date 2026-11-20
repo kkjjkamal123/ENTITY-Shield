@@ -128,6 +128,15 @@ class Explainer private constructor(private val ctx: Context) {
         if (module != null) return 0
         val t0 = System.currentTimeMillis()
         val (pte, tok) = files() ?: throw IllegalStateException("Llama model not found. Install it in More, On-device AI.")
+        // Thread count and big-core pinning, read by Shield's patched ExecuTorch build
+        // (scripts/executorch/patch_threads.py) when the module is created; the stock library ignores them.
+        // 4 threads pinned to the fastest cores was the fastest arm of the thread ablation
+        // (benchmarks/results/threads_*_Infinix_X6878_2026-11-19.csv: 185 tok/s prefill vs 168 default).
+        val prefs = ctx.getSharedPreferences("shield", 0)
+        runCatching {
+            android.system.Os.setenv("ET_NUM_THREADS", prefs.getInt("llm_threads", 4).toString(), true)
+            android.system.Os.setenv("ET_PIN_BIG", if (prefs.getBoolean("llm_pin_big", true)) "1" else "0", true)
+        }
         val m = LlmModule(pte.absolutePath, tok.absolutePath, 0f)
         try { m.load() } catch (e: Throwable) {
             m.close(); loadError = e.message ?: "load failed"
