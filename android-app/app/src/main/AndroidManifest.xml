@@ -11,6 +11,9 @@
          Nothing else uses the network: no analytics, no cloud model, no uploads. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Llama download (1.1 GB, once, only when the user taps Download): keep it running if they leave the app. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- Name the app behind each lookup (sideloaded build; not a Play Store app). -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
@@ -79,6 +82,10 @@
                 <action android:name="android.net.VpnService" />
             </intent-filter>
         </service>
+        <service
+            android:name=".llm.ModelDownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         <!-- Link sandbox: page bytes are parsed only here. isolatedProcess = a throw-away UID with no
              permissions, no files and no network. -->
         <service

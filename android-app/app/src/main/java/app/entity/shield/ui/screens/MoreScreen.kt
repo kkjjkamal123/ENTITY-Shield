@@ -271,16 +271,25 @@ fun LlamaCard() {
     val ctx = LocalContext.current
     val c = Sh.c
     val ex = remember { Explainer.get(ctx) }
-    val installed = ex.available() && !ModelDownload.busy
+    val broken = ex.loadError
+    val installed = ex.available() && !ModelDownload.busy && !ModelImport.busy && broken == null
+    val metered = ModelDownload.onMobileData(ctx)
+    val mobileOk = ModelDownload.allowMobile(ctx)
     Card {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconTile(Ico.Chip, if (installed) Tone.Accent else Tone.Warn, 40.dp)
             Spacer(Modifier.width(Dim.m))
             Column(Modifier.weight(1f)) {
-                Text(if (installed) ex.modelLabel() else tr("Llama 3.2 1B is not installed", "Llama 3.2 1B इंस्टॉल नहीं है"), style = Sh.t.headline, color = c.text)
-                Text(if (installed) tr("Explanations run on this phone", "समझाना इसी फ़ोन पर चलता है")
-                    else tr("Detection already works. Llama adds the plain-language \"why\".", "पहचान पहले से चलती है। Llama आसान भाषा में \"क्यों\" बताता है।"),
-                    style = Sh.t.caption, color = c.text2)
+                Text(when {
+                    installed -> ex.modelLabel()
+                    broken != null -> tr("Llama is installed but did not load", "Llama इंस्टॉल है पर लोड नहीं हुआ")
+                    else -> tr("Llama 3.2 1B is not installed", "Llama 3.2 1B इंस्टॉल नहीं है")
+                }, style = Sh.t.headline, color = c.text)
+                Text(when {
+                    installed -> tr("Explanations run on this phone", "समझाना इसी फ़ोन पर चलता है")
+                    broken != null -> tr("The model file may be damaged. Download or import it again.", "मॉडल फ़ाइल ख़राब हो सकती है। फिर से डाउनलोड या इम्पोर्ट करें।")
+                    else -> tr("Detection already works. Llama adds the plain-language \"why\".", "पहचान पहले से चलती है। Llama आसान भाषा में \"क्यों\" बताता है।")
+                }, style = Sh.t.caption, color = c.text2)
             }
         }
         if (ModelDownload.busy) {
@@ -290,18 +299,30 @@ fun LlamaCard() {
                 Text(ModelDownload.status, style = Sh.t.monoSmall, color = c.text2, modifier = Modifier.weight(1f))
                 Chip(tr("Pause", "रोकें"), icon = Ico.Stop) { ModelDownload.stop() }
             }
+        } else if (ModelImport.busy) {
+            Spacer(Modifier.height(Dim.l))
+            Meter(ModelImport.progress, c.accent, Modifier.fillMaxWidth())
+            Text(ModelImport.status, style = Sh.t.monoSmall, color = c.text2, modifier = Modifier.padding(top = Dim.s))
         } else if (!installed) {
             Spacer(Modifier.height(Dim.l))
-            PrimaryButton(tr("Download Llama · ${ModelDownload.totalBytes shr 20} MB", "Llama डाउनलोड करें · ${ModelDownload.totalBytes shr 20} MB"),
-                Modifier.fillMaxWidth(), Ico.Download, busy = ModelImport.busy) { ModelDownload.start(ctx) }
+            val blocked = metered && !mobileOk
+            PrimaryButton(
+                if (blocked) tr("Download on mobile data · ${ModelDownload.totalBytes shr 20} MB", "मोबाइल डेटा से डाउनलोड करें · ${ModelDownload.totalBytes shr 20} MB")
+                else tr("Download Llama · ${ModelDownload.totalBytes shr 20} MB", "Llama डाउनलोड करें · ${ModelDownload.totalBytes shr 20} MB"),
+                Modifier.fillMaxWidth(), Ico.Download) { ModelDownload.start(ctx, mobileOnce = blocked) }
             Spacer(Modifier.height(Dim.s))
-            SecondaryButton(tr("Import files instead", "फ़ाइलें चुनें"), Modifier.fillMaxWidth(), icon = Ico.Inbox, enabled = !ModelImport.busy) {
+            SecondaryButton(tr("Import from files (no internet)", "फ़ाइलों से इम्पोर्ट करें (बिना इंटरनेट)"), Modifier.fillMaxWidth(), icon = Ico.Inbox) {
                 (ctx as app.entity.shield.MainActivity).importModel()
             }
+            Spacer(Modifier.height(Dim.s))
+            ListRow(tr("Use mobile data", "मोबाइल डेटा इस्तेमाल करें"),
+                tr("Allow the 1.1 GB download without Wi-Fi", "Wi-Fi के बिना 1.1 GB डाउनलोड की अनुमति दें"),
+                trailing = { Toggle(mobileOk) { ModelDownload.setAllowMobile(ctx, it) } })
             val note = listOfNotNull(
                 ModelDownload.status.ifEmpty { null },
                 ModelImport.status.ifEmpty { null },
-                if (ModelDownload.onMobileData(ctx)) tr("You are on mobile data: Wi-Fi is better for 1 GB.", "आप मोबाइल डेटा पर हैं: 1 GB के लिए Wi-Fi बेहतर है।") else null,
+                if (blocked) tr("You are on mobile data. The download uses about 1.1 GB of your plan.", "आप मोबाइल डेटा पर हैं। डाउनलोड आपके प्लान का लगभग 1.1 GB लेगा।") else null,
+                tr("Import: pick the .pte model and tokenizer.model from Downloads, together or one at a time.", "इम्पोर्ट: Downloads से .pte मॉडल और tokenizer.model चुनें, साथ में या एक-एक करके।"),
                 tr("One download, checked with SHA-256. Nothing about you is sent.", "एक बार डाउनलोड, SHA-256 से जांचा गया। आपकी कोई जानकारी नहीं भेजी जाती।"),
             )
             note.forEach { Text(it, style = Sh.t.caption, color = c.text3, modifier = Modifier.padding(top = 6.dp)) }

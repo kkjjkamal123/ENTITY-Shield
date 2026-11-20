@@ -51,10 +51,12 @@ class Explainer private constructor(private val ctx: Context) {
         val pref = ctx.getSharedPreferences("shield", 0).getString("llm_model", "qlora") ?: "qlora"
         val dirs = listOfNotNull(ctx.getExternalFilesDir("models"), ctx.getExternalFilesDir(null), File("/data/local/tmp/shield"))
         for (d in dirs) {
-            val ptes = d.listFiles { f -> f.name.startsWith("llama") && f.name.endsWith(".pte") && f.canRead() }?.toList().orEmpty()
+            // A half-copied or half-downloaded model fails inside LlmModule.load(); skip it here so the
+            // UI offers Download / Import again instead of reporting Llama as installed.
+            val ptes = d.listFiles { f -> f.name.startsWith("llama") && f.name.endsWith(".pte") && f.canRead() && complete(f) }?.toList().orEmpty()
             val pte = ptes.firstOrNull { pref in it.name } ?: ptes.maxByOrNull { it.name } ?: continue
             val tok = File(d, "tokenizer.model")
-            if (tok.canRead()) return pte to tok
+            if (tok.canRead() && tok.length() > 0) return pte to tok
         }
         return null
     }
@@ -74,8 +76,20 @@ class Explainer private constructor(private val ctx: Context) {
         return cachedFiles
     }
 
-    /** After a model import: look again now. */
-    fun refreshFiles() { cachedFiles = files(); checkedAt = System.currentTimeMillis() }
+    private fun complete(f: File) = when (f.name) {
+        ModelDownload.MODEL.name -> f.length() == ModelDownload.MODEL.bytes
+        else -> f.length() > (100L shl 20)
+    }
+
+    /** Why the installed model would not load, if it did not; cleared by a new download or import. */
+    @Volatile var loadError: String? = null; private set
+
+    /** After a model import or download: look again now, and forget an earlier load failure. */
+    fun refreshFiles() {
+        h.post { module?.close(); module = null; loaded = false; warmPrefix = null }   // pick up the new files on next use
+        loadError = null
+        cachedFiles = files(); checkedAt = System.currentTimeMillis()
+    }
 
     fun available() = cached() != null
     fun modelLabel(): String = cached()?.first?.name?.let { if ("qlora" in it) "Llama 3.2 1B · QAT+LoRA 4-bit" else "Llama 3.2 1B · 8da4w 4-bit" } ?: "not installed"
@@ -83,8 +97,14 @@ class Explainer private constructor(private val ctx: Context) {
     private fun ensureLoaded(): Long {
         if (module != null) return 0
         val t0 = System.currentTimeMillis()
-        val (pte, tok) = files() ?: throw IllegalStateException("Llama model not found. Push llama*.pte and tokenizer.model (see README).")
-        module = LlmModule(pte.absolutePath, tok.absolutePath, 0f).also { it.load() }
+        val (pte, tok) = files() ?: throw IllegalStateException("Llama model not found. Install it in More, On-device AI.")
+        val m = LlmModule(pte.absolutePath, tok.absolutePath, 0f)
+        try { m.load() } catch (e: Throwable) {
+            m.close(); loadError = e.message ?: "load failed"
+            throw IllegalStateException("Llama could not load ${pte.name} (${e.message}). Reinstall it in More, On-device AI.", e)
+        }
+        loadError = null
+        module = m
         modelName = pte.name
         loaded = true
         return System.currentTimeMillis() - t0

@@ -2,6 +2,19 @@
 
 Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
 
+## 0.4.1 (2026-11-20)
+
+### Llama install
+- Import from files works with Downloads: the model and tokenizer can be picked together or one at a
+  time, and are recognised by their content, so browser renames ("(1)", ".bin") no longer block them.
+  Imported files are checked against the published SHA-256 and free space is checked first.
+- A half-copied or half-downloaded model is no longer reported as installed. If the model fails to
+  load, the Llama card says so and offers Download and Import again instead of hiding them.
+- New "Use mobile data" switch, plus a one-off "Download on mobile data" button. Off by default.
+- The download retries dropped connections with backoff and resumes where it stopped, and runs under
+  a foreground service with a progress notification so leaving the app does not kill it.
+- A 401/403/404 from the release now says the release is not reachable and points to Import.
+
 ## 0.4.0 (2026-11-19)
 
 ### Network Guard
