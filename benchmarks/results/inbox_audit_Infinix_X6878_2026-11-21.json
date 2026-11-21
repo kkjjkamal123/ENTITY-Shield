@@ -1,0 +1,22 @@
+{
+ "note": "Counts only. The developer's own phone, with his consent. Messages were judged on the phone (app Inbox audit) and once on a laptop from a local copy that was deleted afterwards. No message, number or name is stored here or anywhere in this repository.",
+ "device": "Infinix X6878 (Snapdragon 7s Gen 3)",
+ "date": "2026-11-21",
+ "laptop_replay_all_messages": {
+  "messages": 4620,
+  "v0_5_0": {"SCAM": 537, "UNCERTAIN": 1573},
+  "v0_5_1": {"SCAM": 6, "UNCERTAIN": 46},
+  "caveat": "The 0.5.1 scam gate rules were written after looking at this inbox's false alarms, so this is not a held-out result."
+ },
+ "phone_audit_v0_5_1_newest_1000": {
+  "messages": 1000,
+  "flagged": 11,
+  "owner_confirmed_scam": 2,
+  "owner_said_not_scam": 9,
+  "false_alarm_rate": 0.009,
+  "let_through_sample_checked": 40,
+  "let_through_sample_missed_scams": 0,
+  "ms_per_message": 0.47,
+  "caveat": "Same inbox the gate was tuned on; the owner's labels were given before 0.5.2's saved patterns existed."
+ }
+}

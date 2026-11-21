@@ -31,8 +31,10 @@ def stats(rows, key, flagged):
     neg = [r for r in rows if r["label"] == 0]
     tp = sum(hit(r[key]) for r in pos)
     fp = sum(hit(r[key]) for r in neg)
-    return dict(n=len(rows), pos=len(pos), neg=len(neg), recall=round(tp / max(1, len(pos)), 4),
-                fpr=round(fp / max(1, len(neg)), 4), precision=round(tp / max(1, tp + fp), 4))
+    p, rc = tp / max(1, tp + fp), tp / max(1, len(pos))
+    return dict(n=len(rows), pos=len(pos), neg=len(neg), tp=tp, fp=fp, fn=len(pos) - tp, tn=len(neg) - fp,
+                recall=round(rc, 4), fpr=round(fp / max(1, len(neg)), 4), precision=round(p, 4),
+                f1=round(2 * p * rc / max(1e-9, p + rc), 4))
 
 
 def main():
@@ -58,6 +60,9 @@ def main():
     out = {}
     for name, sel in (("all", rows), ("uci", [r for r in rows if r["source"] == "uci"]), ("indian", [r for r in rows if r["source"] != "uci"])):
         out[name] = {f"{k}_{lvl}": stats(sel, k, lvl == "flagged") for k in ("model", "app") for lvl in ("scam", "flagged")}
+        # 3-way confusion: true label x band
+        out[name]["confusion_app"] = {("scam" if y else "legit"): {b: sum(r["label"] == y and r["app"] == b for r in sel) for b in ("SAFE", "UNCERTAIN", "SCAM")} for y in (0, 1)}
+        out[name]["confusion_model"] = {("scam" if y else "legit"): {b: sum(r["label"] == y and r["model"] == b for r in sel) for b in ("SAFE", "UNCERTAIN", "SCAM")} for y in (0, 1)}
     print(json.dumps(out, indent=1))
     if a.out:
         Path(a.out).write_text(json.dumps(out, indent=1), encoding="utf-8", newline="\n")

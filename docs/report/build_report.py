@@ -42,7 +42,12 @@ def load(pattern):
 
 
 # ------------------------------------------------------------------ data
-sms = load("detector_sms_2026-11-13.json")
+sms = load("detector_sms_2026-11-21.json")
+held = load("sms_heldout_app_*.json")
+chal = load("sms_challenge_*.json")
+inbox = load("inbox_audit_*.json")
+sus = load("sustained_*.json")
+VERSION = (ROOT / "VERSION").read_text().strip()
 url = load("detector_url_2026-11-*.json")
 eval_en = load("llm_explain_eval_llama3_2_1b_instruct_qlora_ctx2048_Infinix_X6878_2026-11-19.json")
 eval_hi2 = load("llm_explain_eval_*_hisigns.json")
@@ -131,6 +136,73 @@ from decimal import Decimal, ROUND_HALF_UP
 f3 = lambda v: "—" if v is None else str(Decimal(str(v)).quantize(Decimal("0.001"), ROUND_HALF_UP))
 
 
+h_ind = held["indian"]["app_scam"] if held else s_ind
+
+
+def conf_table(c, title):
+    rows = "".join(f"<tr><td>{y}</td>" + "".join(f"<td>{c[y][b]}</td>" for b in ("SAFE", "UNCERTAIN", "SCAM")) + "</tr>" for y in ("legit", "scam"))
+    return f"<table style='width:48%'><tr><th>{title}: true label</th><th>Safe</th><th>Be careful</th><th>Scam</th></tr>{rows}</table>"
+
+
+def stat_row(name, x):
+    return (f"<tr><td>{name}</td><td>{x['n']}</td><td>{f3(x['precision'])}</td><td>{f3(x['recall'])}</td><td>{f3(x['f1'])}</td>"
+            f"<td>{pct(x['fpr'])}</td><td>{x['tp']} / {x['fp']} / {x['fn']} / {x['tn']}</td></tr>")
+
+
+gate_html = ""
+if held:
+    hi, hu = held["indian"], held["uci"]
+    lap = inbox["laptop_replay_all_messages"] if inbox else None
+    ph = inbox["phone_audit_v0_5_1_newest_1000"] if inbox else None
+    gate_html = f"""<h3>3b. The scam gate, and what the whole app gets right</h3>
+<p>On a real 4,620-message inbox the 0.5.0 model called <b>{lap['v0_5_0']['SCAM']}</b> messages a scam and {lap['v0_5_0']['UNCERTAIN']}
+suspicious: Jio data and missed-call alerts, bank login alerts, TRAI and DoT advisories, promotions. It had learned "marketing" as
+well as "fraud". 0.5.1 adds a rule layer after the models (<code>ScamGate.kt</code>, the same rules as <code>sms_gate</code> in
+Python; a unit test checks both agree on 1,590 cases). A message is called a <b>scam</b> only with a fraud-specific cue: it asks you
+to hand over a code or PIN, ties a threat to a link or a personal number to call, has a brand look-alike link, is a task-job lure,
+or carries a link the URL model calls phishing. Without one, a registered business sender is safe ("promotion, not a scam" when it
+reads like one), a delivered login code is safe, and anything else is at most "be careful". A saved contact is never called a scam,
+and the user's own "scam / not a scam" answers apply to similar messages from then on.</p>
+<table><tr><th>Held-out split (same as above)</th><th>n</th><th>Precision</th><th>Recall</th><th>F1</th><th>False alarms</th><th>TP / FP / FN / TN</th></tr>
+{stat_row("Model alone, Indian, 'scam'", hi["model_scam"])}
+{stat_row("<b>App verdict</b>, Indian, 'scam'", hi["app_scam"])}
+{stat_row("<b>App verdict</b>, Indian, 'scam' or 'be careful'", hi["app_flagged"])}
+{stat_row("Model alone, UCI, 'scam'", hu["model_scam"])}
+{stat_row("<b>App verdict</b>, UCI, 'scam' or 'be careful'", hu["app_flagged"])}</table>
+<div style="display:flex;gap:4%">{conf_table(hi["confusion_app"], "Indian, app")}{conf_table(hu["confusion_app"], "UCI, app")}</div>
+<div class="box"><b>Trade-off and honest reading.</b>
+<ul>
+<li>On unseen Indian templates the gate raises the precision of a "scam" call from {f3(hi['model_scam']['precision'])} to
+<b>{f3(hi['app_scam']['precision'])}</b> and cuts false alarms from {pct(hi['model_scam']['fpr'])} to <b>{pct(hi['app_scam']['fpr'])}</b>.
+With "be careful" counted it flags {pct(hi['app_flagged']['recall'])} of scams.</li>
+<li>The price is paid on UCI (UK spam, 2011): only {pct(hu['app_flagged']['recall'])} of its fraud gets flagged, against
+{pct(hu['model_flagged']['recall'])} for the model alone. Its lures (premium-rate call-backs, "you have won" without a link) lack the
+Indian fraud cues the gate looks for. Fewer false alarms cost missed scams; the gate makes that trade on purpose for Indian users.</li>
+<li><b>Where the rules were tuned.</b> The gate was written against a 64-message challenge set and the inbox above, so these are
+not held-out numbers: on the inbox, 0.5.1 gives {lap['v0_5_1']['SCAM']} scam and {lap['v0_5_1']['UNCERTAIN']} suspicious of 4,620; on
+the phone, {ph['flagged']} of the newest 1,000 were flagged, {ph['owner_confirmed_scam']} of them real scams, and none was missed in a
+{ph['let_through_sample_checked']}-message sample of the rest. The untouched checks are the held-out split above and 19 messages written
+after tuning: {chal['summary']['fresh_ham']['SCAM']} of {chal['summary']['fresh_ham']['n']} legitimate ones called scam,
+{chal['summary']['fresh_scam']['SCAM']} of {chal['summary']['fresh_scam']['n']} scams called scam.</li>
+</ul></div>"""
+
+sus_html = "<h3>7b. Sustained load: temperature, memory and speed</h3>"
+if sus:
+    sm = sus["summary"]
+    sus_rows = "".join(f"<tr><td>{r['answer']}</td><td>{r['elapsed_s']}</td><td>{r['prefill_tps']}</td><td>{r['decode_tps']}</td><td>{r['ttft_s']}</td>"
+                       f"<td>{r['peak_rss_mib']}</td><td>{r['cpu_c_after']}</td><td>{r['battery_c_after']}</td><td>{r['cpu_util_pct']}</td></tr>" for r in sus["answers"])
+    sus_html += f"""<p>{sm['answers']} Llama answers back to back with no pause ({sm['minutes']} min; {sus['device']}, {sus['soc']},
+Android {sus['android']}, {'charging' if sus['plugged'] else 'on battery'}; <code>scripts/bench_sustained.py</code>). Decode went from
+{sm['decode_first_last'][0]} to {sm['decode_first_last'][1]} tok/s ({sm['decode_drop_pct']}% lower). Hottest CPU zone
+{sm['cpu_c_start_peak'][0]} → {sm['cpu_c_start_peak'][1]} °C, battery {sm['battery_c_start_peak'][0]} → {sm['battery_c_start_peak'][1]} °C.
+Peak memory of the runner: {sm['peak_rss_mib_first_last'][0]} MiB on the first answer, {sm['peak_rss_mib_first_last'][1]} MiB on the last.
+The app at rest with the detectors loaded and no Llama: <b>{sm['app_pss_mb_detectors_only']} MB</b> PSS. Model files: Llama 1.12 GB,
+detectors 130 KB each.</p>
+<table><tr><th>#</th><th>s</th><th>Prefill tok/s</th><th>Decode tok/s</th><th>TTFT s</th><th>Peak RSS MiB</th><th>CPU °C</th><th>Battery °C</th><th>CPU use %</th></tr>{sus_rows}</table>"""
+else:
+    sus_html += "<p class=pending>Pending: scripts/bench_sustained.py needs the phone connected.</p>"
+
+
 def thread_rows():
     out = []
     for dev, rows in threads.items():
@@ -194,14 +266,14 @@ code {{ background: #f3f4f6; padding: 0 3px; border-radius: 3px; font-size: 9pt;
 </style></head><body>
 
 <div class="cover">
-<div style="opacity:.8;font-size:9.5pt">BHARAT AI-SoC CHALLENGE 2026–27 · PROBLEM STATEMENT 3 · TEAM ENTITY</div>
+<div style="opacity:.8;font-size:9.5pt">BHARAT AI-SoC CHALLENGE 2026–27 · PROBLEM STATEMENT 3 · TEAM ENTITY · V S KAMALESH · VERSION {VERSION}</div>
 <h1>ENTITY Shield</h1>
 <div style="font-size:12.5pt">On-device threat, phishing and scam detection on an Arm phone. Detectors decide in milliseconds;
 Llama 3.2 on ExecuTorch explains in English or Hindi. Nothing leaves the phone.</div>
-<div class="k"><b>{f3(s_ind['precision'])} / {f3(s_ind['recall'])}</b>SMS precision / recall on unseen Indian templates</div>
+<div class="k"><b>{f3(h_ind['precision'])} / {f3(h_ind['recall'])}</b>SMS "scam" precision / recall, unseen Indian templates (app verdict)</div>
 <div class="k"><b>0.64 ms</b>full SMS check on a Dimensity 7300</div>
 <div class="k"><b>0.03%</b>ordinary DNS lookups blocked by mistake</div>
-<div class="k"><b>0.89 s</b>Llama first token, Snapdragon 7s Gen 3</div>
+<div class="k"><b>1.0 s</b>Llama first token in the app, Snapdragon 7s Gen 3</div>
 <div class="k"><b>0 bytes</b>sent to any cloud</div>
 </div>
 
@@ -229,6 +301,21 @@ extra hardware.</li>
 <tr><td>Process data locally</td><td>All models on the Arm CPU; airplane-mode capable</td><td>§10</td></tr>
 <tr><td>Llama via ExecuTorch (required)</td><td><code>org.pytorch.executorch.extension.llm.LlmModule</code> 1.5.1 inside the APK</td><td>§6, §7</td></tr></table>
 
+<h3>Phase 1 checklist from the PS3 mentor session</h3>
+<table><tr><th>Asked for</th><th>Where</th></tr>
+<tr><td>One primary threat, finished end to end (input → features → detector → risk → explanation → advice)</td><td>Scam SMS is the primary path (§2, §3); URL and network are add-ons on the same detectors</td></tr>
+<tr><td>Detector decides; Llama explains structured evidence, does not invent, is not run for every message</td><td>§2, §6 (verdict prefill, evidence list, only for flagged items)</td></tr>
+<tr><td>Llama actually executes on the Arm target through ExecuTorch</td><td>§6, §7, §7b; logs in the release</td></tr>
+<tr><td>Realistic legitimate Indian messages (OTP, bank, UPI, KYC reminders), Hinglish, code-mixing</td><td>§3: 96 legitimate and 47 scam templates in English, Hindi and Hinglish</td></tr>
+<tr><td>No near-duplicate leakage; threshold on validation, not the test set</td><td>§3: split by whole template and by time; §3b says where rules were tuned</td></tr>
+<tr><td>Precision, recall, F1, confusion matrix, false-positive rate, the trade-off</td><td>§3, §3b</td></tr>
+<tr><td>Consented, anonymised data; no scraped inboxes</td><td>§10: public datasets and written templates; one inbox, the developer's own, counts only</td></tr>
+<tr><td>Detector latency apart from Llama TTFT and tok/s; RAM, size, CPU, temperature, sustained behaviour</td><td>§2, §3, §7, §7b</td></tr>
+<tr><td>Model loaded once in a long-running process</td><td>§2: Llama stays loaded while alerts are open and is freed after 90 s idle; detectors stay loaded</td></tr>
+<tr><td>Works offline</td><td>§10; demo video in airplane mode</td></tr>
+<tr><td>Minimal data kept; no automatic irreversible actions from the LLM</td><td>§10: alert text auto-deleted; Llama never acts</td></tr>
+<tr><td>Verified updates</td><td>Llama download SHA-256 checked; detector and feed updates ship with the APK (§11: signed feed updates)</td></tr></table>
+
 <h2>2. Architecture</h2>
 <p>Inputs: SMS_RECEIVED, inbox, share/select-text/Link Guard, the DNS VPN and the tripwire → detectors (SMS, URL, behaviour
 rules) → verdict (safe / suspicious / dangerous) → instant notification with fixed steps → when the user opens the alert,
@@ -248,12 +335,13 @@ mistake we measured and removed (§7).</p>
 include urgency, OTP/PIN requests, payment requests, threats, prize and job lures, authority claims, KYC/Aadhaar, brand-vs-domain
 mismatch, shorteners, and <b>sender is a 10-digit mobile number vs a registered DLT header</b> such as <code>VM-HDFCBK</code>.
 <b>Model:</b> logistic regression, exported as one <code>Linear + sigmoid</code> ExecuTorch program (XNNPACK).
-<b>Data:</b> UCI SMS Spam Collection, plus 101 hand-written Indian templates (47 scam families, 54 legitimate: bank OTP and
-debit alerts, deliveries, bills, DLT promotions, personal Hinglish/Hindi). For URLs: PhishTank (time split), OpenPhish, Tranco.
+<b>Data:</b> UCI SMS Spam Collection (only spam with a fraud cue counts as scam: Shield detects fraud, not marketing), plus 143
+hand-written Indian templates (47 scam families, 96 legitimate: bank OTP and debit alerts, UPI, deliveries, bills, missed-call
+and data alerts, DLT promotions, government advisories, personal Hinglish/Hindi). For URLs: PhishTank (time split), OpenPhish, Tranco.
 The test sets hold out whole <i>templates</i> and the <i>newest</i> phishing.</p>
 <table><tr><th>Detector · test set</th><th>n</th><th>Precision</th><th>Recall</th><th>False-alarm rate</th><th>AUC</th></tr>
-<tr><td>SMS · UCI held out</td><td>{s_uci['n']}</td><td>{f3(s_uci['precision'])}</td><td>{f3(s_uci['recall'])}</td><td>{pct(s_uci['fpr'])}</td><td>{f3(auc_uci)}</td></tr>
-<tr><td>SMS · Indian templates never seen in training</td><td>{s_ind['n']}</td><td>{f3(s_ind['precision'])}</td><td>{f3(s_ind['recall'])}</td><td>{pct(s_ind['fpr'])}</td><td>{f3(auc_ind)}</td></tr>
+<tr><td>SMS model alone · UCI held out</td><td>{s_uci['n']}</td><td>{f3(s_uci['precision'])}</td><td>{f3(s_uci['recall'])}</td><td>{pct(s_uci['fpr'])}</td><td>{f3(auc_uci)}</td></tr>
+<tr><td>SMS model alone · Indian templates never seen in training</td><td>{s_ind['n']}</td><td>{f3(s_ind['precision'])}</td><td>{f3(s_ind['recall'])}</td><td>{pct(s_ind['fpr'])}</td><td>{f3(auc_ind)}</td></tr>
 <tr><td>URL v3 · PhishTank newer than training + real DNS hostnames and Tranco (allow-list on)</td><td>{u_t['n']}</td><td>{f3(u_t['precision'])}</td><td>{f3(u_t['recall'])}</td><td>{pct(u_t['fpr'])}</td><td>{f3(auc_u)}</td></tr>
 <tr><td>URL · OpenPhish feed, 19 Nov 2026</td><td>{u_op['n']}</td><td>—</td><td>{f3(u_op['recall'])}</td><td>—</td><td>—</td></tr>
 <tr><td>URL · 41 official Indian bank/UPI/government domains</td><td>{u_of['n']}</td><td>—</td><td>—</td><td>{pct(u_of['fpr'])}</td><td>—</td></tr></table>
@@ -270,6 +358,8 @@ hostnames (<code>connekt.flipkart.net</code>), so it called many of them phishin
 list, split by registrable domain so no domain is on both sides, and a <code>brand_lure</code> signal for brand names inside
 unrelated domains. On 20,000 held-out real hostnames it raises 1.06% false alarms at the link threshold and 0.1% at Network
 Guard's blocking threshold.</p>
+
+{gate_html}
 
 <h2>4. Network Guard: network intrusion and malware behaviour, on the phone</h2>
 <ul>
@@ -322,7 +412,10 @@ answers is reported as "Couldn't check this link", never as safe.</div>
 <h2>6. Llama 3.2 1B on ExecuTorch: the explanation layer</h2>
 <p><b>Model:</b> Meta's quantization-aware-trained <code>Llama-3.2-1B-Instruct-QLORA_INT4_EO8</code>, exported with ExecuTorch
 1.5.1 (XNNPACK, 4-bit groupwise weights, 8-bit dynamic activations, KV cache, custom SDPA, context 2048; 1.12 GB). It runs in the
-APK through <code>LlmModule</code>. It was chosen over our own 8da4w export (faster) because it never refused and wrote fluent
+APK through <code>LlmModule</code> (the official ExecuTorch 1.5.1 Android library). The app downloads this exact file from
+Meta/PyTorch's Hugging Face repository (<code>executorch-community</code>), SHA-256 checked, with the project's GitHub release as
+fallback; the tokenizer ships in the APK. While an answer is being written, a short foreground service keeps the phone's app
+freezer from pausing it. It was chosen over our own 8da4w export (faster) because it never refused and wrote fluent
 Hindi in our October tests.
 <b>Prompt:</b> fact sheet (KYC = Know Your Customer; banks never ask for OTP/PIN by SMS link; a UPI PIN only sends money; police
 never arrest over video calls; helpline 1930) + the detector's evidence + <b>verdict prefill</b>. Without the prefill the 1B
@@ -365,6 +458,13 @@ it falls back. On the Snapdragon, 3 instead of 4 big-core threads costs 17% of p
 <li><b>ENTITY's llama.cpp result holds on ExecuTorch and on Armv9 (A720/A520, i8mm).</b> 8 threads cost 19% decode. Pinning to
 the big cores gives the fastest and steadiest prefill (±0.6 vs ±6.6 tok/s).</li>
 </ol></div>
+<div class="box"><b>Inside the app it did not carry over.</b> 0.5.0 shipped an ExecuTorch build patched to pin its 4 threads to
+the big cores. In the app it measured 7.8–11 tok/s decode, not 19: Android resets a thread's CPU affinity whenever the app moves
+between cpusets (foreground, top-app, background), so the pinning did not last. 0.5.1 went back to the official library:
+<b>15.5 tok/s decode, 1.0 s first token pre-warmed, 1.8 s cold</b> in the app on the Infinix
+(<code>bench_inapp_Infinix_X6878_2026-11-19.csv</code>). The patch is kept in <code>backup/executorch/</code>.</div>
+
+{sus_html}
 
 <h2>8. App: design and smoothness</h2>
 <p>A new design system (graphite and signal lime, light and dark, Geist type, a custom icon set) with a liquid-glass tab bar
@@ -376,7 +476,7 @@ through the tabs 30 times and reads <code>dumpsys gfxinfo</code>:</p>
 <tr><td>CMF Phone 1 (Dimensity 7300, 120 Hz)</td><td>4.0% → <b>1.15%</b></td><td>150 → <b>48 ms</b></td><td>1100 → <b>65 ms</b></td></tr>
 <tr><td>Infinix X6878 (Snapdragon 7s Gen 3, 120 Hz)</td><td>7.1% → <b>2.4%</b></td><td>53 → <b>27 ms</b></td><td>117 → <b>30 ms</b></td></tr></table>
 <p>R8, resource shrinking and a startup profile took the APK from 33 MB to 17 MB. Llama installs from inside the app
-(resumable download from the release, SHA-256 checked).</p>
+(resumable download from Hugging Face, GitHub fallback, SHA-256 checked).</p>
 
 <h2>9. End-to-end on the phones</h2>
 {e2e_html}
@@ -387,10 +487,22 @@ to forward the phone's own DNS lookups to its usual resolver, to visit a link in
 optional one-time Llama download. The inbox audit exports counts only. Test hooks exist only in debug and QA builds, behind
 the DUMP permission. Full table: <code>docs/PRIVACY.md</code>.</p>
 <ul>
+<li><b>Data used.</b> Training and test sets are public datasets (UCI, PhishTank, OpenPhish, Tranco, Cisco Umbrella) and
+message templates written for this project. No real person's messages are in them, so they can be shared in full.</li>
+<li><b>The one real inbox</b> is the developer's own phone, checked with his consent: on the phone by the app's Inbox audit
+(only counts leave) and once on a laptop from a local copy deleted afterwards. Only counts are in the repository.</li>
+<li><b>What the app keeps.</b> Alert text is deleted on its own (safe items after 7 days, alerts after 30). The user's
+"scam / not a scam" answers keep only the message's words with numbers, codes and amounts removed and links cut to their domain.
+The contacts check asks Android "is this number saved?" and reads nothing else.</li>
+<li><b>Always on, with the app closed.</b> Android starts Shield for each SMS; Network Guard restarts after a reboot or update if
+it was on; the app walks the user through battery, auto-start and Always-on VPN settings. "Force stop" switches it off until
+the app is opened again.</li>
+</ul>
+<ul>
 <li><b>Network Guard</b> sees this phone's own traffic, not other devices. Strict Private DNS or in-app DNS-over-HTTPS bypasses
 its DNS view.</li>
-<li><b>Test data:</b> the Indian SMS test set is templated. The real-inbox audit is the trust number
-({'done' if audit else 'pending'}).</li>
+<li><b>Test data:</b> the Indian SMS test set is templated, and the real-inbox numbers come from one phone whose false alarms
+were used to write the scam gate. A labelled set from other consented phones is the first Phase 2 task.</li>
 <li><b>URL recall from the address alone is 0.53</b> on the PhishTank time split and 0.92 on OpenPhish: hostname only, by
 design. The sandbox reads HTML without running JavaScript.</li>
 <li><b>Llama 1B is wrong 10–15% of the time</b> on hard inputs, so it explains but never decides.</li>
@@ -405,6 +517,8 @@ design. The sandbox reads HTML without running JavaScript.</li>
 </ul></li>
 <li><b>Llama:</b> distilled English/Hindi explanation data and LoRA on the QAT checkpoint (as "Llama-…" per the licence);
 prefix-KV reuse; Tamil.</li>
+<li><b>Evaluation:</b> a consented, anonymised SMS set from 10–20 phones never used for tuning; signed, verified updates of
+the phishing feed and detector weights.</li>
 <li><b>Coverage:</b> WhatsApp/Telegram notifications, call screening ("digital arrest"), UPI QR checks, a field trial with
 10–20 phones.</li>
 <li><b>Arm:</b> the KleidiAI on/off ablation (custom AAR), a Mali GPU (Vulkan) delegate for the detectors, and upstreaming the
