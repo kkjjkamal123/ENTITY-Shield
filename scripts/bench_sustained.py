@@ -79,6 +79,7 @@ def answer(serial, model, prompt, max_new):
     for m in re.finditer(r"^PyTorchObserver (\{.*\})\s*$", out, re.M):
         pass
     if not m:
+        print("   runner stopped early:", (err.strip().splitlines() or ["(no stderr)"])[-1][:160])
         return None
     d = json.loads(m.group(1))
     unit = d.get("SCALING_FACTOR_UNITS_PER_SECOND", 1000)
@@ -117,6 +118,10 @@ def main():
     for i in range(1, a.answers + 1):
         before = snapshot(s, zones)
         res = answer(s, a.model, a.prompt, a.max_new)
+        retried = False
+        if not res:  # some vendor freezers kill a long shell process now and then; one retry, counted
+            retried = True
+            res = answer(s, a.model, a.prompt, a.max_new)
         after = snapshot(s, zones)
         if not res:
             print(f"answer {i}: runner failed")
@@ -125,13 +130,18 @@ def main():
                    cpu_c_before=before["cpu_max_c"], cpu_c_after=after["cpu_max_c"],
                    battery_c_before=before["battery_c"], battery_c_after=after["battery_c"],
                    mem_available_mb=after["mem_available_mb"], cpu_util_pct=cpu_util(before["ticks"], after["ticks"]),
-                   battery_pct=after["battery_pct"])
+                   battery_pct=after["battery_pct"], retried=retried)
         rows.append(row)
         print(f"#{i:2d} {row['elapsed_s']:4d}s  prefill {res['prefill_tps']:6.1f}  decode {res['decode_tps']:5.2f} tok/s  "
               f"TTFT {res['ttft_s']:.2f}s  RSS {res['peak_rss_mib']} MiB  CPU {row['cpu_c_after']} °C  batt {row['battery_c_after']} °C  "
               f"util {row['cpu_util_pct']}%  free {row['mem_available_mb']} MB")
     sh(s, "monkey -p app.entity.shield -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; sleep 6")
-    pss = app_memory(s)
+    pss = None
+    for _ in range(3):
+        pss = pss or app_memory(s)
+        if pss:
+            break
+        sh(s, "sleep 3")
     plugged = "powered: true" in sh(s, "dumpsys battery")
     first, last = rows[0], rows[-1]
     summary = dict(
@@ -143,6 +153,7 @@ def main():
         battery_c_start_peak=[start["battery_c"], max(r["battery_c_after"] or 0 for r in rows)],
         peak_rss_mib_first_last=[first["peak_rss_mib"], last["peak_rss_mib"]],
         app_pss_mb_detectors_only=pss,
+        failed_or_retried=a.answers - len(rows) + sum(r["retried"] for r in rows),
     )
     out = dict(device=device, soc=soc, android=android, date=str(datetime.date.today()), plugged=plugged, model=a.model,
                runtime="ExecuTorch llama_main, XNNPACK, --cpu_threads -1", prompt=a.prompt, max_new=a.max_new,
