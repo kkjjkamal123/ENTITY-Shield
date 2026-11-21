@@ -23,6 +23,8 @@ import app.entity.shield.llm.ModelDownload
 import app.entity.shield.llm.ModelImport
 import app.entity.shield.net.DnsPolicy
 import app.entity.shield.net.NetGuard
+import app.entity.shield.net.ShieldVpnService
+import app.entity.shield.util.KeepAlive
 import app.entity.shield.sms.InboxAudit
 import app.entity.shield.ui.LocalNav
 import app.entity.shield.ui.Route
@@ -55,6 +57,8 @@ fun MoreScreen() {
             ListRow(tr("Allowed sites", "चालू की गई साइटें"), tr("${DnsPolicy.allowed().size} sites Network Guard always lets through", "${DnsPolicy.allowed().size} साइटें जिन्हें नेटवर्क गार्ड हमेशा जाने देता है"), Ico.Check,
                 trailing = { Glyph(Ico.Chevron, c.text3, 18.dp) }) { nav.open(Route.Allowed) }
         }
+        SectionHeader(tr("Always-on protection", "हमेशा चालू सुरक्षा"))
+        KeepAliveCard()
         SectionHeader(tr("Lab", "लैब"))
         Card(pad = Dim.l) {
             ListRow(tr("Demo scams", "डेमो स्कैम"), tr("Real pipeline, sample messages, works offline", "असली पाइपलाइन, नमूना मैसेज, ऑफ़लाइन"), Ico.Play,
@@ -160,6 +164,7 @@ private fun InboxScreen() {
 @Composable
 private fun AuditRow(it: InboxAudit.Item) {
     val c = Sh.c
+    val ctx = LocalContext.current
     val l = InboxAudit.labels[it.id]
     Card(pad = Dim.l) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -168,8 +173,8 @@ private fun AuditRow(it: InboxAudit.Item) {
         }
         Text(it.text, style = Sh.t.callout, color = c.text2, maxLines = 4, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = Dim.m)) {
-            Chip(tr("Scam", "धोखा"), selected = l == true) { InboxAudit.labels[it.id] = true }
-            Chip(tr("Not a scam", "धोखा नहीं"), selected = l == false) { InboxAudit.labels[it.id] = false }
+            Chip(tr("Scam", "धोखा"), selected = l == true) { InboxAudit.mark(ctx, it, true) }
+            Chip(tr("Not a scam", "धोखा नहीं"), selected = l == false) { InboxAudit.mark(ctx, it, false) }
         }
     }
 }
@@ -237,8 +242,10 @@ private fun AboutScreen() {
                 tr("The inbox audit exports counts only, never message text.", "इनबॉक्स ऑडिट सिर्फ़ गिनती निर्यात करता है, मैसेज कभी नहीं।"),
                 tr("Contacts are only looked up to see if a sender is saved: a saved contact is never called a scam. Nothing is copied or sent.",
                     "संपर्क सिर्फ़ यह देखने के लिए जांचे जाते हैं कि भेजने वाला सेव है या नहीं: सेव संपर्क को कभी धोखा नहीं कहा जाता। कुछ भी कॉपी या भेजा नहीं जाता।"),
-                tr("\"Scam / Not a scam\" answers are saved on this phone as patterns (numbers and codes removed), not as messages.",
-                    "\"धोखा / धोखा नहीं\" जवाब इस फ़ोन पर पैटर्न के रूप में सेव होते हैं (नंबर और कोड हटाकर), मैसेज नहीं।"),
+                tr("Message text in Alerts is deleted on its own: safe messages after 7 days, alerts after 30.",
+                    "अलर्ट में मैसेज अपने आप मिट जाते हैं: सुरक्षित मैसेज 7 दिन बाद, अलर्ट 30 दिन बाद।"),
+                tr("\"Scam / Not a scam\" answers are saved only on this phone, as the message's words with every number, code and amount removed and links cut to their domain. Never sent anywhere.",
+                    "\"धोखा / धोखा नहीं\" जवाब सिर्फ़ इसी फ़ोन पर सेव होते हैं: मैसेज के शब्द, हर नंबर, कोड और रकम हटाकर, लिंक सिर्फ़ डोमेन तक। कहीं भेजे नहीं जाते।"),
             ).forEachIndexed { i, s ->
                 if (i > 0) Divider()
                 ListRow(s, icon = null)
@@ -339,5 +346,56 @@ fun LlamaCard() {
             )
             note.forEach { Text(it, style = Sh.t.caption, color = c.text3, modifier = Modifier.padding(top = 6.dp)) }
         }
+    }
+}
+
+/**
+ * The system switches that keep Shield working with the app closed. SMS checks run without the app
+ * open; these stop the phone from freezing or killing it, and keep Network Guard on after a reboot.
+ */
+@Composable
+private fun KeepAliveCard() {
+    val ctx = LocalContext.current
+    val c = Sh.c
+    var tick by remember { mutableIntStateOf(0) }
+    val owner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    DisposableEffect(owner) {   // re-check when the user comes back from a settings screen
+        val o = androidx.lifecycle.LifecycleEventObserver { _, e -> if (e == androidx.lifecycle.Lifecycle.Event.ON_RESUME) tick++ }
+        owner.lifecycle.addObserver(o)
+        onDispose { owner.lifecycle.removeObserver(o) }
+    }
+    val battery = remember(tick) { KeepAlive.batteryExempt(ctx) }
+    val netOn = remember(tick) { KeepAlive.netWanted(ctx) }
+    val always = remember(tick) { ShieldVpnService.alwaysOn }
+    val vendor = remember { KeepAlive.hasAutostartScreen(ctx) }
+    val done = @Composable { Glyph(Ico.Check, c.accent, 20.dp) }
+    val go = @Composable { Glyph(Ico.Chevron, c.text3, 18.dp) }
+    Card(pad = Dim.l) {
+        Text(tr("SMS checks run even when Shield is closed. These switches stop the phone from freezing it in the background.",
+            "Shield बंद होने पर भी SMS जांच चलती है। ये स्विच फ़ोन को इसे बैकग्राउंड में रोकने से बचाते हैं।"),
+            style = Sh.t.callout, color = c.text2)
+        Spacer(Modifier.height(Dim.s))
+        ListRow(tr("Battery: unrestricted", "बैटरी: बिना रोक"),
+            if (battery) tr("Done. Android won't pause Shield to save battery", "हो गया। बैटरी बचाने के लिए Android Shield को नहीं रोकेगा")
+            else tr("Needed: otherwise Android may pause Shield when the phone sleeps", "ज़रूरी: वरना फ़ोन सोने पर Android Shield को रोक सकता है"),
+            Ico.Gauge, if (battery) Tone.Accent else Tone.Warn, trailing = { if (battery) done() else go() }) { if (!battery) KeepAlive.requestBatteryExempt(ctx) }
+        Divider()
+        ListRow(tr("Auto-start", "ऑटो-स्टार्ट"),
+            if (vendor) tr("Allow Shield here. This phone's maker freezes closed apps (it can't be checked from inside the app)",
+                "यहां Shield को चालू करें। इस फ़ोन की कंपनी बंद ऐप रोक देती है (ऐप के अंदर से जांचा नहीं जा सकता)")
+            else tr("Open app settings and allow background activity", "ऐप सेटिंग खोलें और बैकग्राउंड गतिविधि चालू करें"),
+            Ico.Play, Tone.Neutral, trailing = go) { KeepAlive.openAutostart(ctx) }
+        Divider()
+        ListRow(tr("Always-on VPN", "हमेशा चालू VPN"),
+            when {
+                always -> tr("Done. Android keeps Network Guard on, even after a restart", "हो गया। Android नेटवर्क गार्ड को हमेशा चालू रखता है, रीस्टार्ट के बाद भी")
+                netOn -> tr("Open, tap the gear next to ENTITY Shield, turn on Always-on VPN", "खोलें, ENTITY Shield के पास गियर दबाएं, Always-on VPN चालू करें")
+                else -> tr("Turn on Network Guard first, then set it always on here", "पहले नेटवर्क गार्ड चालू करें, फिर यहां हमेशा चालू करें")
+            },
+            Ico.Globe, if (always) Tone.Accent else Tone.Neutral, trailing = { if (always) done() else go() }) { KeepAlive.openVpnSettings(ctx) }
+        Spacer(Modifier.height(Dim.s))
+        Text(tr("\"Force stop\" in system settings switches everything off until you open Shield again; Android allows no way around that.",
+            "सिस्टम सेटिंग में \"Force stop\" करने पर सब बंद हो जाता है, जब तक आप Shield फिर से न खोलें; Android इसका कोई रास्ता नहीं देता।"),
+            style = Sh.t.caption, color = c.text3)
     }
 }

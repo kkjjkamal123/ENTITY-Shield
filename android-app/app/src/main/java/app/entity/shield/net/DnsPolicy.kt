@@ -60,12 +60,37 @@ object DnsPolicy {
                 }.getOrDefault(emptySet())
             }
         }
+        loadUser(ctx)
+    }
+
+    /** The user's allowed sites, once. Drops entries that would trust a whole platform (0.5.1 could add
+     *  "web.app" or "bit.ly" from a "Not a scam" on an SMS). */
+    private fun loadUser(ctx: Context) {
         if (!loadedUser) synchronized(userAllowed) {
             if (!loadedUser) {
-                userAllowed += ctx.getSharedPreferences("shield", 0).getStringSet("dns_allow", emptySet()).orEmpty()
+                val saved = ctx.getSharedPreferences("shield", 0).getStringSet("dns_allow", emptySet()).orEmpty()
+                val ok = saved.filter { entryFor(it) == it }
+                userAllowed += ok
+                if (ok.size != saved.size) ctx.getSharedPreferences("shield", 0).edit().putStringSet("dns_allow", HashSet(ok)).apply()
                 loadedUser = true
             }
         }
+    }
+
+    private val PLATFORMS = listOf("app.link", "onelink.me", "page.link", "smart.link", "go.link", "lnk.to", "branch.io", "adj.st")
+
+    /**
+     * What to store when the user allows [host]: its registrable domain (connekt.flipkart.net ->
+     * flipkart.net), except on platforms anyone can publish on (free hosts, deep-link services), where
+     * only that exact site is trusted. Shorteners: null, never; their destination is not visible.
+     */
+    fun entryFor(host: String): String? {
+        val h = host.trim('.').lowercase()
+        val reg = Featurizer.registrable(h)
+        if (Featurizer.isShortener(reg) || Featurizer.isShortener(h)) return null
+        val shared = Featurizer.FREE_HOSTS.any { on(h, it) } || PLATFORMS.any { on(h, it) }
+        if (shared) return if (Featurizer.FREE_HOSTS.any { h == it } || PLATFORMS.any { h == it }) null else h
+        return reg
     }
 
     private fun h32(s: String) = Featurizer.fnv1a32(s.toByteArray(Charsets.UTF_8)).toInt()
@@ -81,13 +106,15 @@ object DnsPolicy {
         return name.length >= 3 && pkg.isNotEmpty() && pkg.lowercase().replace('_', '.').split('.').contains(name)
     }
 
-    fun allow(ctx: Context, host: String) {
-        warm(ctx)
-        val reg = Featurizer.registrable(host)
+    /** Returns false when the site can't be allowed safely (a shortener or a whole platform). */
+    fun allow(ctx: Context, host: String): Boolean {
+        loadUser(ctx)
+        val reg = entryFor(host) ?: return false
         synchronized(userAllowed) {
             userAllowed += reg
             ctx.getSharedPreferences("shield", 0).edit().putStringSet("dns_allow", HashSet(userAllowed)).apply()
         }
+        return true
     }
 
     fun allowed(): List<String> = synchronized(userAllowed) { userAllowed.sorted() }
@@ -99,6 +126,12 @@ object DnsPolicy {
 
     private fun isUserAllowed(host: String) = synchronized(userAllowed) { userAllowed.any { on(host, it) } }
 
+    /** Sites the user allowed, for SMS links too. Loads only the user's list, not the popularity lists. */
+    fun userAllows(ctx: Context, host: String): Boolean {
+        loadUser(ctx)
+        return isUserAllowed(host.trim('.').lowercase())
+    }
+
     fun decide(ctx: Context, name: String, pkg: String): Decision {
         warm(ctx)
         val det = Detectors.get(ctx)
@@ -106,11 +139,12 @@ object DnsPolicy {
         val safe = { why: String -> Decision(Action.ALLOW, why, Verdict("url", Band.SAFE, 0f, Family.LINK, emptyList(), host, 0.0, true)) }
         if ('.' !in host || LOCAL.any { host.endsWith(it) }) return safe("local")
         if (det.isInfra(host)) return safe("infra")
-        if (isUserAllowed(host)) return safe("user")
+        // the phishing feed outranks the user's allow-list: an allowed domain can still host a known kit
         if (isKnownPhish(host)) {
             val v = det.checkUrl(host)
             return Decision(Action.BLOCK, "known_phish", v.copy(band = Band.SCAM, score = maxOf(v.score, 0.99f), evidence = listOf("known_phish") + v.evidence))
         }
+        if (isUserAllowed(host)) return safe("user")
         val reg = Featurizer.registrable(host)
         val free = Featurizer.FREE_HOSTS.any { on(host, it) }
         if (Featurizer.allowlisted(host, det.allow)) return safe("allowlist")

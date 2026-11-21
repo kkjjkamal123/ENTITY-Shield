@@ -34,12 +34,16 @@ import app.entity.shield.core.Family
 import app.entity.shield.core.Featurizer
 import app.entity.shield.core.SmsTrust
 import app.entity.shield.llm.Explainer
+import app.entity.shield.net.DnsPolicy
 import app.entity.shield.net.NetGuard
 import app.entity.shield.sandbox.LinkInspector
 import app.entity.shield.ui.LocalLang
 import app.entity.shield.ui.LocalNav
 import app.entity.shield.ui.Route
 import kotlin.concurrent.thread
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import app.entity.shield.ui.components.*
 import app.entity.shield.ui.theme.Dim
 import app.entity.shield.ui.theme.Glyph
@@ -129,9 +133,12 @@ fun AlertDetailScreen(a: Alert) {
         }
 
         // 2a. the user's own say: saves this message's pattern (SmsTrust), so similar messages follow it
-        if (a.v.kind == "sms") {
+        if (a.v.kind == "sms" && a.source != "demo" && a.source != "bench") {   // a demo or bench text must not teach a pattern
             val trust = remember { SmsTrust.get(ctx) }
-            var mine by remember(a.id) { mutableStateOf(trust.label(a.text, a.sender)) }
+            var mine by remember(a.id) { mutableStateOf<Boolean?>(null) }
+            LaunchedEffect(a.id) { mine = withContext(Dispatchers.Default) { trust.label(a.text, a.sender) } }
+            // saving writes files and may load the allow-list: off the main thread
+            fun put(v: Boolean?) { mine = v; thread(name = "label") { if (v == null) trust.forget(a.text, a.sender) else trust.save(a.text, a.sender, v) } }
             Card(pad = Dim.l) {
                 Text(
                     when (mine) {
@@ -143,9 +150,9 @@ fun AlertDetailScreen(a: Alert) {
                 )
                 Spacer(Modifier.height(Dim.s))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (mine != false) Chip(tr("Not a scam", "धोखा नहीं"), icon = Ico.Check) { trust.save(a.text, a.sender, false); mine = false }
-                    if (mine != true) Chip(tr("It's a scam", "यह धोखा है"), icon = Ico.Close) { trust.save(a.text, a.sender, true); mine = true }
-                    if (mine != null) Chip(tr("Undo", "वापस लें")) { trust.forget(a.text, a.sender); mine = null }
+                    if (mine != false) Chip(tr("Not a scam", "धोखा नहीं"), icon = Ico.Check) { put(false) }
+                    if (mine != true) Chip(tr("It's a scam", "यह धोखा है"), icon = Ico.Close) { put(true) }
+                    if (mine != null) Chip(tr("Undo", "वापस लें")) { put(null) }
                 }
             }
         }
@@ -240,8 +247,11 @@ fun AlertDetailScreen(a: Alert) {
             val acts = buildList<Triple<String, ImageVector, () -> Unit>> {
                 if (a.sender.isNotEmpty() && a.v.kind != "net") add(Triple(if (hi) "ब्लॉक करें" else "Block sender", Ico.Ban) { block(ctx, a.sender) })
                 if (a.v.family == Family.NET_DOMAIN && a.v.worstHost != null) add(Triple(if (hi) "साइट चालू करें" else "Allow this site", Ico.Check) {
-                    NetGuard.allowSite(ctx, a.v.worstHost)
-                    Toast.makeText(ctx, (if (hi) "चालू: " else "Allowed: ") + Featurizer.registrable(a.v.worstHost), Toast.LENGTH_SHORT).show()
+                    val entry = DnsPolicy.entryFor(a.v.worstHost)
+                    val msg = if (entry != null && NetGuard.allowSite(ctx, a.v.worstHost)) (if (hi) "चालू: " else "Allowed: ") + entry
+                        else if (hi) "यह छोटा लिंक या सबके लिए खुली होस्टिंग है, इसे हमेशा के लिए चालू नहीं किया जा सकता"
+                        else "Can't allow this for good: it's a link shortener or shared hosting anyone can use"
+                    Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
                 })
                 if (pkg != null) add(Triple(if (hi) "ऐप हटाएं" else "Remove app", Ico.Trash) { ctx.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$pkg"))) })
                 if (a.v.family == Family.NET_SCAN || a.v.family == Family.NET_BRUTE) add(Triple(if (hi) "Wi-Fi छोड़ें" else "Leave this Wi-Fi", Ico.Wifi) { ctx.startActivity(Intent(Settings.Panel.ACTION_WIFI)) })

@@ -53,6 +53,8 @@ object Pipeline {
     private val ids = AtomicLong(System.currentTimeMillis())
     private const val NET_NOTIFY_MS = 20_000L
     private const val MAX_KEEP = 500
+    private const val KEEP_SAFE_MS = 7L * 24 * 3600 * 1000
+    private const val KEEP_ALERT_MS = 30L * 24 * 3600 * 1000
     private const val MAX_FILE = 1000
     private val lastNetNotify = AtomicLong(-NET_NOTIFY_MS)
     private var appended = 0L
@@ -65,7 +67,11 @@ object Pipeline {
         loaded = true
         val f = file(ctx)
         if (!f.exists()) return
-        val items = f.readLines().mapNotNull { runCatching { Alert.fromJson(JSONObject(it)) }.getOrNull() }.sortedByDescending { it.at }
+        val all = f.readLines().mapNotNull { runCatching { Alert.fromJson(JSONObject(it)) }.getOrNull() }
+        // Keep message text only as long as it is useful: safe items for 7 days, alerts for 30.
+        val now = System.currentTimeMillis()
+        val items = all.filter { now - it.at < if (it.v.band == Band.SAFE) KEEP_SAFE_MS else KEEP_ALERT_MS }.sortedByDescending { it.at }
+        if (items.size != all.size) runCatching { f.writeText(items.reversed().joinToString("") { it.toJson().toString() + "\n" }) }
         main.post { alerts.clear(); alerts.addAll(items) }
     }
 

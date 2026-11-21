@@ -10282,8 +10282,8 @@
 ],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Book tickets on Pharmeasy and get Rs 150 off with code FLY150. Valid till 14/11/2026. https://pharmeasy.com/offers",
@@ -10340,7 +10340,7 @@
 ],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": true
 },
 {
@@ -10423,7 +10423,7 @@
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
 "band": "SAFE",
-"promo": true
+"promo": false
 },
 {
 "text": "End of Season Sale is LIVE! Flat 50-80% off on top brands. Shop now on the Myntra app. T&C apply",
@@ -10449,7 +10449,7 @@
 "band_in": "SCAM",
 "scam_hosts": [],
 "band": "SAFE",
-"promo": true
+"promo": false
 },
 {
 "text": "Your Aadhaar card has been issued to your DigiLocker account. Access it anytime in the DigiLocker app.",
@@ -14749,7 +14749,7 @@
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
 "band": "SAFE",
-"promo": true
+"promo": false
 },
 {
 "text": "End of Season Sale is LIVE! Flat 50-80% off on top brands. Shop now on the Myntra app. T&C apply",
@@ -14775,7 +14775,7 @@
 "band_in": "SCAM",
 "scam_hosts": [],
 "band": "SAFE",
-"promo": true
+"promo": false
 },
 {
 "text": "Your Jio plan expires on 16 Nov. Recharge with Rs 299 on MyJio app to continue enjoying services.",
@@ -16024,7 +16024,7 @@
 ],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -16054,7 +16054,7 @@
 "scam_hosts": [
 "echallan.parivahan.gov.in"
 ],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -16082,7 +16082,7 @@
 ],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "SCAM",
 "promo": false
 },
 {
@@ -16112,7 +16112,7 @@
 "scam_hosts": [
 "echallan.parivahan.gov.in"
 ],
-"band": "SAFE",
+"band": "SCAM",
 "promo": false
 },
 {
@@ -16398,7 +16398,7 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -16424,7 +16424,7 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "SCAM",
 "promo": false
 },
 {
@@ -17040,8 +17040,8 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Blinkit Festive Bonanza: shop for Rs 999 and enter the lucky draw to win exciting gifts! In stores now.",
@@ -17066,8 +17066,8 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "SCAM",
+"promo": false
 },
 {
 "text": "आपके खाते XX1842 से Rs 499 डेबिट हुए। UPI Ref 896418814079। -SBI",
@@ -17118,7 +17118,7 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -17144,7 +17144,7 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "SCAM",
 "promo": false
 },
 {
@@ -21235,7 +21235,7 @@
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
 "band": "SAFE",
-"promo": true
+"promo": false
 },
 {
 "text": "End of Season Sale is LIVE! Flat 50-80% off on top brands. Shop now on the Myntra app. T&C apply",
@@ -21261,7 +21261,7 @@
 "band_in": "SCAM",
 "scam_hosts": [],
 "band": "SAFE",
-"promo": true
+"promo": false
 },
 {
 "text": "Last day! Extra 40% off on everything at Redbus. Offer ends tonight. Hurry: redbus.in/3VC7",
@@ -22102,8 +22102,8 @@
 ],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Hurry! Prices dropped on Groww. Starting at Rs 199 only. Free delivery today. groww.in/37d7H",
@@ -22160,8 +22160,8 @@
 ],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "SCAM",
+"promo": false
 },
 {
 "text": "Hurry! Prices dropped on Groww. Starting at Rs 199 only. Free delivery today. groww.in/37d7H",
@@ -22590,8 +22590,8 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Rs 239 recharge successful. Plan valid till today. Data balance 1.5 GB/day. -Jio",
@@ -22616,8 +22616,8 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "SCAM",
+"promo": false
 },
 {
 "text": "TRAI never sends any message or makes any call for verification or disconnection of mobile numbers. Report such calls at sancharsaathi.gov.in",
@@ -26220,7 +26220,7 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -26246,7 +26246,7 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -27226,8 +27226,8 @@
 ],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Last day! Extra 40% off on everything at Pharmeasy. Offer ends tonight. Hurry: pharmeasy.com/sale",
@@ -27284,7 +27284,7 @@
 ],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": true
 },
 {
@@ -28798,8 +28798,8 @@
 ],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Your cart is waiting! Complete your order now and get free shipping. acko.com/deals",
@@ -28856,7 +28856,7 @@
 ],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": true
 },
 {
@@ -34678,7 +34678,7 @@
 "hosts": [],
 "band_in": "SAFE",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -34704,7 +34704,7 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -34730,7 +34730,7 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "SCAM",
 "promo": false
 },
 {
@@ -34894,8 +34894,8 @@
 ],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Recharge with Rs 299 & get 2GB extra data daily for 28 days. Limited period offer. Recharge now: bit.ly/snitAq39BW",
@@ -34952,8 +34952,8 @@
 ],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "SCAM",
+"promo": false
 },
 {
 "text": "Recharge with Rs 299 & get 2GB extra data daily for 28 days. Limited period offer. Recharge now: bit.ly/snitAq39BW",
@@ -36276,7 +36276,7 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -36302,7 +36302,7 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -37282,8 +37282,8 @@
 ],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Diwali dhamaka! Shoppersstop par flat 80% off. Aaj hi order karein: https://shoppersstop.app.link/2iiL",
@@ -37312,8 +37312,8 @@
 "scam_hosts": [
 "shoppersstop.app.link"
 ],
-"band": "SAFE",
-"promo": true
+"band": "UNCERTAIN",
+"promo": false
 },
 {
 "text": "Diwali dhamaka! Shoppersstop par flat 80% off. Aaj hi order karein: https://shoppersstop.app.link/2iiL",
@@ -37340,8 +37340,8 @@
 ],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
-"promo": true
+"band": "SCAM",
+"promo": false
 },
 {
 "text": "Diwali dhamaka! Shoppersstop par flat 80% off. Aaj hi order karein: https://shoppersstop.app.link/2iiL",
@@ -37370,8 +37370,8 @@
 "scam_hosts": [
 "shoppersstop.app.link"
 ],
-"band": "SAFE",
-"promo": true
+"band": "SCAM",
+"promo": false
 },
 {
 "text": "कल शाम को घर पर पूजा है, समय से आ जाना",
@@ -40260,7 +40260,7 @@
 "hosts": [],
 "band_in": "UNCERTAIN",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "UNCERTAIN",
 "promo": false
 },
 {
@@ -40286,7 +40286,7 @@
 "hosts": [],
 "band_in": "SCAM",
 "scam_hosts": [],
-"band": "SAFE",
+"band": "SCAM",
 "promo": false
 },
 {

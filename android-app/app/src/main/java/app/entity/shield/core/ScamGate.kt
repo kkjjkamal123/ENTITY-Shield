@@ -17,7 +17,8 @@ package app.entity.shield.core
  * A strong cue lifts a SAFE model score to UNCERTAIN.
  */
 object ScamGate {
-    data class Result(val band: Band, val promo: Boolean)
+    /** [strong]: a fraud-specific cue fired (asks for a code, threat with a number, look-alike or phishing link). */
+    data class Result(val band: Band, val promo: Boolean, val strong: Boolean = false)
 
     private val I = setOf(RegexOption.IGNORE_CASE)
     val SECRET_REQUEST = Regex("(?:\\b(?:share|send|tell|give|provide|forward|enter|reply with|confirm|batao|bata do|bhejo)\\b|दें|बताएं|भेजें)" +
@@ -33,6 +34,7 @@ object ScamGate {
     /** App deep-link services (destination not visible, like a shortener) and government-only domains. */
     private val TRUSTED_LINKS = listOf("app.link", "onelink.me", "page.link", "smart.link", "go.link", "lnk.to", "branch.io", "adj.st", "gov.in", "nic.in")
     private val HEADER_PREFIX = Regex("[A-Z]{2}")
+    private val DLT_PREFIX = Regex("^[A-Z]{2}-")
 
     /** A DLT header (VM-HDFCBK-S) and a link on the same brand's own short domain (hdfcbk.io). */
     fun senderOwns(host: String, sender: String): Boolean {
@@ -52,7 +54,9 @@ object ScamGate {
         val own = { h: String -> senderOwns(h, sender) || TRUSTED_LINKS.any { h == it || h.endsWith(".$it") } }
         val linkScam = scamHosts.any { !own(it) }
         val lookalike = s(sig, "brand_link_mismatch") && hosts.any { !own(it) }
-        val dlt = s(sig, "sender_dlt")
+        // The business shortcut needs the full DLT form ("JT-JIOPAY-S"). A bare letter ID ("JIOPAY") still
+        // counts for the model, but international gateways can spoof those, so it goes the stricter way.
+        val dlt = s(sig, "sender_dlt") && DLT_PREFIX.containsMatchIn(sender.trim().uppercase())
         val mobileNo = CALL_TO_MOBILE.containsMatchIn(text)
         val delivered = CODE_DELIVERED.containsMatchIn(text)
         val secret = s(sig, "asks_secret") && !s(sig, "dont_share_otp") && !delivered && SECRET_REQUEST.containsMatchIn(t)
@@ -63,7 +67,7 @@ object ScamGate {
             (s(sig, "kyc_identity") && (hasLink || s(sig, "call_number") || mobileNo)) ||
             (s(sig, "account_threat") && hasLink) || (mobileNo && pressure)
         val promo = PROMO_WORDS.containsMatchIn(t)
-        if (strong) return Result(if (band == Band.SAFE) Band.UNCERTAIN else band, false)
+        if (strong) return Result(if (band == Band.SAFE) Band.UNCERTAIN else band, false, true)
         if (band == Band.SAFE) return Result(band, false)
         if (delivered && !hasLink) return Result(Band.SAFE, false)
         if (dlt) return Result(Band.SAFE, promo)

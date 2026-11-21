@@ -26,6 +26,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 import kotlin.concurrent.thread
+import app.entity.shield.util.KeepAlive
 
 class MainActivity : ComponentActivity() {
     private val shared = mutableStateOf<String?>(null)
@@ -33,7 +34,7 @@ class MainActivity : ComponentActivity() {
     private val tabReq = mutableStateOf<Int?>(null)
 
     private val vpnConsent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
-        if (r.resultCode == Activity.RESULT_OK) ShieldVpnService.start(this)
+        if (r.resultCode == Activity.RESULT_OK) ShieldVpnService.start(this) else KeepAlive.setNetWanted(this, false)
     }
 
     /** Import the Llama files (llama*.pte + tokenizer.model) picked in the system file picker. */
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
 
     /** Turn Network Guard on (asking for the one-time VPN consent if needed) or off. */
     fun setNetworkGuard(on: Boolean) {
+        KeepAlive.setNetWanted(this, on)   // restored after a reboot or update (BootReceiver)
         if (!on) { ShieldVpnService.stop(this); return }
         val consent = ShieldVpnService.consentIntent(this)
         if (consent != null) vpnConsent.launch(consent) else ShieldVpnService.start(this)

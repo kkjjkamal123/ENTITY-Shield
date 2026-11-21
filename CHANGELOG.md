@@ -2,6 +2,42 @@
 
 Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
 
+## 0.5.2 (2026-11-21)
+
+### Always-on protection
+- SMS checks never needed the app open; what stopped them was the phone freezing or killing Shield.
+  New "Always-on protection" card in More: battery optimisation off (one system dialog), the
+  maker's auto-start screen (Infinix/Tecno/itel, Xiaomi, Oppo/Realme, Vivo, Huawei, Samsung), and
+  Android's "Always-on VPN" for Network Guard, each showing whether it is done.
+- Network Guard comes back by itself after a reboot or an app update if it was on (`BootReceiver`).
+  Turning it off, or another VPN taking over, is respected.
+
+### Fixes from an audit of 0.5.1
+- Allowed sites: "Not a scam" on an SMS with a link, or "Allow this site", could add a whole hosting
+  platform (`web.app`, `blogspot.com`) or a link shortener (`bit.ly`) and so trust every site on it.
+  Now a shortener is never allowed, on shared platforms only that exact site is, and entries 0.5.1
+  added that way are removed on update. The bundled phishing list is checked before Allowed sites.
+- The risk number stays inside the verdict's band: a safe message no longer shows "64% risk".
+- Saved contacts: "be careful" (never "scam") now also when the message asks for a code or makes a
+  threat with a number to call, not only for phishing links (a contact's account can be taken over).
+  Safe messages from contacts no longer list a phishing warning sign. Saving or editing a contact
+  takes effect at once (the lookup cache is cleared on change).
+- Your labels: a message of one or two words from a phone number ("hi", "ok") is remembered for that
+  exact text and number only, not for every phone sender. Saving a label no longer blocks the screen,
+  and demo messages can't be labelled.
+- Business sender IDs without the "XX-" network prefix still count for the model but no longer get
+  the business shortcut in the gate (they can be spoofed through international gateways).
+- Llama download: if Hugging Face drops partway, it resumes there instead of starting the 1.1 GB again
+  from GitHub. The answer's keep-alive notification can no longer crash the app when an answer ends
+  instantly.
+- Inbox audit export says when verdicts used your saved answers (`personalised`, `saved_patterns`,
+  labels answered now vs. filled in from patterns), so it is not read as the model alone.
+- Alert history deletes message text on its own: safe messages after 7 days, alerts after 30.
+- Privacy screen says plainly what a saved label keeps: the message's words, with numbers, codes and
+  amounts removed and links cut to the domain.
+- Accuracy write-up corrected (README, 0.5.1 notes below): the app's verdict on held-out data
+  (`scripts/eval_sms_heldout.py`) is now reported next to the model alone.
+
 ## 0.5.1 (2026-11-21)
 
 ### Scam detection: fraud, not marketing
@@ -18,9 +54,12 @@ Versions cover the whole repository. From 0.3.0 the Android app's `versionName` 
 - SMS model retrained: UCI "spam" that is only marketing (322 of 747) is no longer a scam example;
   +40 Indian templates (promotions with links, missed-call and data alerts, bank security alerts,
   advisories, chats).
-- Held-out challenge set written for this (`training/sms/challenge.py`, `scripts/eval_sms_challenge.py`,
+- Challenge set written for this (`training/sms/challenge.py`, `scripts/eval_sms_challenge.py`,
   `benchmarks/results/sms_challenge_2026-11-21.json`): promotions and service messages called scam
   12 of 48 -> 0 of 48; scams caught or flagged 20 of 20 -> 20 of 20 (14 scam, 6 suspicious).
+  Correction (0.5.2): the gate was tuned on these 48 promotions and 16 scams, so they are not held
+  out. Only the 19 "fresh" messages were written after tuning (15 of 15 normal messages not called
+  scam, 4 of 4 scams called scam).
 - Saved contacts are never called a scam (only a phishing link still shows "be careful"). Needs the
   contacts permission; only a lookup, nothing is copied.
 - "Not a scam" / "It's a scam" on an SMS alert saves the message's pattern (numbers, codes and links

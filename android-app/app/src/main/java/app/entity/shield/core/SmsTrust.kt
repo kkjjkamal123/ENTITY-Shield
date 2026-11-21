@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.ContactsContract
+import app.entity.shield.net.DnsPolicy
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -42,6 +43,7 @@ class SmsTrust private constructor(private val ctx: Context) {
     fun isContact(sender: String): Boolean {
         val n = sender.filter { it.isDigit() || it == '+' }
         if (n.count { it.isDigit() } < 7 || !contactsAllowed()) return false
+        watchContacts()
         synchronized(contactCache) { contactCache[n]?.let { return it } }
         val hit = runCatching {
             val uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(n))
@@ -53,13 +55,30 @@ class SmsTrust private constructor(private val ctx: Context) {
 
     fun forgetContacts() = synchronized(contactCache) { contactCache.clear() }
 
+    @Volatile private var watching = false
+
+    /** Saving, editing or deleting a contact clears the cache, so the next message sees the change. */
+    private fun watchContacts() {
+        if (watching) return
+        synchronized(this) {
+            if (watching) return
+            watching = runCatching {
+                ctx.contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true,
+                    object : android.database.ContentObserver(null) { override fun onChange(selfChange: Boolean) = forgetContacts() })
+            }.isSuccess
+        }
+    }
+
     // ---------------------------------------------------------------- labels
 
     /** The user's label for a message like this one: true = scam, false = not a scam, null = none. */
     fun label(text: String, sender: String): Boolean? {
-        val list = synchronized(byKind) { byKind[kind(sender)]?.toList() } ?: return null
+        val pt = pattern(text)
+        val k = kindFor(sender, pt)
+        val list = synchronized(byKind) { byKind[k]?.toList() } ?: return null
         if (list.isEmpty()) return null
-        val sh = shingles(pattern(text))
+        if (k.startsWith(EXACT)) return list.lastOrNull { it.text == pt }?.scam
+        val sh = shingles(pt)
         var best: Pattern? = null
         var bestJ = 0.0
         for (p in list) {
@@ -70,21 +89,26 @@ class SmsTrust private constructor(private val ctx: Context) {
     }
 
     fun save(text: String, sender: String, scam: Boolean) {
-        val k = kind(sender)
+        // "Not a scam" on a message with links: the user vouches for those sites (Allowed sites, removable)
+        if (!scam) Featurizer.riskyHosts(text).forEach { DnsPolicy.allow(ctx, it) }
         val pt = pattern(text)
+        val k = kindFor(sender, pt)
         val p = Pattern(k, pt, shingles(pt), scam, System.currentTimeMillis())
         synchronized(byKind) {
             val l = byKind.getOrPut(k) { mutableListOf() }
-            l.removeAll { jaccard(it.shingles, p.shingles) >= SAME }   // relabelling replaces, never piles up
+            l.removeAll { if (k.startsWith(EXACT)) it.text == pt else jaccard(it.shingles, p.shingles) >= SAME }   // relabelling replaces
             l += p
             trim()
             store()
+            android.util.Log.i("ShieldTrust", "saved ${if (scam) "scam" else "not-scam"} pattern for kind=$k (${count()} patterns)")
         }
     }
 
     fun forget(text: String, sender: String) = synchronized(byKind) {
-        val sh = shingles(pattern(text))
-        byKind[kind(sender)]?.removeAll { jaccard(it.shingles, sh) >= MATCH }
+        val pt = pattern(text)
+        val k = kindFor(sender, pt)
+        val sh = shingles(pt)
+        byKind[k]?.removeAll { if (k.startsWith(EXACT)) it.text == pt else jaccard(it.shingles, sh) >= MATCH }
         store()
     }
 
@@ -129,6 +153,20 @@ class SmsTrust private constructor(private val ctx: Context) {
         private val SUFFIX = Regex("-[A-Z]$")
         private val SPACE = Regex("\\s+")
         private val DIGITS = Regex("[0-9०-९]+")
+
+        private const val EXACT = "EXACT:"
+        private const val MIN_WORDS = 3
+
+        /**
+         * Where a pattern applies. Business IDs and longer messages: by kind, so it generalises. A short
+         * message from a phone number or unknown sender ("hi", "ok", a bare link) is too generic to stand
+         * for a pattern, so it applies only to that exact text from that exact sender.
+         */
+        fun kindFor(sender: String, pattern: String): String {
+            val k = kind(sender)
+            if (Featurizer.isBusinessSender(sender) || pattern.split(' ').count { it.isNotEmpty() } >= MIN_WORDS) return k
+            return EXACT + sender.filter { it.isLetterOrDigit() }.takeLast(10)
+        }
 
         /** Sender kind: the business ID without its route prefix/suffix ("JT-JioPay-S" -> "JIOPAY"), "PHONE", or "OTHER". */
         fun kind(sender: String): String {

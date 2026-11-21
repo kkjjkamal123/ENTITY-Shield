@@ -52,6 +52,8 @@ class ShieldVpnService : VpnService() {
     }
 
     private fun startGuard() {
+        alwaysOn = isAlwaysOn
+        app.entity.shield.util.KeepAlive.setNetWanted(this, true)   // also covers guards turned on before 0.5.2
         if (running) return
         kotlin.concurrent.thread(name = "dns-lists") { DnsPolicy.warm(applicationContext) } // 4 MB list, ~20 ms, off the main thread
         val b = Builder()
@@ -187,6 +189,8 @@ class ShieldVpnService : VpnService() {
     }
 
     override fun onRevoke() {
+        // the user turned it off in system settings, or another VPN app took over: don't fight it at boot
+        app.entity.shield.util.KeepAlive.setNetWanted(this, false)
         stopGuard()
         stopSelf()
     }
@@ -203,6 +207,9 @@ class ShieldVpnService : VpnService() {
         const val DNS_ADDR = "10.215.173.2"
         const val ACTION_START = "app.entity.shield.NET_START"
         const val ACTION_STOP = "app.entity.shield.NET_STOP"
+
+        /** The system "Always-on VPN" switch is on for Shield (known once the guard has started). */
+        @Volatile var alwaysOn = false
 
         /** null when consent is already given; otherwise the system consent Intent to launch. */
         fun consentIntent(ctx: Context): Intent? = prepare(ctx)

@@ -262,7 +262,9 @@ def sms_gate(band: str, sig: dict, scam_hosts: list, text: str, sender: str = ""
     own = lambda h: sender_owns(h, sender) or any(h == d or h.endswith("." + d) for d in LINK_SERVICES + GOV_DOMAINS)
     link_scam = any(not own(h) for h in scam_hosts)
     lookalike = sig["brand_link_mismatch"] and any(not own(h) for h in hosts)
-    dlt = sig["sender_dlt"]
+    # The business shortcut needs the full DLT form ("JT-JIOPAY-S"). A bare letter ID ("JIOPAY") still
+    # counts for the model, but international gateways can spoof those, so it goes the stricter way.
+    dlt = sig["sender_dlt"] and bool(re.match(r"[A-Z]{2}-", sender.strip().upper()))
     mobile_no = bool(CALL_TO_MOBILE.search(text))  # "call/contact/WhatsApp 98...": not the user's own number in an alert
     # an OTP given to you is normal; asking you to hand one over is the fraud
     delivered = bool(CODE_DELIVERED.search(text))  # the code itself is in the message: it is being given, not asked for

@@ -2,6 +2,7 @@ package app.entity.shield.sms
 
 import app.entity.shield.core.Band
 import app.entity.shield.core.Detectors
+import app.entity.shield.core.SmsTrust
 import app.entity.shield.core.Verdict
 
 import android.content.Context
@@ -31,6 +32,8 @@ object InboxAudit {
     val flagged = mutableStateListOf<Item>()
     val sample = mutableStateListOf<Item>()          // random unflagged messages to spot-check for misses
     val labels = mutableStateMapOf<Long, Boolean>()   // id -> owner says it IS a scam
+    val manual = mutableStateMapOf<Long, Boolean>()   // ids the owner answered in this scan (not filled in from patterns)
+    var patternsUsed by mutableIntStateOf(0)
     var scanned by mutableIntStateOf(0)
     var running by mutableStateOf(false)
     var msPerMsg by mutableStateOf(0.0)
@@ -56,11 +59,23 @@ object InboxAudit {
             }
             val fl = all.filter { it.v.band != Band.SAFE }
             val safe = all.filter { it.v.band == Band.SAFE }.shuffled(java.util.Random(7)).take(sampleSize)
+            // answers given before (here or on an alert) come back pre-selected, from the saved patterns
+            val trust = SmsTrust.get(ctx)
+            val known = (fl + safe).mapNotNull { i -> trust.label(i.text, i.sender)?.let { i.id to it } }
             main.post {
                 flagged.clear(); flagged.addAll(fl); sample.clear(); sample.addAll(safe)
+                labels.clear(); manual.clear(); known.forEach { (id, l) -> labels[id] = l }
+                patternsUsed = trust.count()
                 scanned = all.size; msPerMsg = if (all.isEmpty()) 0.0 else total / all.size; running = false
             }
         }.start()
+    }
+
+    /** The owner's answer: counted for the audit and saved as a pattern, so similar messages follow it. */
+    fun mark(ctx: Context, item: Item, scam: Boolean) {
+        labels[item.id] = scam
+        manual[item.id] = true
+        Thread { SmsTrust.get(ctx).save(item.text, item.sender, scam) }.start()
     }
 
     data class Summary(val scanned: Int, val flagged: Int, val flaggedLabelled: Int, val confirmed: Int, val falseAlarms: Int,
@@ -87,6 +102,12 @@ object InboxAudit {
             .put("unflagged_sample_labelled", s.sampleLabelled).put("missed_in_sample", s.missed)
             .put("precision", s.precision ?: JSONObject.NULL).put("fpr_estimate", s.fpr ?: JSONObject.NULL)
             .put("ms_per_message", msPerMsg)
+            // With saved answers the verdicts include the owner's own patterns (and contacts), so this is
+            // the personalised app, not the model alone; labels filled in from patterns are counted apart.
+            .put("personalised", patternsUsed > 0)
+            .put("saved_patterns", patternsUsed)
+            .put("labels_answered_now", manual.size)
+            .put("labels_from_patterns", labels.keys.count { it !in manual })
         val dir = ctx.getExternalFilesDir("audit")!!.apply { mkdirs() }
         return File(dir, "audit_${o.getString("date")}.json").apply { writeText(o.toString(1)) }
     }

@@ -1,6 +1,7 @@
 package app.entity.shield.core
 
 import android.content.Context
+import app.entity.shield.net.DnsPolicy
 import org.json.JSONObject
 import org.pytorch.executorch.EValue
 import org.pytorch.executorch.Module
@@ -80,7 +81,7 @@ class Detectors private constructor(ctx: Context) {
         val host = Featurizer.urlHost(if ("://" in link) link else "http://$link")
         val sig = Featurizer.urlSignals(host)
         val allowed = Featurizer.allowlisted(host, allow)
-        val p = if (allowed) 0f else Featurizer.hashedSparse(host).let { (sl, v) -> urlIn.score(sl, v, sig) }
+        val p = if (allowed || DnsPolicy.userAllows(app, host)) 0f else Featurizer.hashedSparse(host).let { (sl, v) -> urlIn.score(sl, v, sig) }
         var band = band(p, urlT)
         if (band == Band.SAFE && sig[Featurizer.URL_SIGNALS.indexOf("shortener")] > 0) band = Band.UNCERTAIN // can't see where it goes
         val ev = Featurizer.URL_SIGNALS.filterIndexed { i, _ -> sig[i] > 0 }
@@ -106,7 +107,7 @@ class Detectors private constructor(ctx: Context) {
         val hosts = Featurizer.riskyHosts(text)
         val scamHosts = ArrayList<String>(2)
         for (h in hosts) {
-            val p = if (Featurizer.allowlisted(h, allow)) 0f else Featurizer.hashedSparse(h).let { (sl, v) -> urlIn.score(sl, v, Featurizer.urlSignals(h)) }
+            val p = if (Featurizer.allowlisted(h, allow) || DnsPolicy.userAllows(app, h)) 0f else Featurizer.hashedSparse(h).let { (sl, v) -> urlIn.score(sl, v, Featurizer.urlSignals(h)) }
             if (band(p, urlT) == Band.SCAM) scamHosts += h
             if (p >= pUrl) { pUrl = p; worst = h; urlBand = band(p, urlT) }
         }
@@ -116,15 +117,32 @@ class Detectors private constructor(ctx: Context) {
         var fam = if (g.promo) Family.PROMO else family(text, ev)
         val trust = SmsTrust.get(app)
         if (b != Band.SAFE && trust.isContact(sender)) {
-            b = if (scamHosts.isNotEmpty()) Band.UNCERTAIN else Band.SAFE
-            ev += "in_contacts"
+            // A saved contact is never "scam". Still "be careful" when the message itself carries a fraud
+            // cue (phishing link, asks for a code, threat with a number): their account may be hacked.
+            b = if (g.strong) Band.UNCERTAIN else Band.SAFE
+            ev += if (b == Band.UNCERTAIN) "in_contacts" else "contact"
         }
         when (trust.label(text, sender)) {
             true -> { b = Band.SCAM; ev += "your_label"; if (fam == Family.PROMO) fam = family(text, ev) }
             false -> { b = Band.SAFE; ev += "your_label" }
             null -> {}
         }
-        return Verdict("sms", b, maxOf(pSms, pUrl), fam, ev, worst, (System.nanoTime() - t0) / 1e6)
+        return Verdict("sms", b, shown(maxOf(pSms, pUrl), b), fam, ev, worst, (System.nanoTime() - t0) / 1e6)
+    }
+
+    /**
+     * The risk number shown with a verdict. The raw model score can disagree with the final band once the
+     * gate, a contact or the user's label has decided (0.5.1 showed "64% risk" on a message the user had
+     * marked safe), so it is kept inside the band's range: SAFE below the "be careful" line, UNCERTAIN
+     * between the lines, SCAM at or above the scam line.
+     */
+    private fun shown(raw: Float, b: Band): Float {
+        val (scam, unsure) = smsT
+        return when (b) {
+            Band.SAFE -> minOf(raw, unsure * 0.95f)
+            Band.UNCERTAIN -> raw.coerceIn(unsure, scam * 0.99f)
+            Band.SCAM -> maxOf(raw, scam)
+        }
     }
 
     private fun band(p: Float, t: Pair<Float, Float>) = when {

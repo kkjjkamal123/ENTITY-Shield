@@ -91,7 +91,9 @@ object ModelDownload {
                 val dir = Explainer.modelDir(app)
                 if (SOURCES.none { File(dir, it.item.name).length() == it.item.bytes }) {
                     var lastError: Throwable? = null
-                    for ((i, src) in SOURCES.withIndex()) {
+                    // a source with a partial download goes first, so a resume continues where it stopped
+                    val order = SOURCES.sortedByDescending { File(dir, it.item.name + ".part").length() }
+                    for ((i, src) in order.withIndex()) {
                         if (cancel) throw InterruptedException("paused")
                         val f = src.item
                         val part = File(dir, f.name + ".part")
@@ -109,14 +111,18 @@ object ModelDownload {
                             val out = File(dir, f.name)
                             out.delete()
                             if (!part.renameTo(out)) throw IllegalStateException("Could not save the model")
-                            SOURCES.filter { it !== src }.forEach { File(dir, it.item.name + ".part").delete() }
+                            order.filter { it !== src }.forEach { File(dir, it.item.name + ".part").delete() }
                             lastError = null
                             break
                         } catch (e: InterruptedException) { throw e
                         } catch (e: Blocked) { throw e
                         } catch (e: Exception) {
+                            // Fall back only when this source could not be used at all. If it was already
+                            // downloading, keep its partial file and resume it next time: switching would
+                            // start another 1.1 GB from zero (costly on mobile data).
+                            if (part.length() > 0) throw e
                             lastError = e
-                            if (i < SOURCES.lastIndex) status = "${src.host} failed (${e.message}), trying ${SOURCES[i + 1].host}…"
+                            if (i < order.lastIndex) status = "${src.host} failed (${e.message}), trying ${order[i + 1].host}…"
                         }
                     }
                     lastError?.let { throw it }

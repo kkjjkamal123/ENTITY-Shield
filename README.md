@@ -89,10 +89,21 @@ cannot overturn a verdict or invent advice. Details: [`docs/ARCHITECTURE.md`](do
 
 ### Detectors: accuracy (held-out data, threshold set on validation for ≤ 1% false alarms)
 
+SMS rows are the 0.5.1 model (`benchmarks/results/detector_sms_2026-11-21.json`) and the app's full
+verdict on the same held-out split (`scripts/eval_sms_heldout.py`,
+`benchmarks/results/sms_heldout_app_2026-11-21.json`). The 0.5.1 model alone is weaker on unseen
+templates than 0.5.0's (recall 0.90 -> 0.67): it was retrained to stop treating marketing as fraud, and
+the scam gate now makes the final call. UCI is UK spam from 2011; the gate looks for fraud cues seen in
+Indian scams, so it lets more of that through. The gate's rules were tuned on a challenge set and one
+real inbox (below); only the 19 "fresh" challenge messages were written after tuning.
+
 | Detector · test set | n | Precision | Recall | False-alarm rate | AUC |
 |---|---:|---:|---:|---:|---:|
-| SMS · UCI SMS Spam (held out) | 837 | 0.974 | 0.942 | 0.42% | 0.997 |
-| SMS · **Indian scam/legit templates never seen in training** | 840 | 0.978 | 0.903 | 1.82% | 0.982 |
+| SMS model alone · UCI SMS Spam, fraud-only positives (held out) | 788 | 1.000 | 0.783 | 0.00% | 0.990 |
+| SMS model alone · **Indian scam/legit templates never seen in training** | 1,200 | 0.848 | 0.668 | 6.00% | 0.952 |
+| SMS **app verdict** (model + URL model + scam gate) · same Indian templates, "scam" | 1,200 | 0.973 | 0.715 | 1.00% | — |
+| SMS **app verdict** · same Indian templates, "scam" or "be careful" | 1,200 | 0.905 | 0.933 | 4.88% | — |
+| SMS **app verdict** · UCI, "scam" or "be careful" | 788 | 0.905 | 0.633 | 0.55% | — |
 | URL v3 · PhishTank **newer than all training data** + real DNS hostnames and Tranco domains (with allow-list) | 19,873 | 0.938 | 0.526 | 0.72% | 0.898 |
 | URL v3 · OpenPhish feed of 19 Nov 2026 (recall only) | 297 | — | 0.923 | — | — |
 | URL v3 · 20,000 held-out real DNS hostnames (Umbrella ranks 600k–1M), false alarms only | 20,000 | — | — | 1.06% (0.1% at Network Guard's threshold) | — |

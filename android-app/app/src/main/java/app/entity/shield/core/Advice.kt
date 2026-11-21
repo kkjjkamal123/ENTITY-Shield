@@ -128,7 +128,7 @@ object Advice {
         "unverifiable" -> "the page is gone or would not load, so Shield could not check it. Scam pages are often taken down within hours"
         "from_flagged_message" -> "it came in a message Shield already flagged"
         "your_label" -> if (v.band == Band.SCAM) "you marked messages like this as a scam" else null
-        "in_contacts" -> "it is from a saved contact, but the link looks like phishing (their account may be hacked)"
+        "in_contacts" -> "it is from a saved contact, but the message itself looks like fraud (their account may be hacked)"
         "cloaking_redirect" -> "the link sends visitors on to the real site, a trick scam kits use to hide from checkers"
         "secret_on_free_host" -> "it asks for passwords or codes on a free website anyone can make"
         "lookalike_domain" -> v.evidence.firstOrNull { it.startsWith("imitates:") }?.let { "the address imitates ${it.removePrefix("imitates:").replaceFirstChar { c -> c.uppercase() }}" } ?: "the address imitates a well-known brand"
@@ -195,7 +195,7 @@ object Advice {
         "unverifiable" -> "पेज हट चुका है या खुला नहीं, इसलिए Shield इसे जांच नहीं सका। धोखे वाले पेज अक्सर कुछ घंटों में हटा दिए जाते हैं"
         "from_flagged_message" -> "यह उस मैसेज में आया जिसे Shield पहले ही ख़तरनाक बता चुका है"
         "your_label" -> if (v.band == Band.SCAM) "आपने ऐसे मैसेज को धोखा बताया था" else null
-        "in_contacts" -> "यह आपके सेव किए संपर्क से है, पर लिंक फ़िशिंग जैसा है (उनका खाता हैक हो सकता है)"
+        "in_contacts" -> "यह आपके सेव किए संपर्क से है, पर मैसेज धोखे जैसा है (उनका खाता हैक हो सकता है)"
         "cloaking_redirect" -> "लिंक जांचने वालों को असली साइट पर भेज देता है, धोखेबाज़ ख़ुद को छिपाने के लिए यही चाल चलते हैं"
         "secret_on_free_host" -> "यह ऐसी मुफ़्त वेबसाइट पर पासवर्ड या कोड मांगता है जिसे कोई भी बना सकता है"
         "lookalike_domain" -> v.evidence.firstOrNull { it.startsWith("imitates:") }?.let { "पता ${it.removePrefix("imitates:").replaceFirstChar { c -> c.uppercase() }} की नकल करता है" } ?: "पता किसी जाने-माने ब्रांड की नकल करता है"

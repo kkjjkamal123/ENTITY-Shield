@@ -119,9 +119,10 @@ object NetGuard {
     fun forgetVerdicts() = verdicts.evictAll()
 
     /** The user said a blocked site is fine: never block or flag it again. */
-    fun allowSite(ctx: Context, host: String) {
-        DnsPolicy.allow(ctx, host)
+    fun allowSite(ctx: Context, host: String): Boolean {
+        val ok = DnsPolicy.allow(ctx, host)
         verdicts.evictAll()
+        return ok
     }
 
     /** Called by the VPN for every answered (or blocked) query. */

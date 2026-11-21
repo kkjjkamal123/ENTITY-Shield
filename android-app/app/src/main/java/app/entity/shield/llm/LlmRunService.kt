@@ -23,16 +23,20 @@ class LlmRunService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // startForeground() must always follow startForegroundService(), even if the answer already
+        // ended: stopping first crashes the app on some Android versions. So go foreground, then stop
+        // right away if nothing is running any more.
         try {
             if (Build.VERSION.SDK_INT >= 34) startForeground(ID, notification(this), ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE)
             else startForeground(ID, notification(this))
         } catch (_: Exception) {
-            stopSelf()   // not allowed from the background: the answer still runs while the app is open
+            stopSelf(); return START_NOT_STICKY   // not allowed from the background: the answer still runs while the app is open
         }
+        synchronized(LOCK) { started = true; if (!wanted) { started = false; stopSelf() } }
         return START_NOT_STICKY
     }
 
-    override fun onTimeout(startId: Int) { stopSelf() }
+    override fun onTimeout(startId: Int) { synchronized(LOCK) { started = false }; stopSelf() }
 
     companion object {
         private const val CHANNEL = "llm_run"
@@ -50,7 +54,19 @@ class LlmRunService : Service() {
                 .build()
         }
 
-        fun start(ctx: Context) { runCatching { ctx.startForegroundService(Intent(ctx, LlmRunService::class.java)) } }
-        fun stop(ctx: Context) { runCatching { ctx.stopService(Intent(ctx, LlmRunService::class.java)) } }
+        private val LOCK = Any()
+        @Volatile private var wanted = false    // an answer is running
+        @Volatile private var started = false   // the service reached startForeground()
+
+        fun start(ctx: Context) = synchronized(LOCK) {
+            wanted = true
+            if (!started) runCatching { ctx.startForegroundService(Intent(ctx, LlmRunService::class.java)) }
+        }
+
+        /** Stops it if it is up; if it is still starting, onStartCommand stops it once it is foreground. */
+        fun stop(ctx: Context) = synchronized(LOCK) {
+            wanted = false
+            if (started) { started = false; runCatching { ctx.stopService(Intent(ctx, LlmRunService::class.java)) } }
+        }
     }
 }
