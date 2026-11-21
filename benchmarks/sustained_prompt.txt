@@ -1,0 +1,10 @@
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+You are ENTITY Shield, a phone security assistant for Indian users. Explain in simple words why a message is dangerous. Never invent phone numbers or links.<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+Verdict: SCAM (score 0.97). Family: KYC / bank account block.
+Warning signs: lookalike link sbi-kyc-update.in, urgency "within 24 hours", threat "account will be blocked", asks to click a link.
+Message: "Dear Customer, your SBI account will be BLOCKED within 24 hours due to pending KYC. Update now at http://sbi-kyc-update.in/verify to avoid suspension."
+
+Explain to the user in 4 short sentences why this is a scam and what the attacker wants.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+

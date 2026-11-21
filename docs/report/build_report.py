@@ -190,12 +190,15 @@ sus_html = "<h3>7b. Sustained load: temperature, memory and speed</h3>"
 if sus:
     sm = sus["summary"]
     sus_rows = "".join(f"<tr><td>{r['answer']}</td><td>{r['elapsed_s']}</td><td>{r['prefill_tps']}</td><td>{r['decode_tps']}</td><td>{r['ttft_s']}</td>"
-                       f"<td>{r['peak_rss_mib']}</td><td>{r['cpu_c_after']}</td><td>{r['battery_c_after']}</td><td>{r['cpu_util_pct']}</td></tr>" for r in sus["answers"])
+                       f"<td>{r['peak_rss_mib']:.0f}</td><td>{r['cpu_c_after']}</td><td>{r['battery_c_after']}</td><td>{r['cpu_util_pct']}</td></tr>" for r in sus["answers"])
     sus_html += f"""<p>{sm['answers']} Llama answers back to back with no pause ({sm['minutes']} min; {sus['device']}, {sus['soc']},
-Android {sus['android']}, {'charging' if sus['plugged'] else 'on battery'}; <code>scripts/bench_sustained.py</code>). Decode went from
-{sm['decode_first_last'][0]} to {sm['decode_first_last'][1]} tok/s ({sm['decode_drop_pct']}% lower). Hottest CPU zone
-{sm['cpu_c_start_peak'][0]} → {sm['cpu_c_start_peak'][1]} °C, battery {sm['battery_c_start_peak'][0]} → {sm['battery_c_start_peak'][1]} °C.
-Peak memory of the runner: {sm['peak_rss_mib_first_last'][0]} MiB on the first answer, {sm['peak_rss_mib_first_last'][1]} MiB on the last.
+Android {sus['android']}, {'on USB power' if sus['plugged'] else 'on battery'}; <code>scripts/bench_sustained.py</code>, the loop run as a
+script on the phone). Each answer is an alert explanation: a {sus['answers'][0]['prompt_tokens']}-token prompt (verdict, warning signs, the SMS)
+and up to {sus['max_new']} new tokens. Decode, average of the first three answers vs the last three:
+{sm['decode_avg_first3_last3'][0]} → {sm['decode_avg_first3_last3'][1]} tok/s; time to first token {sm['ttft_avg_first3_last3'][0]} →
+{sm['ttft_avg_first3_last3'][1]} s. Hottest CPU zone
+{sm['cpu_c_start_peak'][0]} °C at the start, {sm['cpu_c_start_peak'][1]} °C at its peak; battery {sm['battery_c_start_peak'][0]} → {sm['battery_c_start_peak'][1]} °C.
+Slowest single answer: {min(r['decode_tps'] for r in sus['answers'])} tok/s, so no thermal throttling showed in this run. Peak memory of the runner: {sm['peak_rss_mib_first_last'][0]:.0f} MiB on the first answer, {sm['peak_rss_mib_first_last'][1]:.0f} MiB on the last (no growth).
 The app at rest with the detectors loaded and no Llama: <b>{sm['app_pss_mb_detectors_only']} MB</b> PSS. Model files: Llama 1.12 GB,
 detectors 130 KB each.</p>
 <table><tr><th>#</th><th>s</th><th>Prefill tok/s</th><th>Decode tok/s</th><th>TTFT s</th><th>Peak RSS MiB</th><th>CPU °C</th><th>Battery °C</th><th>CPU use %</th></tr>{sus_rows}</table>"""

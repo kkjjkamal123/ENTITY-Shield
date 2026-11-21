@@ -1,6 +1,9 @@
 """Sustained Llama load on an Android phone: speed, temperature, memory and CPU, answer after answer.
 
-  python scripts/bench_sustained.py --serial <adb serial> [--answers 12] [--max-new 96]
+  python scripts/bench_sustained.py --serial <adb serial> [--answers 12] [--max-new 96] [--on-device]
+
+The report run: --model hf.pte --prompt sus_prompt.txt (benchmarks/sustained_prompt.txt pushed to the phone)
+--answers 30 --max-new 160 --on-device.
 
 Runs ExecuTorch's llama_main (already in /data/local/tmp/shield) back to back with no cool-down, the
 worst case for a phone: a user opening alert after alert. ExecuTorch picks its own thread count, as in
@@ -44,10 +47,16 @@ def cpu_zones(serial):
     return zs
 
 
+def snap_cmd(zones):
+    return ("dumpsys battery | grep -E 'temperature|level'; grep -E 'MemAvailable' /proc/meminfo; head -1 /proc/stat; "
+            + "; ".join(f"echo Z {z} $(cat /sys/class/thermal/thermal_zone{z}/temp 2>/dev/null)" for z in zones))
+
+
 def snapshot(serial, zones):
-    cmd = ("dumpsys battery | grep -E 'temperature|level'; grep -E 'MemAvailable' /proc/meminfo; head -1 /proc/stat; "
-           + "; ".join(f"echo Z {z} $(cat /sys/class/thermal/thermal_zone{z}/temp 2>/dev/null)" for z in zones))
-    out = sh(serial, cmd)
+    return parse_snap(sh(serial, snap_cmd(zones)))
+
+
+def parse_snap(out):
     t = re.search(r"temperature: (\d+)", out)
     lvl = re.search(r"level: (\d+)", out)
     mem = re.search(r"MemAvailable:\s+(\d+)", out)
@@ -75,6 +84,10 @@ def answer(serial, model, prompt, max_new):
            f"--temperature 0 --max_new_tokens {max_new} --cpu_threads -1 2>sus.err")
     out = adb(serial, "shell", cmd)
     err = sh(serial, f"cat {DIR}/sus.err")
+    return parse_answer(out, err)
+
+
+def parse_answer(out, err):
     m = None
     for m in re.finditer(r"^PyTorchObserver (\{.*\})\s*$", out, re.M):
         pass
@@ -97,6 +110,69 @@ def app_memory(serial, pkg="app.entity.shield"):
     return round(int(tot.group(1)) / 1024, 1) if tot else None
 
 
+def on_device(s, a, zones):
+    """The whole loop as a shell script on the phone, started with setsid/nohup: some phones (Infinix X6878)
+    drop the USB data link under sustained CPU load, which kills an adb-driven loop. Results are pulled after."""
+    import time
+    snap = snap_cmd(zones)
+    run = (f"./llama_main --model_path {a.model} --tokenizer_path tokenizer.model --prompt_file {a.prompt} "
+           f"--temperature 0 --max_new_tokens {a.max_new} --cpu_threads -1")
+    script = "\n".join([
+        f"cd {DIR}",
+        f"for i in $(seq 1 {a.answers}); do",
+        f'echo "=BEFORE $i $(date +%s)"; {snap}',
+        f"{run} 2>err.txt | grep PyTorchObserver; grep 'RSS after' err.txt",
+        f'echo "=AFTER $i $(date +%s)"; {snap}',
+        "done",
+        "echo =DONE", ""])
+    tmp = ROOT / "benchmarks/results/.sus_loop.sh"
+    tmp.write_text(script, encoding="utf-8", newline="\n")
+    if not a.collect:
+        adb(s, "push", str(tmp), f"{DIR}/loop.sh")
+        try:  # adb shell stays attached to the background job; the loop keeps running after the timeout
+            sh(s, f"cd {DIR} && rm -f run.log && setsid nohup sh loop.sh > run.log 2>&1 < /dev/null &", timeout=10)
+        except subprocess.TimeoutExpired:
+            pass
+        print("started on the phone; waiting (USB may drop and come back)")
+    tmp.unlink()
+    deadline = time.time() + a.answers * 60
+    log = ""
+    while time.time() < deadline:
+        time.sleep(20)
+        try:
+            got = adb(s, "shell", f"cat {DIR}/run.log", timeout=30)
+        except subprocess.TimeoutExpired:
+            continue
+        if "=BEFORE" not in got:  # phone off USB right now
+            print("  (phone not reachable)", flush=True)
+            continue
+        log = got
+        n = log.count("=AFTER")
+        print(f"  {n}/{a.answers} answers", flush=True)
+        if "=DONE" in log:
+            break
+    start = None
+    rows = []
+    t0 = None
+    for blk in re.split(r"^=BEFORE ", log, flags=re.M)[1:]:
+        i, ts = blk.split()[:2]
+        pre, _, post = blk.partition("=AFTER ")
+        before, after = parse_snap(pre), parse_snap(post)
+        start = start or before
+        t0 = t0 or int(ts)
+        res = parse_answer(pre, pre)
+        if not res or not post:
+            print(f"answer {i}: runner failed")
+            continue
+        end = int(post.split()[1])
+        rows.append(dict(answer=int(i), elapsed_s=end - t0, **res,
+                         cpu_c_before=before["cpu_max_c"], cpu_c_after=after["cpu_max_c"],
+                         battery_c_before=before["battery_c"], battery_c_after=after["battery_c"],
+                         mem_available_mb=after["mem_available_mb"], cpu_util_pct=cpu_util(before["ticks"], after["ticks"]),
+                         battery_pct=after["battery_pct"], retried=False))
+    return start, rows
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--serial", required=True)
@@ -104,6 +180,8 @@ def main():
     ap.add_argument("--prompt", default="v4_en.txt")
     ap.add_argument("--answers", type=int, default=12)
     ap.add_argument("--max-new", type=int, default=96)
+    ap.add_argument("--on-device", action="store_true", help="run the loop on the phone (survives USB drops)")
+    ap.add_argument("--collect", action="store_true", help="with --on-device: only collect a loop that is already running")
     a = ap.parse_args()
     s = a.serial
     device = sh(s, "getprop ro.product.model").strip()
@@ -111,16 +189,22 @@ def main():
     android = sh(s, "getprop ro.build.version.release").strip()
     zones = cpu_zones(s)
     print(f"{device} ({soc}, Android {android}); CPU thermal zones {zones}")
-    start = snapshot(s, zones)
+    if a.on_device:
+        start, rows = on_device(s, a, zones)
+    else:
+        start, rows = snapshot(s, zones), []
     print("start", {k: v for k, v in start.items() if k != "ticks"})
-    rows = []
     t0 = datetime.datetime.now()
-    for i in range(1, a.answers + 1):
+    for i in range(1, 0 if a.on_device else a.answers + 1):
         before = snapshot(s, zones)
         res = answer(s, a.model, a.prompt, a.max_new)
         retried = False
         if not res:  # some vendor freezers kill a long shell process now and then; one retry, counted
             retried = True
+            try:  # a USB link that drops for a moment: wait for the phone before the retry
+                subprocess.run([ADB, "-s", s, "wait-for-device"], timeout=90)
+            except subprocess.TimeoutExpired:
+                print("   phone did not come back"); break
             res = answer(s, a.model, a.prompt, a.max_new)
         after = snapshot(s, zones)
         if not res:
@@ -144,7 +228,11 @@ def main():
         sh(s, "sleep 3")
     plugged = "powered: true" in sh(s, "dumpsys battery")
     first, last = rows[0], rows[-1]
+    avg = lambda xs: round(sum(xs) / len(xs), 2)
+    head, tail = rows[:3], rows[-3:]
     summary = dict(
+        decode_avg_first3_last3=[avg([r["decode_tps"] for r in head]), avg([r["decode_tps"] for r in tail])],
+        ttft_avg_first3_last3=[avg([r["ttft_s"] for r in head]), avg([r["ttft_s"] for r in tail])],
         answers=len(rows), minutes=round(last["elapsed_s"] / 60, 1),
         decode_first_last=[first["decode_tps"], last["decode_tps"]],
         decode_drop_pct=round(100 * (1 - last["decode_tps"] / first["decode_tps"]), 1),
@@ -156,7 +244,7 @@ def main():
         failed_or_retried=a.answers - len(rows) + sum(r["retried"] for r in rows),
     )
     out = dict(device=device, soc=soc, android=android, date=str(datetime.date.today()), plugged=plugged, model=a.model,
-               runtime="ExecuTorch llama_main, XNNPACK, --cpu_threads -1", prompt=a.prompt, max_new=a.max_new,
+               runtime="ExecuTorch llama_main, XNNPACK, --cpu_threads -1", mode="on-device loop" if a.on_device else "adb loop", prompt=a.prompt, max_new=a.max_new,
                thermal_zones=zones, start={k: v for k, v in start.items() if k != "ticks"}, summary=summary, answers=rows)
     path = ROOT / "benchmarks/results" / f"sustained_{device.replace(' ', '_')}_{datetime.date.today()}.json"
     path.write_text(json.dumps(out, indent=1), encoding="utf-8", newline="\n")
