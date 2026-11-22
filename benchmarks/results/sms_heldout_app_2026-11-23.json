@@ -1,0 +1,236 @@
+{
+ "all": {
+  "model_scam": {
+   "n": 1988,
+   "pos": 460,
+   "neg": 1528,
+   "tp": 314,
+   "fp": 48,
+   "fn": 146,
+   "tn": 1480,
+   "recall": 0.6826,
+   "fpr": 0.0314,
+   "precision": 0.8674,
+   "f1": 0.764
+  },
+  "model_flagged": {
+   "n": 1988,
+   "pos": 460,
+   "neg": 1528,
+   "tp": 346,
+   "fp": 64,
+   "fn": 114,
+   "tn": 1464,
+   "recall": 0.7522,
+   "fpr": 0.0419,
+   "precision": 0.8439,
+   "f1": 0.7954
+  },
+  "app_scam": {
+   "n": 1988,
+   "pos": 460,
+   "neg": 1528,
+   "tp": 405,
+   "fp": 1,
+   "fn": 55,
+   "tn": 1527,
+   "recall": 0.8804,
+   "fpr": 0.0007,
+   "precision": 0.9975,
+   "f1": 0.9353
+  },
+  "app_flagged": {
+   "n": 1988,
+   "pos": 460,
+   "neg": 1528,
+   "tp": 419,
+   "fp": 16,
+   "fn": 41,
+   "tn": 1512,
+   "recall": 0.9109,
+   "fpr": 0.0105,
+   "precision": 0.9632,
+   "f1": 0.9363
+  },
+  "confusion_app": {
+   "legit": {
+    "SAFE": 1512,
+    "UNCERTAIN": 15,
+    "SCAM": 1
+   },
+   "scam": {
+    "SAFE": 41,
+    "UNCERTAIN": 14,
+    "SCAM": 405
+   }
+  },
+  "confusion_model": {
+   "legit": {
+    "SAFE": 1464,
+    "UNCERTAIN": 16,
+    "SCAM": 48
+   },
+   "scam": {
+    "SAFE": 114,
+    "UNCERTAIN": 32,
+    "SCAM": 314
+   }
+  }
+ },
+ "uci": {
+  "model_scam": {
+   "n": 788,
+   "pos": 60,
+   "neg": 728,
+   "tp": 47,
+   "fp": 0,
+   "fn": 13,
+   "tn": 728,
+   "recall": 0.7833,
+   "fpr": 0.0,
+   "precision": 1.0,
+   "f1": 0.8785
+  },
+  "model_flagged": {
+   "n": 788,
+   "pos": 60,
+   "neg": 728,
+   "tp": 54,
+   "fp": 0,
+   "fn": 6,
+   "tn": 728,
+   "recall": 0.9,
+   "fpr": 0.0,
+   "precision": 1.0,
+   "f1": 0.9474
+  },
+  "app_scam": {
+   "n": 788,
+   "pos": 60,
+   "neg": 728,
+   "tp": 39,
+   "fp": 1,
+   "fn": 21,
+   "tn": 727,
+   "recall": 0.65,
+   "fpr": 0.0014,
+   "precision": 0.975,
+   "f1": 0.78
+  },
+  "app_flagged": {
+   "n": 788,
+   "pos": 60,
+   "neg": 728,
+   "tp": 46,
+   "fp": 3,
+   "fn": 14,
+   "tn": 725,
+   "recall": 0.7667,
+   "fpr": 0.0041,
+   "precision": 0.9388,
+   "f1": 0.844
+  },
+  "confusion_app": {
+   "legit": {
+    "SAFE": 725,
+    "UNCERTAIN": 2,
+    "SCAM": 1
+   },
+   "scam": {
+    "SAFE": 14,
+    "UNCERTAIN": 7,
+    "SCAM": 39
+   }
+  },
+  "confusion_model": {
+   "legit": {
+    "SAFE": 728,
+    "UNCERTAIN": 0,
+    "SCAM": 0
+   },
+   "scam": {
+    "SAFE": 6,
+    "UNCERTAIN": 7,
+    "SCAM": 47
+   }
+  }
+ },
+ "indian": {
+  "model_scam": {
+   "n": 1200,
+   "pos": 400,
+   "neg": 800,
+   "tp": 267,
+   "fp": 48,
+   "fn": 133,
+   "tn": 752,
+   "recall": 0.6675,
+   "fpr": 0.06,
+   "precision": 0.8476,
+   "f1": 0.7469
+  },
+  "model_flagged": {
+   "n": 1200,
+   "pos": 400,
+   "neg": 800,
+   "tp": 292,
+   "fp": 64,
+   "fn": 108,
+   "tn": 736,
+   "recall": 0.73,
+   "fpr": 0.08,
+   "precision": 0.8202,
+   "f1": 0.7725
+  },
+  "app_scam": {
+   "n": 1200,
+   "pos": 400,
+   "neg": 800,
+   "tp": 366,
+   "fp": 0,
+   "fn": 34,
+   "tn": 800,
+   "recall": 0.915,
+   "fpr": 0.0,
+   "precision": 1.0,
+   "f1": 0.9556
+  },
+  "app_flagged": {
+   "n": 1200,
+   "pos": 400,
+   "neg": 800,
+   "tp": 373,
+   "fp": 13,
+   "fn": 27,
+   "tn": 787,
+   "recall": 0.9325,
+   "fpr": 0.0163,
+   "precision": 0.9663,
+   "f1": 0.9491
+  },
+  "confusion_app": {
+   "legit": {
+    "SAFE": 787,
+    "UNCERTAIN": 13,
+    "SCAM": 0
+   },
+   "scam": {
+    "SAFE": 27,
+    "UNCERTAIN": 7,
+    "SCAM": 366
+   }
+  },
+  "confusion_model": {
+   "legit": {
+    "SAFE": 736,
+    "UNCERTAIN": 16,
+    "SCAM": 48
+   },
+   "scam": {
+    "SAFE": 108,
+    "UNCERTAIN": 25,
+    "SCAM": 267
+   }
+  }
+ }
+}

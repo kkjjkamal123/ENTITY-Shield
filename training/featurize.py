@@ -223,6 +223,47 @@ SECRET_REQUEST = re.compile(r"(?:\b(?:share|send|tell|give|provide|forward|enter
                             r"[^.!?\n]{0,40}(?:\b(?:otp|pin|cvv|password|passcode|code|card number)\b|ओटीपी|पिन)", re.I)
 CODE_DELIVERED = re.compile(r"(otp|code|password|passcode|pin|कोड|ओटीपी)[^\n.!?]{0,40}?(?<![\d#,.₹])(?<!rs )(?<!rs\.)(?<!inr )(G-)?\d{4,8}(?![\d,])|(?<![\d#,.₹])(?<!rs )(?<!rs\.)(?<!inr )(G-)?\d{4,8}(?![\d,])[^\n.!?]{0,40}?(otp|code|password|passcode|pin|कोड|ओटीपी)|\b\d{3}-\d{3}\b", re.I)
 CALL_TO_MOBILE = re.compile(r"(call|contact|whatsapp|dial|ring|reach|message|msg|sampark|संपर्क|कॉल)[^\d\n]{0,25}(?:\+?91[\s-]?)?[6-9]\d{4}\s?\d{5}(?!\d)", re.I)
+# v5 (2026-11-23), gate only (the model's signals are unchanged). Found on the validation split:
+# Hindi puts the number before the verb ("{num} पर कॉल करें"); Hindi service-cut threats; "send the code
+# you received" (WhatsApp takeover); premium-rate prize scams ("call 09066...", "txt WIN to 87121");
+# "Prize Code 2" read as an OTP; and "train"/"training" matching TRAI.
+MOBILE_THEN_CALL = re.compile(r"(?<!\d)(?:\+?91[\s-]?)?[6-9]\d{4}\s?\d{5}(?!\d)[^\d\n]{0,12}(?:पर|pe|par|on)\s*(?:कॉल|संपर्क|व्हाट्सएप|call|contact|whatsapp)", re.I)
+SERVICE_CUT = re.compile(r"काट दी|काटी जाएगी|काट दिया|कट जाएगी|बंद कर दी|बंद हो जाएगी|cut off|will be cut|banned|kaat d", re.I)
+SEND_CODE = re.compile(r"\b(?:share|send|tell|give|forward|bhejo|batao)\b[^.!?\n]{0,40}\bcode\b", re.I)
+PRIZE_CLAIM = re.compile(r"\b(?:win|won|winner|prize|awarded|claim|cash|jackpot|free entry|selected)\b|£\s?\d|congrat|जीत|इनाम|लॉटरी", re.I)
+PREMIUM_CALL = re.compile(r"(?<!\d)0(?:9\d{9}|8\d{9,10})(?!\d)|\b(?:txt|text|send|reply)\b\W+\w+\W+(?:to\W+)?\d{5}(?!\d)", re.I)
+AUTHORITY = re.compile(r"police|\bcbi\b|customs|\bcourt\b|arrest|narcotics|cyber cell|\brbi\b|\btrai\b|ed officer|गिरफ्तार|पुलिस", re.I)
+PRESS_KEY = re.compile(r"\bpress \d\b|\bdial \d\b|\btalk to\b", re.I)  # IVR scams: "press 1 to talk to the officer"
+CONTACT_ASK = re.compile(r"\b(?:reply|send|whatsapp|contact|sms|text|txt|click|visit|open|download|install)\b|भेजें|संपर्क|क्लिक", re.I)
+TXN_ALERT = re.compile(r"\b(?:sent|debited|credited|received|paid|spent)\b[^\n]{0,60}\b(?:ref|txn|utr|upi ref|avl bal|a/c)\b", re.I)
+ADVISORY = re.compile(r"\bnever\b[^.!?\n]{0,30}\b(?:sends?|asks?|calls?|makes?|requests?)\b|कभी नहीं", re.I)
+DEEP_LINKS = ("app.link", "onelink.me", "page.link", "smart.link", "go.link", "lnk.to", "branch.io", "adj.st")
+
+
+def brand_owns(host: str, sender: str, text: str) -> bool:
+    """The link belongs to the brand that sent or names the message: a bare sender ID ("BYJUS" ->
+    byjus.onelink.me, "PEPPER" -> pepperfry.onelink.me) or a deep link whose subdomain is the brand the
+    text names ("Snitch की सेल" -> snitch.onelink.me). Never true for shorteners."""
+    h = host.lower()
+    sub = h.split(".")[0]
+    if any(h == d or h.endswith("." + d) for d in DEEP_LINKS):
+        name = sub
+    else:
+        name = registrable(h).split(".")[0]
+    if len(name) < 3:
+        return False
+    tag = sender.strip().upper()
+    tag = re.sub(r"^[A-Z]{2}-", "", tag)
+    tag = re.sub(r"-[A-Z]$", "", tag).lower()
+    if is_business_sender(sender) and len(tag) >= 3:
+        k = min(4, len(tag), len(name))
+        if name.startswith(tag[:k]) or tag.startswith(name[:k]):
+            return True
+    if any(h == d or h.endswith("." + d) for d in DEEP_LINKS):
+        return re.search(r"(?<![a-z])" + re.escape(name) + r"(?![a-z])", text.lower()) is not None
+    return False
+
+
 PROMO_WORDS = re.compile(r"\b(?:sale|offers?|discount|cashback|coupon|code|deals?|shop|order now|free delivery|t&c|"
                          r"opt.?out|sms stop|bogo|buy 1|recharge|subscription|apply now|book now)\b|% ?off|%|छूट|सेल", re.I)
 
@@ -265,23 +306,48 @@ def sms_gate(band: str, sig: dict, scam_hosts: list, text: str, sender: str = ""
     # The business shortcut needs the full DLT form ("JT-JIOPAY-S"). A bare letter ID ("JIOPAY") still
     # counts for the model, but international gateways can spoof those, so it goes the stricter way.
     dlt = sig["sender_dlt"] and bool(re.match(r"[A-Z]{2}-", sender.strip().upper()))
-    mobile_no = bool(CALL_TO_MOBILE.search(text))  # "call/contact/WhatsApp 98...": not the user's own number in an alert
+    mobile_no = bool(CALL_TO_MOBILE.search(text) or MOBILE_THEN_CALL.search(text))  # a personal number to call: not the user's own number in an alert
+    prize = bool(PRIZE_CLAIM.search(text))
     # an OTP given to you is normal; asking you to hand one over is the fraud
-    delivered = bool(CODE_DELIVERED.search(text))  # the code itself is in the message: it is being given, not asked for
-    secret = sig["asks_secret"] and not sig["dont_share_otp"] and not delivered and bool(SECRET_REQUEST.search(t))
-    pressure = sig["account_threat"] or sig["money_request"] or sig["prize_lottery"] or sig["kyc_identity"] or sig["authority_threat"] or "refund" in t
+    delivered = bool(CODE_DELIVERED.search(text)) and not prize  # the code itself is in the message ("Prize Code 2" is not one)
+    secret = not sig["dont_share_otp"] and not delivered and ((sig["asks_secret"] and bool(SECRET_REQUEST.search(t))) or bool(SEND_CODE.search(t)))
+    advisory = bool(ADVISORY.search(text))  # "TRAI never calls to disconnect...": a warning, not a threat
+    threat = (sig["account_threat"] or bool(SERVICE_CUT.search(text))) and not advisory
+    pressure = threat or sig["money_request"] or sig["prize_lottery"] or sig["kyc_identity"] or sig["authority_threat"] or "refund" in t
+    # police/court words only count with something to do: chat mentions "police" and "train"
+    authority = bool(AUTHORITY.search(text)) and not advisory and (has_link or sig["call_number"] or mobile_no or sig["money_request"] or secret or sig["urgency"] or sig["kyc_identity"] or bool(PRESS_KEY.search(text)))
+    premium_prize = prize and bool(PREMIUM_CALL.search(text))
     if dlt:  # registered senders: advisories and bank alerts name TRAI, KYC, PIN all the time
         strong = secret or lookalike or link_scam or (mobile_no and pressure)
     else:
-        strong = (secret or sig["authority_threat"] or lookalike or link_scam or sig["job_task"]
+        strong = (secret or authority or premium_prize or lookalike or link_scam or sig["job_task"]
                   or (sig["kyc_identity"] and (has_link or sig["call_number"] or mobile_no))
-                  or (sig["account_threat"] and has_link)
+                  or (threat and has_link)
                   or (mobile_no and pressure))
     promo = "PROMO" if PROMO_WORDS.search(t) else None
+    # v5: cues that only fraud has. Not from a registered sender, they make it a scam whatever the model says:
+    # asking you to hand over a code, a look-alike or phishing link, a prize behind a premium-rate number,
+    # a service-cut threat with a personal number to call.
+    certain = not dlt and (secret or lookalike or link_scam or premium_prize or (mobile_no and threat))
+    if certain:
+        return "SCAM", None
     if strong:  # a fraud-specific cue: never fully SAFE, even when the model is unsure
         return ("UNCERTAIN" if band == "SAFE" else band), None
     if band == "SAFE":
         return band, None
+    # v5: no link, no number, nothing to reply to or install, no prize: nothing a scammer could use
+    # ("Your Jio plan expires on 16 Nov. Recharge with Rs 299 on MyJio app")
+    if not has_link and not sig["call_number"] and not mobile_no and not prize and not sig["prize_lottery"] and not CONTACT_ASK.search(text):
+        return "SAFE", None
+    # v5: a payment receipt ("Rs 500 sent to X. Ref 1234. Not you? Call 1800...") reports, it asks for nothing
+    if TXN_ALERT.search(text) and not has_link and not mobile_no:
+        return "SAFE", None
+    # v5: every link is a government site (gov.in, nic.in: only government bodies can register those)
+    if has_link and hosts and all(any(h == d or h.endswith("." + d) for d in GOV_DOMAINS) for h in hosts):
+        return "SAFE", None
+    # v5: every link goes to the brand that sent or names the message (byjus.onelink.me from "BYJUS")
+    if has_link and hosts and not sig["shortener_link"] and all(brand_owns(h, sender, text) for h in hosts):
+        return "SAFE", promo
     if delivered and not has_link:  # "Your Discord code is 123456": a login code, from any kind of sender
         return "SAFE", None
     if dlt:

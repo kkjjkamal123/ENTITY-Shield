@@ -29,7 +29,22 @@ rows += [dict(text=t, sender=s) for s, t in [
     ("", "आपका खाता आज ब्लॉक हो जाएगा, तुरंत OTP बताएं 9876543210 पर कॉल करें"),
     ("VM-BLRPWR", "Dear consumer, your electricity connection will be disconnected tonight. Contact officer 8167429301"),
     ("JD-MYNTRA-P", "मेगा सेल! 70% तक की छूट। अभी खरीदें: https://myntr.it/abc"),
+    # v5 cues
+    ("+916590705813", "प्रिय उपभोक्ता, आज रात आपकी बिजली काट दी जाएगी। बिल अपडेट नहीं है। तुरंत +916590705813 पर कॉल करें"),
+    ("+919876543210", "Your WhatsApp will be banned in 2 hours. Send the 6 digit code you received to this number to verify"),
+    ("", "Congratulations YOU'VE Won. You're a Winner in our August £1000 Prize Draw. Call 09066660100 NOW. Prize Code 2309"),
+    ("", "Free entry in 2 a wkly comp to win FA Cup final tkts 21st May 2005. Text FA to 87121 to receive entry question"),
+    ("", "Am on a train back from northampton so i'm afraid not!"),
+    ("", "Did you get that police abstract?"),
+    ("PAYTMB", "Rs 2500 sent to Divya from your UPI. Ref 582181509304. Not you? Call 1800-859-2959"),
+    ("BYJUS", "Last chance to grab 60% OFF on annual plans! Offer expires in 24 hours. Upgrade: https://byjus.onelink.me/38755579"),
+    ("", "Snitch की सेल शुरू! हर ऑर्डर पर 60% तक की छूट। अभी खरीदें: snitch.onelink.me/17633890"),
+    ("", "TRAI never sends any message or makes any call for verification or disconnection of mobile numbers. Report such calls at https://sancharsaathi.gov.in"),
+    ("+918888888888", "Rs 5000 credited to your account by mistake. Ref 12345. Please return it, call 9876543210"),
+    ("", "Win cash now! Call 9876543210 to claim your prize"),
 ]]
+uci = [l.rstrip("\n").split("\t", 1)[1] for l in open(HERE.parent.parent / "datasets" / "uci_sms" / "SMSSpamCollection", encoding="utf-8")]
+rows += [dict(text=t, sender="") for t in random.Random(5).sample(uci, 400)]
 out = []
 for r in rows:
     sig = F.sms_signals(r["text"], r["sender"])
