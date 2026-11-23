@@ -4,6 +4,11 @@ Versions cover the whole repository. From 0.3.0 the Android app's `versionName` 
 
 ## 0.5.4 (2026-11-23)
 
+### ENTITY Shield logo
+- New mark: the ENTITY pixel "E" inside a pixel shield, white on black. Launcher icon (adaptive, themed
+  icons on Android 13+), Home header and scam-alert notifications; `docs/img/logo.png` and
+  `docs/img/wordmark.png` for the README and slides.
+
 ### Link model v4
 - 40 more free-hosting, dynamic-DNS and tunnel platforms (duckdns.org, twil.io, cpanel.site, edgeone.app,
   surge.sh, onrender.com, trycloudflare.com...) count as "free host", where anyone can own a subdomain.

@@ -59,7 +59,7 @@ fun HomeScreen(@Suppress("UNUSED_PARAMETER") shared: MutableState<String?>) {
         // header
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = Dim.s)) {
             Box(Modifier.size(34.dp).clip(RoundedCornerShape(11.dp)).background(androidx.compose.ui.graphics.Color.Black), contentAlignment = Alignment.Center) {
-                androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(app.entity.shield.R.drawable.ic_entity_mark), contentDescription = "ENTITY", modifier = Modifier.height(20.dp))
+                androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(app.entity.shield.R.drawable.ic_entity_mark), contentDescription = "ENTITY", modifier = Modifier.height(26.dp))
             }
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {

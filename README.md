@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/img/logo.png" width="96" alt="ENTITY logo">
+<img src="docs/img/logo.png" width="104" alt="ENTITY Shield logo">
 
 # ENTITY Shield
 
