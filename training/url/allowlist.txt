@@ -1055,7 +1055,6 @@ babepedia.com
 babesource.com
 bac.com
 backblaze.com
-backblazeb2.com
 backlinko.com
 badoo.com
 bahesab.ir
@@ -2272,7 +2271,6 @@ dcbprotect.com
 dcinside.com
 dcloudlive.com
 ddd-smart.net
-ddns.net
 ddnsfree.com
 ddnss.de
 de-tencentclb.cloud
@@ -2894,7 +2892,6 @@ etsy.com
 etsystatic.com
 ettdnsv.com
 eu-1-id5-sync.com
-eu.cc
 eu.com
 eufy.com
 eufylife.com
@@ -3182,7 +3179,6 @@ flowapi.stream
 flowgpt.com
 flurry.com
 flvcdn.net
-fly.dev
 flysleep.cn
 fmkorea.com
 fn-pz.com
@@ -4009,7 +4005,6 @@ honor.com
 hookspf.com
 hootsuite.com
 hopkinsmedicine.org
-hopto.org
 hornbach.de
 hornyleak.tv
 horoscope.com
@@ -4559,7 +4554,6 @@ jianshu.com
 jigsawplanet.com
 jimdo.com
 jimdofree.com
-jimdosite.com
 jin115.com
 jino.ru
 jio.com
@@ -5777,7 +5771,6 @@ myshopline.com
 myspace.com
 mysql.com
 mysterium.network
-mystrikingly.com
 mythad.com
 myvzw.com
 mywellness.com
@@ -5907,7 +5900,6 @@ netgate.com
 netgear.com
 netis.cc
 netkeiba.com
-netlify.com
 netlifyglobalcdn.com
 netmarble.com
 netnod.se
@@ -6043,7 +6035,6 @@ nme.com
 nmrodam.com
 nngroup.com
 no-ip.com
-no-ip.org
 noaa.gov
 nobat.ir
 nobelprize.org
@@ -6286,7 +6277,6 @@ onlinetestpad.com
 onlyfans.com
 onlyfy.jobs
 onmicrosoft.com
-onrender.com
 ons.gov.uk
 onstove.com
 ontario.ca
@@ -6999,7 +6989,6 @@ radissonhotels.com
 radwarecloud.net
 rae.es
 raiffeisen.ru
-railway.app
 railyatri.in
 rainberrytv.com
 rainbird.com
@@ -8162,7 +8151,6 @@ syosetu.org
 syr.edu
 system-monitor.com
 systemdns.com
-sytes.net
 szerencsejatek.hu
 t-bank-app.ru
 t-ipconnect.de
@@ -8677,7 +8665,6 @@ truyenfull.live
 truyenqq.com.vn
 truyenqqko.com
 trvdp.com
-trycloudflare.com
 tryfi.com
 tryst.link
 ts.net
@@ -9367,7 +9354,6 @@ webhostbox.net
 webmd.com
 webmotors.com.br
 webnode.com
-webnode.page
 webnovel.com
 webofscience.com
 weborama-tech.ru
@@ -9779,7 +9765,6 @@ yna.co.kr
 ynet.co.il
 yoast.com
 yodobashi.com
-yolasite.com
 yomiuri.co.jp
 yonosbi.sbi
 yoomoney.ru

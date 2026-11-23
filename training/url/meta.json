@@ -1,6 +1,6 @@
 {
  "kind": "url",
- "version": "2026-11-19",
+ "version": "2026-11-23",
  "dim": 32768,
  "ngrams": [
   2,
@@ -23,8 +23,8 @@
   "brand_lure"
  ],
  "thresholds": {
-  "scam": 0.8748,
-  "uncertain": 0.5539,
+  "scam": 0.8728,
+  "uncertain": 0.5483,
   "dns_block": 0.99
  },
  "input": [

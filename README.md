@@ -35,7 +35,7 @@ Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · Team ENTITY
 | SMS verdict accuracy, Indian scam and normal templates **never seen in training** (1,200) | **96.7%** |
 | Scams called "scam" / flagged at all, same unseen set | **91.5%** / **93.3%** |
 | Normal messages called "scam" / flagged at all | **0 of 800** / **1.6%** |
-| Live phishing domains caught by the URL model alone (OpenPhish) | **92%** |
+| Live phishing domains caught by the URL model alone (OpenPhish) | **93%** |
 | Real app lookups blocked by mistake by Network Guard | **0.03%** |
 | Official Indian bank / UPI / government domains flagged | **0 of 41** |
 | SMS check on the phone / SMS in → warning shown | **0.5 ms** / **38 ms** |
@@ -76,7 +76,7 @@ More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 ## Quick start
 
 1. Install the APK from the [latest release](../../releases/latest) (Android 10+, arm64):
-   `adb install ENTITY-Shield-0.5.3.apk`
+   `adb install ENTITY-Shield-0.5.4.apk`
 2. In the app: **More → On-device AI → Download Llama** (1.1 GB, resumable, SHA-256 checked).
    Detection works without it.
 3. **More → Demo scams** → tap a sample: instant verdict, warning signs, then Llama's explanation.
@@ -104,8 +104,8 @@ Each result's script is listed next to it in [`docs/RESULTS.md`](docs/RESULTS.md
 ## Limitations
 
 - Network Guard sees this phone's traffic only; Private DNS or an app's own DNS-over-HTTPS bypasses it.
-- The URL model sees hostnames only (DNS has no paths): it catches 92% of live OpenPhish domains but
-  53% of the older PhishTank time-split set. The sandbox and the phishing list cover more.
+- The URL model sees hostnames only (DNS has no paths): it catches 93% of live OpenPhish domains but
+  56% of the older PhishTank time-split set (many are hacked real sites). The sandbox and the phishing list cover more.
 - UK premium-rate spam (UCI, 2011) is flagged less often (77%) than Indian scams: the scam gate is
   built around the fraud cues of Indian scams.
 - The Indian SMS test set is hand-written templates. Held-out scams still missed: some spoofed

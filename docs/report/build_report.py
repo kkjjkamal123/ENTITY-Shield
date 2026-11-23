@@ -351,7 +351,7 @@ The test sets hold out whole <i>templates</i> and the <i>newest</i> phishing.</p
 <table><tr><th>Detector · test set</th><th>n</th><th>Precision</th><th>Recall</th><th>False-alarm rate</th><th>AUC</th></tr>
 <tr><td>SMS model alone · UCI held out</td><td>{s_uci['n']}</td><td>{f3(s_uci['precision'])}</td><td>{f3(s_uci['recall'])}</td><td>{pct(s_uci['fpr'])}</td><td>{f3(auc_uci)}</td></tr>
 <tr><td>SMS model alone · Indian templates never seen in training</td><td>{s_ind['n']}</td><td>{f3(s_ind['precision'])}</td><td>{f3(s_ind['recall'])}</td><td>{pct(s_ind['fpr'])}</td><td>{f3(auc_ind)}</td></tr>
-<tr><td>URL v3 · PhishTank newer than training + real DNS hostnames and Tranco (allow-list on)</td><td>{u_t['n']}</td><td>{f3(u_t['precision'])}</td><td>{f3(u_t['recall'])}</td><td>{pct(u_t['fpr'])}</td><td>{f3(auc_u)}</td></tr>
+<tr><td>URL v4 · PhishTank newer than training + real DNS hostnames and Tranco (allow-list on)</td><td>{u_t['n']}</td><td>{f3(u_t['precision'])}</td><td>{f3(u_t['recall'])}</td><td>{pct(u_t['fpr'])}</td><td>{f3(auc_u)}</td></tr>
 <tr><td>URL · OpenPhish feed, 19 Nov 2026</td><td>{u_op['n']}</td><td>—</td><td>{f3(u_op['recall'])}</td><td>—</td><td>—</td></tr>
 <tr><td>URL · 41 official Indian bank/UPI/government domains</td><td>{u_of['n']}</td><td>—</td><td>—</td><td>{pct(u_of['fpr'])}</td><td>—</td></tr></table>
 <p><b>Same answer on the phone.</b> The app's Kotlin featurizer is a line-by-line port of the Python one. The golden vectors pass
@@ -384,8 +384,8 @@ the rest.
 <table><tr><th>Blocked by mistake / phishing caught</th><th>v1</th><th>v2</th></tr>
 <tr><td>Long-tail legitimate domains with real subdomain prefixes (20,000)</td><td>21.5%</td><td><b>0.03%</b></td></tr>
 <tr><td>Held-out real DNS hostnames, Umbrella ranks 600k–1M (20,000)</td><td>10.5%</td><td><b>0.12%</b></td></tr>
-<tr><td>PhishTank time-split (3,393), model alone</td><td>65%</td><td>33% (the feed list adds the known ones)</td></tr>
-<tr><td>OpenPhish held-out (297), model alone</td><td>93%</td><td>87%</td></tr></table></li>
+<tr><td>PhishTank time-split (3,393), model alone</td><td>67%</td><td>36% (the feed list adds the known ones)</td></tr>
+<tr><td>OpenPhish held-out (297), model alone</td><td>94%</td><td>87%</td></tr></table></li>
 <li><b>Malware behaviour</b> (per app):
 <ul>
 <li><i>Beacon:</i> 6 or more lookups of one domain at a near-constant interval.</li>
@@ -512,7 +512,7 @@ the app is opened again.</li>
 its DNS view.</li>
 <li><b>Test data:</b> the Indian SMS test set is templated, and the real-inbox numbers come from one phone whose false alarms
 were used to write the scam gate. A labelled set from other consented phones is the first Phase 2 task.</li>
-<li><b>URL recall from the address alone is 0.53</b> on the PhishTank time split and 0.92 on OpenPhish: hostname only, by
+<li><b>URL recall from the address alone is 0.56</b> on the PhishTank time split and 0.93 on OpenPhish: hostname only, by
 design. The sandbox reads HTML without running JavaScript.</li>
 <li><b>Llama 1B is wrong 10–15% of the time</b> on hard inputs, so it explains but never decides.</li>
 </ul>

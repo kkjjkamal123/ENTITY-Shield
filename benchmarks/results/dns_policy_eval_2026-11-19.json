@@ -1,7 +1,7 @@
 {
  "thresholds": {
   "v1_scam": 0.6947,
-  "v2_scam": 0.8748,
+  "v2_scam": 0.8728,
   "v2_dns_block": 0.99
  },
  "note": "popularity list simulated as Tranco top 500k; legit sets are outside it or held out",
@@ -19,25 +19,25 @@
     "ALLOW": 0.7852
    },
    "v2_model_only": {
-    "BLOCK": 0.0004,
-    "FLAG": 0.0126,
-    "ALLOW": 0.987
+    "BLOCK": 0.0003,
+    "FLAG": 0.0128,
+    "ALLOW": 0.9869
    },
    "v2_model_and_red_flag": {
     "BLOCK": 0.0001,
-    "FLAG": 0.0129,
-    "ALLOW": 0.987
+    "FLAG": 0.0131,
+    "ALLOW": 0.9869
    }
   },
   "umbrella_heldout_600k_1m": {
    "v1_shipped": {
-    "BLOCK": 0.105,
+    "BLOCK": 0.1052,
     "FLAG": 0.0,
-    "ALLOW": 0.895
+    "ALLOW": 0.8948
    },
    "v2_model_only": {
     "BLOCK": 0.0012,
-    "FLAG": 0.0023,
+    "FLAG": 0.0021,
     "ALLOW": 0.9966
    },
    "v2_model_and_red_flag": {
@@ -48,36 +48,36 @@
   },
   "phishtank_test": {
    "v1_shipped": {
-    "BLOCK": 0.6543,
+    "BLOCK": 0.6714,
     "FLAG": 0.0,
-    "ALLOW": 0.3457
+    "ALLOW": 0.3286
    },
    "v2_model_only": {
-    "BLOCK": 0.3333,
-    "FLAG": 0.1356,
-    "ALLOW": 0.5311
+    "BLOCK": 0.3578,
+    "FLAG": 0.1712,
+    "ALLOW": 0.471
    },
    "v2_model_and_red_flag": {
-    "BLOCK": 0.0424,
-    "FLAG": 0.4265,
-    "ALLOW": 0.5311
+    "BLOCK": 0.0421,
+    "FLAG": 0.4869,
+    "ALLOW": 0.471
    }
   },
   "openphish_heldout": {
    "v1_shipped": {
-    "BLOCK": 0.9327,
+    "BLOCK": 0.9394,
     "FLAG": 0.0,
-    "ALLOW": 0.0673
+    "ALLOW": 0.0606
    },
    "v2_model_only": {
-    "BLOCK": 0.8687,
-    "FLAG": 0.0303,
-    "ALLOW": 0.101
+    "BLOCK": 0.8653,
+    "FLAG": 0.064,
+    "ALLOW": 0.0707
    },
    "v2_model_and_red_flag": {
-    "BLOCK": 0.0337,
-    "FLAG": 0.8653,
-    "ALLOW": 0.101
+    "BLOCK": 0.0404,
+    "FLAG": 0.8889,
+    "ALLOW": 0.0707
    }
   }
  },
@@ -97,7 +97,6 @@
    "events.itools.pe"
   ],
   "tranco_longtail_with_prefixes/v2_model_only": [
-   "mail.snabbgross.se",
    "m-bima.co.ke",
    "orfebreria-cevallos.com",
    "graph.aldousbio.pt",
@@ -125,10 +124,10 @@
   ],
   "umbrella_heldout_600k_1m/v2_model_only": [
    "lancelot-fa22c.firebaseapp.com",
+   "uhqyh3ao.up.railway.app",
    "kamino-e359a.web.app",
    "redirection-js.pages.dev",
    "aerokam.github.io",
-   "americangirl-social-proofing.netlify.app",
    "ig-horoscopo.pages.dev",
    "pub-bf074c15de234dfa912a23c638766c75.r2.dev",
    "chatbot-97318.web.app",

@@ -105,7 +105,7 @@ def phishing_test():
     ph = sorted(first, key=first.get)
     n = len(ph)
     seen = set(ph[:int(n * .7)])
-    op = sorted(DS.glob("openphish/feed_*.txt"))[-1]
+    op = sorted(DS.glob("openphish/feed_2*.txt"))[-1]
     extra = {F.url_host(u) for u in open(op, encoding="utf-8") if u.strip()} - seen - top100k
     return tranco, ph[int(n * .8):], sorted(extra)
 

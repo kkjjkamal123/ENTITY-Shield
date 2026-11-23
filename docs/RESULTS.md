@@ -22,8 +22,9 @@ real inbox (below); only the 19 "fresh" challenge messages were written after tu
 | SMS **app verdict 0.5.3** · UCI, "scam" or "be careful" | 788 | 0.939 | 0.767 | 0.41% | — |
 | SMS app verdict 0.5.2 (gate v4) · Indian, "scam" / "scam" or "be careful" | 1,200 | 0.973 / 0.905 | 0.715 / 0.933 | 1.00% / 4.88% | — |
 | SMS app verdict 0.5.2 (gate v4) · UCI, "scam" or "be careful" | 788 | 0.905 | 0.633 | 0.55% | — |
-| URL v3 · PhishTank **newer than all training data** + real DNS hostnames and Tranco domains (with allow-list) | 19,873 | 0.938 | 0.526 | 0.72% | 0.898 |
-| URL v3 · OpenPhish feed of 19 Nov 2026 (recall only) | 297 | — | 0.923 | — | — |
+| URL v4 · PhishTank **newer than all training data** + real DNS hostnames and Tranco domains (with allow-list) | 19,873 | 0.952 | 0.561 | 0.59% | 0.912 |
+| URL v4 · OpenPhish feed of 19 Nov 2026 (recall only) | 297 | — | 0.933 | — | — |
+| URL v3 (0.5.3) · same two sets | | 0.938 / — | 0.526 / 0.923 | 0.72% / — | 0.898 |
 | URL v3 · 20,000 held-out real DNS hostnames (Umbrella ranks 600k–1M), false alarms only | 20,000 | — | — | 1.06% (0.1% at Network Guard's threshold) | — |
 | URL · 41 official Indian bank/UPI/government domains | 41 | — | — | **0%** | — |
 
@@ -61,8 +62,8 @@ Airtel's backend and an Indian SMS-link service. v2 (`net/DnsPolicy.kt`) decides
 |---|---:|---:|
 | Long-tail legitimate domains with real subdomain prefixes (20,000) | 21.5% | **0.03%** |
 | Held-out real DNS hostnames, Umbrella ranks 600k–1M (20,000) | 10.5% | **0.12%** |
-| PhishTank time-split test (3,393), by the model alone | 65% | 33% (the feed list adds the known ones) |
-| OpenPhish held-out (297), by the model alone | 93% | 87% |
+| PhishTank time-split test (3,393), by the model alone | 67% | 36% (the feed list adds the known ones) |
+| OpenPhish held-out (297), by the model alone | 94% | 87% |
 | The 4 hosts v1 wrongly blocked on the Infinix | blocked | **allowed** |
 
 The leftover v2 mistakes are mostly app backends on free hosts (Firebase, Pages). Those are blocked

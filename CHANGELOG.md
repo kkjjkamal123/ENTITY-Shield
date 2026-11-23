@@ -2,6 +2,19 @@
 
 Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
 
+## 0.5.4 (2026-11-23)
+
+### Link model v4
+- 40 more free-hosting, dynamic-DNS and tunnel platforms (duckdns.org, twil.io, cpanel.site, edgeone.app,
+  surge.sh, onrender.com, trycloudflare.com...) count as "free host", where anyone can own a subdomain.
+  They were the largest group of phishing hosts the model missed on the validation split.
+- Same model shape and inputs, so the app needs no other change. Validation recall at 1% false alarms
+  0.644 -> 0.677. Held-out PhishTank (newer than all training data) 0.526 -> **0.561** at 0.59% false
+  alarms (was 0.72%); OpenPhish 0.923 -> **0.933**; long-tail real DNS names blocked 0.04% -> 0.03%;
+  official bank / UPI / government domains flagged: still 0.
+- Fix: training and the DNS evaluation picked up `feed_live_*.txt` instead of the dated OpenPhish snapshot
+  when both were present; both now use the snapshot the published numbers were measured on.
+
 ## 0.5.3 (2026-11-23)
 
 ### Scam detection: scam gate v5

@@ -126,7 +126,7 @@ def url_data():
     train_regs = {F.registrable(h) for h in b_tr}
     out["dns_longtail"] = mk(r.sample([h for h in tail if F.registrable(h) not in train_regs], 20_000), 0)
     seen = set(p_tr)
-    op = sorted(DS.glob("openphish/feed_*.txt"))[-1]
+    op = sorted(DS.glob("openphish/feed_2*.txt"))[-1]  # dated snapshots only (feed_live_* is a different capture)
     extra = {F.url_host(u) for u in open(op, encoding="utf-8") if u.strip()} - seen - top100k
     out["openphish"] = mk(sorted(extra), 1)
     out["official"] = mk(sorted({d for ds in F.BRANDS.values() for d in ds}), 0)

@@ -138,7 +138,9 @@ object Featurizer {
     val FREE_HOSTS = listOf("workers.dev", "pages.dev", "blogspot.com", "github.io", "vercel.app", "netlify.app",
         "web.app", "firebaseapp.com", "weebly.com", "wixsite.com", "000webhostapp.com",
         "glitch.me", "ngrok.io", "ngrok-free.app", "herokuapp.com", "r2.dev", "webflow.io",
-        "godaddysites.com", "square.site", "carrd.co", "framer.app", "replit.app")
+        "godaddysites.com", "square.site", "carrd.co", "framer.app", "replit.app",
+        // v4 (0.5.4): free hosting, dynamic DNS and tunnels
+        "duckdns.org", "ddns.net", "hopto.org", "zapto.org", "sytes.net", "serveo.net", "no-ip.org", "myftp.org", "twil.io", "cpanel.site", "edgeone.app", "edgeone.dev", "wasmer.app", "surge.sh", "mybluehost.me", "mytemp.website", "bolt.host", "craftum.io", "wapka.site", "us.cc", "eu.cc", "onrender.com", "fly.dev", "railway.app", "backblazeb2.com", "ipfs.dweb.link", "jimdosite.com", "webnode.page", "mystrikingly.com", "yolasite.com", "wixstudio.io", "notion.site", "gitbook.io", "typedream.app", "lovable.app", "netlify.com", "deno.dev", "trycloudflare.com", "loca.lt", "web.core.windows.net")
     private val BAD_TLDS = setOf("top", "xyz", "icu", "live", "shop", "click", "buzz", "cfd", "sbs", "rest", "cc", "tk",
         "ml", "ga", "cf", "gq", "online", "site", "website", "support", "vip", "cyou", "bond",
         "lat", "monster", "quest", "life", "info", "work", "fun", "pw", "ws")
