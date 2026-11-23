@@ -78,7 +78,7 @@ More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 ## Quick start
 
 1. Install the APK from the [latest release](../../releases/latest) (Android 10+, arm64):
-   `adb install ENTITY-Shield-0.5.4.apk`
+   `adb install ENTITY-Shield-0.5.3.apk` (beta: [0.5.4-beta.1](../../releases/tag/v0.5.4-beta.1))
 2. In the app: **More → On-device AI → Download Llama** (1.1 GB, resumable, SHA-256 checked).
    Detection works without it.
 3. **More → Demo scams** → tap a sample: instant verdict, warning signs, then Llama's explanation.
