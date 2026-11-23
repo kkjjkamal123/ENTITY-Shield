@@ -2,6 +2,34 @@
 
 Versions cover the whole repository. From 0.3.0 the Android app's `versionName` matches.
 
+## 0.5.3 (2026-11-23)
+
+### Scam detection: scam gate v5
+Every rule below was found on the validation split (`scripts/analyze_sms_misses.py`); the held-out
+test split was run once, after the rules were final.
+- **New fraud cues:** Hindi call-backs with the number first ("{number} पर कॉल करें"), Hindi
+  service-cut threats ("बिजली काट दी जाएगी"), "send the code you received" (WhatsApp takeover),
+  prizes behind premium-rate numbers or "txt WIN to 87121" short codes, IVR "press 1" scams.
+- **Cues only fraud has now make it a scam outright** (from an unregistered sender): asking you to
+  hand over a code, a look-alike or phishing link, a premium-rate prize, a service-cut threat with a
+  personal number to call.
+- **Fewer false alarms:** "Prize Code 2309" is no longer read as an OTP being delivered; "police" and
+  "TRAI" only count with something to do ("on a train" and "training" matched TRAI); advisories
+  ("TRAI never calls...") are warnings, not threats; payment receipts, government links, the sending
+  brand's own deep links (byjus.onelink.me from BYJUS) and messages with nothing to click, call or
+  reply to are safe.
+- **Held-out Indian templates:** "scam" precision / recall 0.973 / 0.715 -> **1.000 / 0.915**; flagged
+  at all 0.933 at 4.9% false alarms -> **0.933 at 1.6%**; accuracy **96.7%**. UCI flagged 0.633 -> 0.767.
+- The app's `ScamGate.kt` and the Python gate agree on 2,871 golden cases.
+
+### Also
+- More shows the installed version (it said 0.4).
+- End-to-end on the Infinix X6878: 20/20 checks (`e2e_Infinix_X6878_2026-11-23.json`).
+- Sustained Llama load: 30 answers back to back, 18.6 -> 19.1 tok/s, CPU peak 61 °C, no throttling
+  (`scripts/bench_sustained.py --on-device`). README shortened; details in `docs/RESULTS.md`.
+- A larger URL model (one hidden layer) was tried and dropped: no better on validation (recall at 1%
+  false alarms 0.63 vs 0.64).
+
 ## 0.5.2 (2026-11-21)
 
 ### Always-on protection

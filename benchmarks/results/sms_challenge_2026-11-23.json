@@ -1,0 +1,866 @@
+{
+ "summary": {
+  "promo": {
+   "SCAM": 0,
+   "UNCERTAIN": 0,
+   "SAFE": 32,
+   "n": 32
+  },
+  "service": {
+   "SCAM": 0,
+   "UNCERTAIN": 0,
+   "SAFE": 16,
+   "n": 16
+  },
+  "scam": {
+   "SCAM": 12,
+   "UNCERTAIN": 4,
+   "SAFE": 0,
+   "n": 16
+  },
+  "fresh_ham": {
+   "SCAM": 0,
+   "UNCERTAIN": 1,
+   "SAFE": 14,
+   "n": 15
+  },
+  "fresh_scam": {
+   "SCAM": 4,
+   "UNCERTAIN": 0,
+   "SAFE": 0,
+   "n": 4
+  }
+ },
+ "rows": [
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.021,
+   "p_url": 0.052,
+   "sender": "JD-MYNTRA-P",
+   "text": "Last 6 hours! Extra 10% off on 1.2 lakh+ styles. Shop now: https://myntr.it/b9XkQ2 T&C"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.025,
+   "p_url": 0.036,
+   "sender": "AX-FLPKRT-P",
+   "text": "Big Billion Days are LIVE! Up to 80% off on mobiles, TVs & more. Shop: http://fkrt.it/Rk2m"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.034,
+   "p_url": 0.0,
+   "sender": "VM-AMAZON-P",
+   "text": "Great Indian Festival: Bank offers up to Rs 10,000 instant discount. Shop now https://amzn"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.156,
+   "p_url": 0.501,
+   "sender": "BZ-SWIGGY-P",
+   "text": "Hungry? 60% OFF up to Rs 120 on your next 3 orders! Code: SWIGGYIT. Order now swiggy.oneli"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.053,
+   "p_url": 0.101,
+   "sender": "JM-ZOMATO-P",
+   "text": "Weekend treat! Free delivery on all orders above Rs 199 today. Order now: https://zoma.to/"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.007,
+   "p_url": 0.0,
+   "sender": "VK-AIRTEL-P",
+   "text": "Get 2GB extra data FREE with Rs 349 recharge. Offer valid till tonight. Recharge on Airtel"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.018,
+   "p_url": 0.0,
+   "sender": "CP-JIOINF-P",
+   "text": "Jio True 5G Unlimited! Recharge with Rs 349 and enjoy unlimited 5G data. Click https://www"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.366,
+   "p_url": 0.128,
+   "sender": "AD-DOMINO-P",
+   "text": "Buy 1 Get 1 FREE on all medium pizzas today! Order now: https://dpz.in/3kd8a Call 1800-208"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.253,
+   "p_url": 0.0,
+   "sender": "VM-BIGBSK-P",
+   "text": "Congratulations! You have won a Rs 100 cashback voucher on your next order above Rs 999. U"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.06,
+   "p_url": 0.532,
+   "sender": "JD-AJIOCM-P",
+   "text": "Flat 50-90% off on top brands. Extra Rs 300 off on first order. Hurry, sale ends at midnig"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.044,
+   "p_url": 0.105,
+   "sender": "AX-NYKAAF-P",
+   "text": "Your favourites are on sale! Up to 50% off + free gift on orders above Rs 999. Shop: https"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.012,
+   "p_url": 0.197,
+   "sender": "VM-PVRCIN-P",
+   "text": "Book 2 movie tickets and get Rs 150 off with code PVRFUN. Valid this weekend only. pvrcine"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.025,
+   "p_url": 0.02,
+   "sender": "BZ-MAKMTR-P",
+   "text": "Flight sale! Domestic fares from Rs 1,499. Book before 31 Nov. https://mmyt.co/Ab12Cd"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": "PROMO",
+   "p_sms": 0.009,
+   "p_url": 0.817,
+   "sender": "JM-LENSKA-P",
+   "text": "Buy 1 Get 1 on eyeglasses. Visit your nearest Lenskart store or shop at lskt.me/bogo. T&C "
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.069,
+   "p_url": 0.0,
+   "sender": "VM-ICICIB-P",
+   "text": "Pre-approved Personal Loan of up to Rs 5 lakh at attractive rates. Apply on iMobile Pay. T"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.201,
+   "p_url": 0.222,
+   "sender": "AD-HDFCBK-P",
+   "text": "Get 5% cashback on your HDFC Bank Millennia Credit Card spends. Apply now: https://hdfcbk."
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.342,
+   "p_url": 0.17,
+   "sender": "VK-PHONPE-P",
+   "text": "Pay electricity bill on PhonePe and win cashback up to Rs 100! Pay now: https://phon.pe/ru"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.15,
+   "p_url": 0.39,
+   "sender": "TX-PAYTMB-P",
+   "text": "Recharge your FASTag on Paytm and get assured cashback. Tap: https://p.paytm.me/xCTH/fasta"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.018,
+   "p_url": 0.0,
+   "sender": "JD-DECATH-P",
+   "text": "Winter sports sale: up to 40% off on jackets & shoes. In store and on decathlon.in. Hurry!"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.02,
+   "p_url": 0.0,
+   "sender": "VM-CROMA-P",
+   "text": "Mega Electronics Sale! No cost EMI + extra 10% off on HDFC cards. Shop: croma.com/sale"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.023,
+   "p_url": 0.119,
+   "sender": "AX-URBNCO-P",
+   "text": "Your home deserves a deep clean! Flat 25% off on cleaning services today. Book: https://ur"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.016,
+   "p_url": 0.0,
+   "sender": "VM-RELDIG-P",
+   "text": "Exchange your old phone and get up to Rs 15,000 off on the new iPhone at Reliance Digital."
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": "PROMO",
+   "p_sms": 0.083,
+   "p_url": 0.607,
+   "sender": "BZ-UNACAD-P",
+   "text": "Last chance! Get 30% off on Unacademy Plus subscription. Offer expires tonight. Join: http"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.01,
+   "p_url": 0.0,
+   "sender": "JM-OLAAPP-P",
+   "text": "Ride more, save more! Flat 50% off up to Rs 75 on your next 2 rides. Code RIDE50. Book on "
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.016,
+   "p_url": 0.008,
+   "sender": "VK-TATACL-P",
+   "text": "Tata CLiQ Luxury sale is LIVE! Up to 70% off on luxury brands. https://tatacliq.com/luxury"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.029,
+   "p_url": 0.0,
+   "sender": "AD-MEESHO-P",
+   "text": "Prices dropped! Sarees from Rs 199, kurtis from Rs 149. Free delivery. Shop now: https://m"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.008,
+   "p_url": 0.0,
+   "sender": "VM-SBICRD-P",
+   "text": "Congratulations! You are eligible for an SBI Card with lifetime free offer. Apply: https:/"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.003,
+   "p_url": 0.0,
+   "sender": "JD-BKMSHO-P",
+   "text": "Movie night? Get 1+1 on tickets with BookMyShow Stream. Offer for today only. bms.bz/AbC"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": "PROMO",
+   "p_sms": 0.037,
+   "p_url": 0.911,
+   "sender": "CP-VODAID-P",
+   "text": "Vi Hero Unlimited: Weekend data rollover + binge all night. Recharge Rs 299 now: https://v"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.039,
+   "p_url": 0.0,
+   "sender": "AX-HAPPYM-P",
+   "text": "Win exciting prizes! Shop for Rs 999 at your nearest store and enter the lucky draw. Visit"
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.062,
+   "p_url": 0.0,
+   "sender": "BZ-KFCIND-P",
+   "text": "Bucket deal at Rs 399 only! Order now on KFC app or call 1800-102-5322. Valid till stocks "
+  },
+  {
+   "group": "promo",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.014,
+   "p_url": 0.5,
+   "sender": "VM-UPSTOX-P",
+   "text": "Open a free Demat account in 5 mins & get Rs 0 brokerage on delivery. https://upstox.com/o"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.114,
+   "p_url": 0.222,
+   "sender": "VM-HDFCBK-S",
+   "text": "Your HDFC Bank Credit Card statement for Nov-26 is ready. Total due Rs 8,450, min due Rs 4"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.064,
+   "p_url": 0.0,
+   "sender": "AD-SBIINB-T",
+   "text": "Your A/c XX4321 is debited for Rs 2,000 on 20-11-26 by ATM withdrawal. Avl bal Rs 12,345. "
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.07,
+   "p_url": 0.259,
+   "sender": "JD-AMAZON-S",
+   "text": "Your package will be delivered today by 8 PM. Track your package: https://amzn.in/d/abc123"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.014,
+   "p_url": 0.015,
+   "sender": "VK-DLVERY-S",
+   "text": "Your Delhivery shipment 1234567890 is out for delivery. Track: https://dlv.ry/xyz. Share O"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.218,
+   "p_url": 0.0,
+   "sender": "AX-AIRTEL-S",
+   "text": "Your Airtel Xstream Fiber bill of Rs 1,178 is due on 25-Nov. Pay now to avoid disconnectio"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.451,
+   "p_url": 0.0,
+   "sender": "VM-BESCOM-S",
+   "text": "BESCOM: Bill for RR no 123456 Rs 845 due on 28-11-2026. Pay at bescom.co.in to avoid disco"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.009,
+   "p_url": 0.0,
+   "sender": "BZ-ICICIB-S",
+   "text": "Your ICICI Bank debit card will expire on 30-Nov-26. New card has been dispatched to your "
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.023,
+   "p_url": 0.0,
+   "sender": "JM-IRCTCI-S",
+   "text": "PNR 4523678901: Your ticket is WL 12. Chart prepares 4 hrs before departure. Check status:"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.018,
+   "p_url": 0.0,
+   "sender": "VM-UIDAIS-G",
+   "text": "Your Aadhaar has been successfully updated. Download e-Aadhaar at https://myaadhaar.uidai."
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.026,
+   "p_url": 0.0,
+   "sender": "AD-EPFOHO-G",
+   "text": "Dear member, your claim for Rs 25,000 has been settled and sent to your bank account. -EPF"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.03,
+   "p_url": 0.0,
+   "sender": "VM-KOTAKB-S",
+   "text": "Dear customer, your KYC is due for periodic update. Please visit your nearest Kotak branch"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.622,
+   "p_url": 0.0,
+   "sender": "AX-PAYTMB-T",
+   "text": "Rs 500 sent to Ravi Kumar from your Paytm UPI. UPI Ref 412345678901. Not you? Call 0120-44"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.024,
+   "p_url": 0.101,
+   "sender": "JD-ZOMATO-S",
+   "text": "Your Zomato order #5678 is out for delivery. Your delivery partner Suresh will reach in 15"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.011,
+   "p_url": 0.091,
+   "sender": "CP-GOIBIB-S",
+   "text": "Booking confirmed! Hotel Sunrise, Goa, 12-14 Dec. Booking ID GO12345. Manage booking: http"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.063,
+   "p_url": 0.0,
+   "sender": "VK-JIOINF-S",
+   "text": "Your plan expires in 2 days. Recharge now to continue enjoying uninterrupted services. htt"
+  },
+  {
+   "group": "service",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.01,
+   "p_url": 0.0,
+   "sender": "VM-AXISBK-S",
+   "text": "Your Axis Bank account will be debited Rs 4,999 for EMI on 05-Dec. Please maintain suffici"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.999,
+   "p_url": 0.49,
+   "sender": "+919812345678",
+   "text": "Dear user, your HDFC NetBanking will be suspended today. Update PAN immediately: http://hd"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.993,
+   "p_url": 0.0,
+   "sender": "+917003456789",
+   "text": "Congratulations! Your mobile number won Rs 25,00,000 in KBC lucky draw. Call Rana Pratap o"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "UNCERTAIN",
+   "family": null,
+   "p_sms": 0.49,
+   "p_url": 0.0,
+   "sender": "VM-BLRPWR",
+   "text": "Dear consumer, your electricity connection will be disconnected tonight at 9.30 PM because"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.981,
+   "p_url": 0.0,
+   "sender": "+916290123456",
+   "text": "Part time job offer: earn Rs 3000-8000 daily by liking YouTube videos. Contact on WhatsApp"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.952,
+   "p_url": 0.784,
+   "sender": "",
+   "text": "Your parcel could not be delivered due to incomplete address. Update within 24 hours: http"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.993,
+   "p_url": 0.0,
+   "sender": "+918876543210",
+   "text": "This is from Mumbai Cyber Crime. A case is registered against your Aadhaar for money laund"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "UNCERTAIN",
+   "family": null,
+   "p_sms": 0.763,
+   "p_url": 0.816,
+   "sender": "AD-REWARD",
+   "text": "Dear customer, 7,250 SBI reward points expire today! Redeem now by installing SBI Rewardz "
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.99,
+   "p_url": 0.0,
+   "sender": "+919900112233",
+   "text": "Hi Mom, my phone broke, this is my new number. Need Rs 15,000 urgently for hospital, pleas"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.773,
+   "p_url": 0.725,
+   "sender": "",
+   "text": "Income Tax Dept: You are eligible for refund of Rs 15,490. Submit your account details at "
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.992,
+   "p_url": 0.0,
+   "sender": "+917788990011",
+   "text": "Your SIM card will be blocked in 2 hours due to KYC failure. Call customer care 7788990011"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.96,
+   "p_url": 1.0,
+   "sender": "JM-ALERTS",
+   "text": "Your Paytm KYC is pending. Account will be closed today. Complete KYC: https://paytm-kyc-v"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.961,
+   "p_url": 0.0,
+   "sender": "+918123456789",
+   "text": "Invest Rs 10,000 and get Rs 50,000 in 7 days guaranteed! Join our Telegram stock tips grou"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "UNCERTAIN",
+   "family": null,
+   "p_sms": 0.322,
+   "p_url": 0.0,
+   "sender": "",
+   "text": "FedEx: your package containing illegal items is held at customs. Press 1 to talk to office"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.897,
+   "p_url": 0.917,
+   "sender": "+916000123456",
+   "text": "Instant loan Rs 50,000 approved without CIBIL! Download app http://quickloan-apk.click and"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "UNCERTAIN",
+   "family": null,
+   "p_sms": 0.151,
+   "p_url": 0.0,
+   "sender": "VK-INFOSM",
+   "text": "Dear customer, Rs 9,999 was debited for Amazon Prime auto renewal. If not you, call 880012"
+  },
+  {
+   "group": "scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.652,
+   "p_url": 0.0,
+   "sender": "+919123987654",
+   "text": "You have received a refund of Rs 2,500. Accept the UPI collect request and enter your PIN "
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.003,
+   "p_url": 0.0,
+   "sender": "JM-JIOMCA-S",
+   "text": "You have a missed call from 9876543210 at 10:32 AM on 21-Nov-26. The caller did not leave "
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.028,
+   "p_url": 0.0,
+   "sender": "JX-JIOSVC-S",
+   "text": "Missed call alert: +91 98450 12345 tried to call you 2 times. Last call at 18:05. Call bac"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "UNCERTAIN",
+   "family": null,
+   "p_sms": 0.052,
+   "p_url": 0.0,
+   "sender": "VK-AIRMCA-S",
+   "text": "Missed call alert: 9123456780 called you at 09:14 on 21/11. Recharge with Rs 199 to stay c"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.103,
+   "p_url": 0.0,
+   "sender": "AD-AIRTEL-S",
+   "text": "Hello! 8899776655 is now available to take calls. -Airtel"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.021,
+   "p_url": 0.0,
+   "sender": "VM-VIMCAL-S",
+   "text": "You missed 3 calls from 7012345678. Last call 21-Nov 11:40 PM. -Vi"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.008,
+   "p_url": 0.0,
+   "sender": "JD-AMAZON-S",
+   "text": "Your OTP for Amazon login is 482913. Valid for 10 minutes."
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.012,
+   "p_url": 0.0,
+   "sender": "VM-SBIOTP-S",
+   "text": "OTP for your SBI transaction of Rs 2,340.00 at FLIPKART is 739201. Valid for 3 mins."
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.02,
+   "p_url": 0.0,
+   "sender": "AX-PHONPE-S",
+   "text": "PhonePe: 551822 is your OTP to log in. It is valid for 5 minutes. #PhonePe"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.021,
+   "p_url": 0.0,
+   "sender": "BZ-GOOGLE-S",
+   "text": "G-482913 is your Google verification code."
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.041,
+   "p_url": 0.0,
+   "sender": "TX-WHTSAP-S",
+   "text": "Your WhatsApp code: 123-456. You can also tap on this link to verify your phone: v.whatsap"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.017,
+   "p_url": 0.0,
+   "sender": "JM-JIOPAY-S",
+   "text": "Use 4821 as your OTP to recharge Rs 299 on MyJio. OTP is valid for 5 mins."
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.043,
+   "p_url": 0.0,
+   "sender": "VM-IRCTCI-S",
+   "text": "OTP for IRCTC registration is 902114. Please enter this to complete registration."
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.013,
+   "p_url": 0.0,
+   "sender": "CP-ICICIT-T",
+   "text": "Dear Customer, OTP for card ending 4321 is 845612 for txn of Rs 1,250 at SWIGGY. Valid 5 m"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.063,
+   "p_url": 0.0,
+   "sender": "VK-JIOINF-S",
+   "text": "Dear customer, your number 9876543210 has been ported in to Jio successfully. Enjoy servic"
+  },
+  {
+   "group": "fresh_ham",
+   "label": 0,
+   "band": "SAFE",
+   "family": null,
+   "p_sms": 0.044,
+   "p_url": 0.0,
+   "sender": "AD-AIRTEL-T",
+   "text": "Your data pack has expired. Recharge now to continue using data: https://i.airtel.in/data"
+  },
+  {
+   "group": "fresh_scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.997,
+   "p_url": 0.0,
+   "sender": "+918765432109",
+   "text": "Your Jio SIM will be blocked in 24 hrs due to incomplete KYC. Share the OTP sent to you wi"
+  },
+  {
+   "group": "fresh_scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.877,
+   "p_url": 0.0,
+   "sender": "+917654321098",
+   "text": "Airtel: you have won a Rs 5000 recharge in our lucky draw. Send the OTP you received to cl"
+  },
+  {
+   "group": "fresh_scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.863,
+   "p_url": 0.861,
+   "sender": "",
+   "text": "Your missed call refund of Rs 1,499 is pending. Enter your UPI PIN on this link to receive"
+  },
+  {
+   "group": "fresh_scam",
+   "label": 1,
+   "band": "SCAM",
+   "family": null,
+   "p_sms": 0.97,
+   "p_url": 0.99,
+   "sender": "JM-ALERTS",
+   "text": "Dear customer, your Airtel number will be deactivated today. Verify Aadhaar now at http://"
+  }
+ ]
+}

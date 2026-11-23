@@ -158,10 +158,10 @@ if held:
 <p>On a real 4,620-message inbox the 0.5.0 model called <b>{lap['v0_5_0']['SCAM']}</b> messages a scam and {lap['v0_5_0']['UNCERTAIN']}
 suspicious: Jio data and missed-call alerts, bank login alerts, TRAI and DoT advisories, promotions. It had learned "marketing" as
 well as "fraud". 0.5.1 adds a rule layer after the models (<code>ScamGate.kt</code>, the same rules as <code>sms_gate</code> in
-Python; a unit test checks both agree on 1,590 cases). A message is called a <b>scam</b> only with a fraud-specific cue: it asks you
+Python; a unit test checks both agree on 2,871 cases). A message is called a <b>scam</b> only with a fraud-specific cue: it asks you
 to hand over a code or PIN, ties a threat to a link or a personal number to call, has a brand look-alike link, is a task-job lure,
 or carries a link the URL model calls phishing. Without one, a registered business sender is safe ("promotion, not a scam" when it
-reads like one), a delivered login code is safe, and anything else is at most "be careful". A saved contact is never called a scam,
+reads like one), a delivered login code is safe, and anything else is at most "be careful". A message from a saved contact is never called a scam (at most "be careful" when it carries a fraud cue, in case the contact was hacked),
 and the user's own "scam / not a scam" answers apply to similar messages from then on.</p>
 <table><tr><th>Held-out split (same as above)</th><th>n</th><th>Precision</th><th>Recall</th><th>F1</th><th>False alarms</th><th>TP / FP / FN / TN</th></tr>
 {stat_row("Model alone, Indian, 'scam'", hi["model_scam"])}
@@ -178,6 +178,11 @@ With "be careful" counted it flags {pct(hi['app_flagged']['recall'])} of scams.<
 <li>The price is paid on UCI (UK spam, 2011): only {pct(hu['app_flagged']['recall'])} of its fraud gets flagged, against
 {pct(hu['model_flagged']['recall'])} for the model alone. Its lures (premium-rate call-backs, "you have won" without a link) lack the
 Indian fraud cues the gate looks for. Fewer false alarms cost missed scams; the gate makes that trade on purpose for Indian users.</li>
+<li><b>0.5.3, scam gate v5, built on the validation split only</b> (<code>scripts/analyze_sms_misses.py</code>):
+Hindi "{{number}} पर कॉल करें" call-backs and service-cut threats, "send the code you received", premium-rate prizes, police words only
+with something to do, payment receipts, government links and the sending brand's own deep links. On validation, Indian scams went
+from 80 missed to 0. The test split above was run once, after the rules were final. Held-out scams still missed (34 of 400):
+spoofed bank-header frauds, tax refund, courier, loan and investment templates.</li>
 <li><b>Where the rules were tuned.</b> The gate was written against a 64-message challenge set and the inbox above, so these are
 not held-out numbers: on the inbox, 0.5.1 gives {lap['v0_5_1']['SCAM']} scam and {lap['v0_5_1']['UNCERTAIN']} suspicious of 4,620; on
 the phone, {ph['flagged']} of the newest 1,000 were flagged, {ph['owner_confirmed_scam']} of them real scams, and none was missed in a
