@@ -186,7 +186,8 @@ spoofed bank-header frauds, tax refund, courier, loan and investment templates.<
 <li><b>Where the rules were tuned.</b> The gate was written against a 64-message challenge set and the inbox above, so these are
 not held-out numbers: on the inbox, 0.5.1 gives {lap['v0_5_1']['SCAM']} scam and {lap['v0_5_1']['UNCERTAIN']} suspicious of 4,620; on
 the phone, {ph['flagged']} of the newest 1,000 were flagged, {ph['owner_confirmed_scam']} of them real scams, and none was missed in a
-{ph['let_through_sample_checked']}-message sample of the rest. The untouched checks are the held-out split above and 19 messages written
+{ph['let_through_sample_checked']}-message sample of the rest. On 23 Nov 0.5.3 flagged {inbox['phone_audit_v0_5_3_newest_1000']['flagged']} of the newest 1,000, all of them scams by the
+owner's saved answers (a personalised result: those answers are applied by the app itself). The untouched checks are the held-out split above and 19 messages written
 after tuning: {chal['summary']['fresh_ham']['SCAM']} of {chal['summary']['fresh_ham']['n']} legitimate ones called scam,
 {chal['summary']['fresh_scam']['SCAM']} of {chal['summary']['fresh_scam']['n']} scams called scam.</li>
 </ul></div>"""

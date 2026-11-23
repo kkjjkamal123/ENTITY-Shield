@@ -39,7 +39,7 @@ real inbox (below); only the 19 "fresh" challenge messages were written after tu
   test is a time split: train ≤ 2026-06-04, test ≥ 2026-08-07.
 - **Reproducibility:** retraining the SMS model on Windows reproduced the 13 Nov Mac model
   exactly (43/43 golden scores, max difference 0.0).
-- **Real-inbox audit (counts only, no message text):** [`inbox_audit_Infinix_X6878_2026-11-21.json`](../benchmarks/results/inbox_audit_Infinix_X6878_2026-11-21.json). The scam gate was tuned on that inbox, so it is not a held-out number.
+- **Real-inbox audit (counts only, no message text):** [`inbox_audit_Infinix_X6878_2026-11-21.json`](../benchmarks/results/inbox_audit_Infinix_X6878_2026-11-21.json). The scam gate was tuned on that inbox, so it is not a held-out number. 0.5.3 on the phone (23 Nov): 7 of the newest 1,000 flagged, all scams by the owner's saved answers; 0 missed in a 10-message sample of the rest (personalised: the app applies those answers itself).
 - **URL v3 vs v1:** v1's benign data held only bare domains (flipkart.com). On the new test, whose
   benign side includes real hostnames (api.x.io, connekt.flipkart.net), v1 had precision 0.38 and 23%
   false alarms. v3 adds real DNS names from the Cisco Umbrella list, split by domain so nothing leaks,

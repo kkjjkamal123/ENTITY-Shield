@@ -4,8 +4,14 @@
  "date": "2026-11-21",
  "laptop_replay_all_messages": {
   "messages": 4620,
-  "v0_5_0": {"SCAM": 537, "UNCERTAIN": 1573},
-  "v0_5_1": {"SCAM": 6, "UNCERTAIN": 46},
+  "v0_5_0": {
+   "SCAM": 537,
+   "UNCERTAIN": 1573
+  },
+  "v0_5_1": {
+   "SCAM": 6,
+   "UNCERTAIN": 46
+  },
   "caveat": "The 0.5.1 scam gate rules were written after looking at this inbox's false alarms, so this is not a held-out result."
  },
  "phone_audit_v0_5_1_newest_1000": {
@@ -18,5 +24,18 @@
   "let_through_sample_missed_scams": 0,
   "ms_per_message": 0.47,
   "caveat": "Same inbox the gate was tuned on; the owner's labels were given before 0.5.2's saved patterns existed."
+ },
+ "phone_audit_v0_5_3_newest_1000": {
+  "date": "2026-11-23",
+  "messages": 1000,
+  "flagged": 7,
+  "owner_labelled_scam": 7,
+  "owner_labelled_not_scam": 0,
+  "let_through_sample_labelled": 10,
+  "let_through_sample_missed_scams": 0,
+  "ms_per_message": 0.81,
+  "personalised": true,
+  "saved_patterns": 58,
+  "caveat": "Personalised app: the owner's 58 saved scam / not-a-scam answers are applied, and every label here was filled in from those earlier answers, not given fresh. Same inbox the 0.5.1 rules were tuned on."
  }
 }
