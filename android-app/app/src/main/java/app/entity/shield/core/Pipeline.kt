@@ -144,7 +144,7 @@ object Pipeline {
         val open = PendingIntent.getActivity(ctx, a.id.toInt(), Intent(ctx, MainActivity::class.java).putExtra("alert", a.id),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val n = android.app.Notification.Builder(ctx, if (a.v.kind == "net") NET_CHANNEL else CHANNEL)
-            .setSmallIcon(android.R.drawable.stat_sys_warning)
+            .setSmallIcon(app.entity.shield.R.drawable.ic_entity_mark)
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(android.app.Notification.BigTextStyle().bigText("${a.sender.ifEmpty { "" }}\n$body"))
@@ -160,7 +160,7 @@ object Pipeline {
         ensureChannel(ctx)
         val lang = Prefs.lang(ctx)
         val n = android.app.Notification.Builder(ctx, CHANNEL)
-            .setSmallIcon(android.R.drawable.stat_sys_warning)
+            .setSmallIcon(app.entity.shield.R.drawable.ic_entity_mark)
             .setContentTitle(Advice.headline(v, lang))
             .setContentText(Advice.steps(v.family, lang).first())
             .build()

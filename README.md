@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/img/logo.png" width="96" alt="ENTITY logo">
+
 # ENTITY Shield
 
 **On-device scam, phishing and threat protection for Arm Android phones**
