@@ -7,7 +7,7 @@ The [technical report](report/ENTITY-Shield-Report.pdf) has the same results wit
 
 SMS rows are the 0.5.1 model (`benchmarks/results/detector_sms_2026-11-21.json`) and the app's full
 verdict on the same held-out split (`scripts/eval_sms_heldout.py`,
-`benchmarks/results/sms_heldout_app_2026-11-21.json`). The 0.5.1 model alone is weaker on unseen
+`benchmarks/results/sms_heldout_app_2026-11-23.json`; 0.5.2: `sms_heldout_app_2026-11-21.json`). The 0.5.1 model alone is weaker on unseen
 templates than 0.5.0's (recall 0.90 -> 0.67): it was retrained to stop treating marketing as fraud, and
 the scam gate now makes the final call. UCI is UK spam from 2011; the gate looks for fraud cues seen in
 Indian scams, so it lets more of that through. The gate's rules were tuned on a challenge set and one
@@ -17,14 +17,24 @@ real inbox (below); only the 19 "fresh" challenge messages were written after tu
 |---|---:|---:|---:|---:|---:|
 | SMS model alone · UCI SMS Spam, fraud-only positives (held out) | 788 | 1.000 | 0.783 | 0.00% | 0.990 |
 | SMS model alone · **Indian scam/legit templates never seen in training** | 1,200 | 0.848 | 0.668 | 6.00% | 0.952 |
-| SMS **app verdict** (model + URL model + scam gate) · same Indian templates, "scam" | 1,200 | 0.973 | 0.715 | 1.00% | — |
-| SMS **app verdict** · same Indian templates, "scam" or "be careful" | 1,200 | 0.905 | 0.933 | 4.88% | — |
-| SMS **app verdict** · UCI, "scam" or "be careful" | 788 | 0.905 | 0.633 | 0.55% | — |
+| SMS **app verdict 0.5.3** (model + URL model + scam gate v5) · same Indian templates, "scam" | 1,200 | **1.000** | **0.915** | **0.00%** | — |
+| SMS **app verdict 0.5.3** · same Indian templates, "scam" or "be careful" | 1,200 | **0.966** | **0.933** | **1.63%** | — |
+| SMS **app verdict 0.5.3** · UCI, "scam" or "be careful" | 788 | 0.939 | 0.767 | 0.41% | — |
+| SMS app verdict 0.5.2 (gate v4) · Indian, "scam" / "scam" or "be careful" | 1,200 | 0.973 / 0.905 | 0.715 / 0.933 | 1.00% / 4.88% | — |
+| SMS app verdict 0.5.2 (gate v4) · UCI, "scam" or "be careful" | 788 | 0.905 | 0.633 | 0.55% | — |
 | URL v3 · PhishTank **newer than all training data** + real DNS hostnames and Tranco domains (with allow-list) | 19,873 | 0.938 | 0.526 | 0.72% | 0.898 |
 | URL v3 · OpenPhish feed of 19 Nov 2026 (recall only) | 297 | — | 0.923 | — | — |
 | URL v3 · 20,000 held-out real DNS hostnames (Umbrella ranks 600k–1M), false alarms only | 20,000 | — | — | 1.06% (0.1% at Network Guard's threshold) | — |
 | URL · 41 official Indian bank/UPI/government domains | 41 | — | — | **0%** | — |
 
+- **Scam gate v5 (0.5.3) was built on the validation split only** (`scripts/analyze_sms_misses.py`):
+  Hindi "{number} पर कॉल करें" call-backs and service-cut threats, "send the code you received",
+  premium-rate prizes, "Prize Code" no longer read as an OTP, police/court words only with something
+  to do, payment receipts, government links, deep links of the brand that sent the message, and
+  messages with nothing to click, call or reply to. On validation Indian scams went from 80 missed to
+  0; the test split was run once after the rules were final. Held-out scams it still misses (34 of
+  400): spoofed bank-header frauds (dltf1/2), tax refund, courier, loan and investment templates.
+  Overall accuracy on the 1,200 held-out Indian messages: 96.7%.
 - **Splits:** the SMS test uses *templates*, not just messages, that were never trained on. The URL
   test is a time split: train ≤ 2026-06-04, test ≥ 2026-08-07.
 - **Reproducibility:** retraining the SMS model on Windows reproduced the 13 Nov Mac model

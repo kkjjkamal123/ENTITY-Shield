@@ -75,7 +75,7 @@ fun MoreScreen() {
             ListRow(tr("Privacy and models", "प्राइवेसी और मॉडल"), tr("What runs where, licences, Built with Llama", "क्या कहां चलता है, लाइसेंस, Built with Llama"), Ico.Lock,
                 trailing = { Glyph(Ico.Chevron, c.text3, 18.dp) }) { nav.open(Route.About) }
         }
-        Text("ENTITY Shield 0.4 · Bharat AI-SoC Challenge 2026–27 · PS3", style = Sh.t.caption, color = c.text3, modifier = Modifier.padding(top = Dim.s))
+        Text("ENTITY Shield ${remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "" }} · Bharat AI-SoC Challenge 2026–27 · PS3", style = Sh.t.caption, color = c.text3, modifier = Modifier.padding(top = Dim.s))
     }
 }
 

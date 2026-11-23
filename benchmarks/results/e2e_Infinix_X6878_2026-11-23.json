@@ -1,0 +1,108 @@
+{
+ "device": "Infinix X6878",
+ "soc": "SM7635",
+ "locked": true,
+ "date": "2026-11-23 01:38:58.457167",
+ "results": [
+  {
+   "check": "install",
+   "ok": true,
+   "detail": "Success"
+  },
+  {
+   "check": "detector parity (Kotlin featurizer + ExecuTorch == Python)",
+   "ok": true,
+   "detail": "sms golden: 43/43 match (max diff 4.7e-07) | url golden: 40/40 match (max diff 5.4e-07) | SMS check, featurize + models, n=1000: p50 0.744 ms · p95 1.027 ms | URL check, n=1000: p50 0.128 ms · p95 0.168 ms | "
+  },
+  {
+   "check": "link sandbox runs in an isolated process (files and network denied)",
+   "ok": true,
+   "detail": "probe uid=99229 isolated=true files_denied=true net_denied=true"
+  },
+  {
+   "check": "sandbox visits a real bank site and finds it safe",
+   "ok": true,
+   "detail": "inspect id=1795378102361 band=SAFE score=0.2000 family=KYC evidence=sandbox"
+  },
+  {
+   "check": "SMS verdict SCAM: Dear customer your SBI account will be b…",
+   "ok": true,
+   "detail": "got SCAM warnMs=31.03"
+  },
+  {
+   "check": "SMS verdict SCAM: आपके आधार पर मनी लॉन्ड्रिंग केस दर्ज है।…",
+   "ok": true,
+   "detail": "got SCAM warnMs=35.18"
+  },
+  {
+   "check": "SMS verdict SCAM: You have received Rs 4,999 refund. Enter…",
+   "ok": true,
+   "detail": "got SCAM warnMs=27.18"
+  },
+  {
+   "check": "SMS verdict SAFE: 482913 is your OTP for transaction of Rs…",
+   "ok": true,
+   "detail": "got SAFE warnMs=28.85"
+  },
+  {
+   "check": "SMS verdict SAFE: Your Amazon order will be delivered toda…",
+   "ok": true,
+   "detail": "got SAFE warnMs=23.31"
+  },
+  {
+   "check": "SMS verdict SAFE: Bhai kal ka plan cancel, office me late …",
+   "ok": true,
+   "detail": "got SAFE warnMs=72.86"
+  },
+  {
+   "check": "time to first warning < 1500 ms (detect + notification)",
+   "ok": true,
+   "detail": "median 31.0 ms, max 72.9 ms"
+  },
+  {
+   "check": "Llama explanation (EN) on ExecuTorch",
+   "ok": true,
+   "detail": "ttft=1651 ms prefill=147.202 decode=18.8679 tok/s :: It creates urgency and asks for sensitive information, and the link is not from the official SBI website."
+  },
+  {
+   "check": "Llama explanation (HI) on ExecuTorch",
+   "ok": true,
+   "detail": "ttft=2350 ms prefill=140.725 decode=16.3226 tok/s :: यह आपके बैंक खाते को बंद करने की धमकी देता है, जो बिल्कुल गलत है।"
+  },
+  {
+   "check": "Network Guard starts (local DNS VPN + tripwire)",
+   "ok": true,
+   "detail": "net requested=true vpnOn=true listening=2222,2323,5555,8080,8443,9999 ip=100.65.198.210 upstream=117.96.122.218, 117.96.122.178, 2401:4900:50:9::786, 2401:4900:50:9::7ac"
+  },
+  {
+   "check": "benign domain resolves (ALLOW)",
+   "ok": true,
+   "detail": "Shell (adb):www.google.com:ALLOW:0"
+  },
+  {
+   "check": "app infrastructure not blocked (connekt.flipkart.net ALLOW)",
+   "ok": true,
+   "detail": "Shell (adb):connekt.flipkart.net:ALLOW:0"
+  },
+  {
+   "check": "reported phishing domain blocked (BLOCK + alert)",
+   "ok": true,
+   "detail": "Shell (adb):websenicatelisi.wapka.site:BLOCK:3"
+  },
+  {
+   "check": "look-alike domain flagged, not blocked (FLAG)",
+   "ok": true,
+   "detail": "Shell (adb):hdfc-netbanking-verify.top:FLAG:3"
+  },
+  {
+   "check": "DGA-style lookup burst detected",
+   "ok": true,
+   "detail": "net:SCAM:NET_DGA:Shell (adb) looked up 8 names that do not exist in one minute (e.g. 7sqa1rkho3v5m1.xyz), t || net:SCAM:NET_DOMAIN:Shell (adb) tried to open websenicatelisi.wapka.site. It is on a publ"
+  },
+  {
+   "check": "LAN tripwire catches a port scan from the laptop",
+   "ok": true,
+   "detail": "4 ports reached on 100.65.198.210"
+  }
+ ]
+}

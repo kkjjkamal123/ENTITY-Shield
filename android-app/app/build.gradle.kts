@@ -13,8 +13,8 @@ android {
         applicationId = "app.entity.shield"
         minSdk = 29
         targetSdk = 36
-        versionCode = 502
-        versionName = "0.5.2"
+        versionCode = 503
+        versionName = "0.5.3"
         ndk { abiFilters += "arm64-v8a" } // Arm only; also drops the x86_64 ExecuTorch library
     }
 

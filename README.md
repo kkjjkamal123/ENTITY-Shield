@@ -32,8 +32,9 @@ Bharat AI-SoC Challenge 2026–27 · Problem Statement 3 · Team ENTITY
 
 | | Measured |
 |---|---|
-| Scam SMS flagged, Indian scam templates **never seen in training** | **93%** (precision 90.5%) |
-| When Shield says "scam", it is right | **97%** of the time (1.0% false alarms) |
+| SMS verdict accuracy, Indian scam and normal templates **never seen in training** (1,200) | **96.7%** |
+| Scams called "scam" / flagged at all, same unseen set | **91.5%** / **93.3%** |
+| Normal messages called "scam" / flagged at all | **0 of 800** / **1.6%** |
 | Live phishing domains caught by the URL model alone (OpenPhish) | **92%** |
 | Real app lookups blocked by mistake by Network Guard | **0.03%** |
 | Official Indian bank / UPI / government domains flagged | **0 of 41** |
@@ -105,8 +106,10 @@ Each result's script is listed next to it in [`docs/RESULTS.md`](docs/RESULTS.md
 - Network Guard sees this phone's traffic only; Private DNS or an app's own DNS-over-HTTPS bypasses it.
 - The URL model sees hostnames only (DNS has no paths): it catches 92% of live OpenPhish domains but
   53% of the older PhishTank time-split set. The sandbox and the phishing list cover more.
-- UK-style premium-rate spam (UCI, 2011) is flagged less often (63%) than Indian scams: the gate looks
-  for the fraud cues of Indian scams.
+- UK premium-rate spam (UCI, 2011) is flagged less often (77%) than Indian scams: the scam gate is
+  built around the fraud cues of Indian scams.
+- The Indian SMS test set is hand-written templates. Held-out scams still missed: some spoofed
+  bank-header frauds, tax-refund, courier, loan and investment templates (listed in the results).
 - Llama 3.2 1B is wrong 10–15% of the time in manual review, which is why it never decides and never
   writes the steps.
 
