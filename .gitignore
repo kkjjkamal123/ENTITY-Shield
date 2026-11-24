@@ -66,3 +66,4 @@ models/detectors/v1/*
 !models/detectors/v1/url.pte
 !models/detectors/v1/url_meta.json
 !models/detectors/v1/allowlist.txt
+docs/report/_build/
