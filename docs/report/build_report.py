@@ -325,6 +325,26 @@ extra hardware.</li>
 <tr><td>Minimal data kept; no automatic irreversible actions from the LLM</td><td>§10: alert text auto-deleted; Llama never acts</td></tr>
 <tr><td>Verified updates</td><td>Llama download SHA-256 checked; detector and feed updates ship with the APK (§11: signed feed updates)</td></tr></table>
 
+<h3>Submission criteria → where in this report</h3>
+<table><tr><th>Criterion</th><th>Where</th></tr>
+<tr><td>Methodology</td><td>§2 architecture; §3 features, data, splits, threshold tuning on validation only; §4 DNS policy; §5 sandbox; §6 Llama prompt and verdict prefill</td></tr>
+<tr><td>Results</td><td>§3 detector precision / recall / FPR / AUC; §4 false blocks and phishing caught; §5 live links; §6 explanation quality; §9 end-to-end on two phones</td></tr>
+<tr><td>Hardware utilization</td><td>§7: threads, big vs little cores, prefill / decode tok/s, TTFT; sustained run (30 answers, CPU temperature); memory 164 MB at rest, Llama ~1.3 GB only while an alert is open</td></tr>
+<tr><td>Optimization techniques</td><td>Summary below; details in §3, §6, §7, §8</td></tr></table>
+
+<h3>Optimization techniques, measured on the phones</h3>
+<table><tr><th>Technique</th><th>Before → after</th><th>§</th></tr>
+<tr><td>Allocation-free featurizer + one reused direct buffer per ExecuTorch model (<code>Tensor.fromBlob</code>)</td><td>SMS check 9.4 → 5.0 ms, URL 2.7 → 1.1 ms (Dimensity 7300, debug)</td><td>§3</td></tr>
+<tr><td>R8 release build</td><td>SMS 0.64 ms, URL 0.15 ms (Dimensity 7300); 0.50 / 0.11 ms (Snapdragon 7s Gen 3)</td><td>§3</td></tr>
+<tr><td>Tiny detectors: one <code>Linear + sigmoid</code> on XNNPACK</td><td>130 KB each, always loaded</td><td>§3</td></tr>
+<tr><td>Llama 3.2 1B QAT: 4-bit groupwise weights, 8-bit dynamic activations, KV cache, custom SDPA</td><td>1.12 GB model; ~19 tok/s decode</td><td>§6</td></tr>
+<tr><td>Pre-filling the fixed system prompt into the KV cache when an alert fires</td><td>First token 1.78 → 1.00 s (−44%)</td><td>§6</td></tr>
+<tr><td>Llama off the background cgroup (normal priority, only while the alert is on screen)</td><td>Little cores, 9.2 s first token → big cores</td><td>§7</td></tr>
+<tr><td>Load on demand, free after 90 s idle</td><td>~1.3 GB held only while needed; 164 MB at rest</td><td>§2</td></tr>
+<tr><td>Thread count and core choice measured, not guessed</td><td>3 vs 4 big-core threads: −17% prefill; 8 threads: −19% decode</td><td>§7</td></tr>
+<tr><td>DNS-only VPN route + lookup policy v2</td><td>App traffic never passes through Shield; false blocks 21.5% → 0.03%</td><td>§4</td></tr>
+<tr><td>R8, resource shrinking, startup profile; screens built once</td><td>APK 33 → 17 MB; janky frames 4.0% → 1.15%</td><td>§8</td></tr></table>
+
 <h2>2. Architecture</h2>
 <p>Inputs: SMS_RECEIVED, inbox, share/select-text/Link Guard, the DNS VPN and the tripwire → detectors (SMS, URL, behaviour
 rules) → verdict (safe / suspicious / dangerous) → instant notification with fixed steps → when the user opens the alert,
@@ -450,7 +470,7 @@ first token arrives after <b>1.00 s pre-warmed vs 1.78 s cold (−44%)</b>. The 
 summation order when the prompt is prefilled in two chunks; we have not confirmed it directly. Removing the literal BOS token
 from the prefilled text diverged from the first sentence, so <code>prefillPrompt</code> adds no BOS of its own.</p>
 
-<h2 class="pb">7. Arm SoC: where the time goes</h2>
+<h2 class="pb">7. Hardware utilization on the Arm SoC: where the time goes</h2>
 <p>Measured with ExecuTorch's own <code>llama_main</code> under <code>taskset</code>. The only things that change are the thread
 count and the allowed cores. Masks come from each phone's <code>cpuinfo_max_freq</code>; arms are interleaved over 3 runs.</p>
 {"".join(f'<img src="{v}">' for k, v in charts.items() if k.startswith("threads_"))}
